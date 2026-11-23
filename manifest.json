@@ -1,0 +1,16 @@
+{
+  "name": "棒球壘審模擬器",
+  "short_name": "棒球壘審模擬器",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b131e",
+  "theme_color": "#0b131e",
+  "icons": [
+    {
+      "src": "icon_baseball.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
