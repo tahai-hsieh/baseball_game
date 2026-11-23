@@ -1,0 +1,1769 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>棒球壘審判決模擬器｜Safe / Out 挑戰賽</title>
+  <style>
+    :root {
+      --bg: #0d1520;
+      --panel: #152233;
+      --panel-light: #1e3148;
+      --border: #2c4563;
+      --text: #eef4fb;
+      --muted: #93abc7;
+      --safe: #18b86b;
+      --safe-dark: #0f874d;
+      --out: #e64545;
+      --out-dark: #b32828;
+      --accent: #f5b942;
+      --blue: #3b9cff;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      padding: 14px;
+      background: radial-gradient(circle at top, #17283d 0%, var(--bg) 70%);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 920px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 16px;
+    }
+
+    .title-group h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      letter-spacing: 0.5px;
+    }
+
+    .title-group p {
+      margin: 3px 0 0;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .stats {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .stat-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 6px 12px;
+      text-align: center;
+      min-width: 78px;
+    }
+
+    .stat-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .stat-value {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-top: 2px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px 14px;
+    }
+
+    .base-selector {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .base-selector span {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-right: 4px;
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      transition: transform 0.08s ease, background 0.15s ease, opacity 0.15s ease;
+    }
+
+    button:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-tab {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 7px 13px;
+      font-size: 0.86rem;
+    }
+
+    .btn-tab.active {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+    }
+
+    .btn-ghost {
+      background: var(--panel-light);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 7px 12px;
+      font-size: 0.85rem;
+    }
+
+    .stage-wrap {
+      position: relative;
+      background: #0b121b;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+    }
+
+    .overlay-banner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: rgba(9, 14, 22, 0.78);
+      backdrop-filter: blur(3px);
+      text-align: center;
+      padding: 20px;
+      z-index: 10;
+    }
+
+    .overlay-banner.hidden {
+      display: none;
+    }
+
+    .banner-tag {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: var(--out);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    .banner-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin: 0 0 8px;
+    }
+
+    .banner-desc {
+      font-size: 0.95rem;
+      color: #d6e4f5;
+      max-width: 520px;
+      line-height: 1.5;
+      margin: 0 0 16px;
+    }
+
+    .control-panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .status-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 0.95rem;
+    }
+
+    .status-text {
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .hint-text {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .action-row.single {
+      grid-template-columns: 1fr;
+    }
+
+    .btn-primary {
+      background: var(--blue);
+      color: #fff;
+      padding: 14px 18px;
+      font-size: 1.05rem;
+    }
+
+    .btn-safe {
+      background: var(--safe);
+      color: #fff;
+      padding: 16px;
+      font-size: 1.15rem;
+      box-shadow: 0 4px 0 var(--safe-dark);
+    }
+
+    .btn-out {
+      background: var(--out);
+      color: #fff;
+      padding: 16px;
+      font-size: 1.15rem;
+      box-shadow: 0 4px 0 var(--out-dark);
+    }
+
+    .btn-accent {
+      background: var(--accent);
+      color: #171c24;
+      padding: 14px 18px;
+      font-size: 1.02rem;
+    }
+
+    .replay-box {
+      background: #101b29;
+      border: 1px solid #35567c;
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .replay-box.hidden,
+    .result-box.hidden {
+      display: none;
+    }
+
+    .replay-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .replay-badge {
+      background: #c92a2a;
+      color: #fff;
+      font-size: 0.78rem;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.8px;
+    }
+
+    .replay-time {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.95rem;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .scrubber-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .scrubber {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .replay-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .btn-sm {
+      background: var(--panel-light);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      font-size: 0.82rem;
+    }
+
+    .btn-sm.active {
+      background: var(--accent);
+      color: #141921;
+      border-color: var(--accent);
+    }
+
+    .result-box {
+      background: #101c2b;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .result-headline {
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+
+    .result-headline.good {
+      color: #46e095;
+    }
+
+    .result-headline.bad {
+      color: #ff6b6b;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 8px;
+    }
+
+    .result-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+
+    .result-item .k {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .result-item .v {
+      font-size: 0.98rem;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    .footer-note {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 600px) {
+      .action-row {
+        grid-template-columns: 1fr;
+      }
+      .title-group h1 {
+        font-size: 1.1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="title-group">
+        <h1>⚾ 棒球壘審判決系統（Safe / Out）</h1>
+        <p>看準壘包、聽清手套接球聲！遇上教練挑戰時，親自操作慢動作重播進行改判或維持原判。</p>
+      </div>
+      <div class="stats">
+        <div class="stat-box">
+          <div class="stat-label">總局數</div>
+          <div class="stat-value" id="statTotal">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">初判準確率</div>
+          <div class="stat-value" id="statInitial">--%</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">最終正確率</div>
+          <div class="stat-value" id="statFinal">--%</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">連勝</div>
+          <div class="stat-value" id="statStreak">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="base-selector">
+        <span>執法壘包：</span>
+        <button class="btn-tab active" data-base="1">一壘</button>
+        <button class="btn-tab" data-base="2">二壘</button>
+        <button class="btn-tab" data-base="3">三壘</button>
+        <button class="btn-tab" data-base="random">隨機切換</button>
+      </div>
+      <div class="btn-group">
+        <button class="btn-ghost" id="btnSound">🔊 音效：開</button>
+        <button class="btn-ghost" id="btnResetStats">重置戰績</button>
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <canvas id="gameCanvas" width="960" height="540"></canvas>
+      <div class="overlay-banner hidden" id="challengeBanner">
+        <div class="banner-tag">COACH CHALLENGE</div>
+        <h2 class="banner-title" id="challengeTitle">教練衝出休息室提出挑戰！</h2>
+        <p class="banner-desc" id="challengeDesc"></p>
+        <button class="btn-accent" id="btnEnterReplay">進入慢動作重播室進行檢視</button>
+      </div>
+    </div>
+
+    <div class="control-panel">
+      <div class="status-line">
+        <div class="status-text" id="statusText">按下「開始這一球」或空白鍵，準備進行判決。</div>
+        <div class="hint-text" id="hintText">快捷鍵：空白鍵開始/播放、A 判 Safe、D 判 Out、方向鍵微調影格</div>
+      </div>
+
+      <div class="action-row single" id="startRow">
+        <button class="btn-primary" id="btnStart">▶ 開始這一球（目前：一壘）</button>
+      </div>
+
+      <div class="action-row" id="judgeRow" style="display: none;">
+        <button class="btn-safe" id="btnSafe">SAFE 安全上壘 (A)</button>
+        <button class="btn-out" id="btnOut">OUT 出局 (D)</button>
+      </div>
+
+      <div class="replay-box hidden" id="replayBox">
+        <div class="replay-top">
+          <div class="btn-group">
+            <span class="replay-badge" id="replayBadge">● REPLAY REVIEW 重播輔助判決</span>
+            <span id="replaySubInfo" style="font-size: 0.85rem; color: var(--muted);"></span>
+          </div>
+          <div class="replay-time" id="replayTimeDisplay">0.000s / 2.100s</div>
+        </div>
+
+        <div class="scrubber-wrap">
+          <input type="range" id="replayScrubber" class="scrubber" min="0" max="2100" value="0" step="1" />
+        </div>
+
+        <div class="replay-controls">
+          <div class="btn-group">
+            <button class="btn-sm" id="btnReplayPlay">▶ 播放</button>
+            <button class="btn-sm" id="btnStepBack">⏪ -1 影格</button>
+            <button class="btn-sm" id="btnStepFwd">⏩ +1 影格</button>
+            <button class="btn-sm" id="btnJumpImpact">🎯 跳至關鍵瞬間</button>
+            <button class="btn-sm" id="btnZoom">🔍 放大特寫：開</button>
+          </div>
+          <div class="btn-group">
+            <span style="font-size: 0.8rem; color: var(--muted);">倍速：</span>
+            <button class="btn-sm speed-btn" data-speed="0.1">0.1x</button>
+            <button class="btn-sm speed-btn active" data-speed="0.25">0.25x</button>
+            <button class="btn-sm speed-btn" data-speed="0.5">0.5x</button>
+            <button class="btn-sm speed-btn" data-speed="1">1.0x</button>
+          </div>
+        </div>
+
+        <div class="action-row" id="replayDecisionRow">
+          <button class="btn-primary" id="btnCallStands">維持原判</button>
+          <button class="btn-accent" id="btnCallOverturned">改判</button>
+        </div>
+      </div>
+
+      <div class="result-box hidden" id="resultBox">
+        <div class="result-headline" id="resultHeadline">判決正確！</div>
+        <div class="result-grid">
+          <div class="result-item">
+            <div class="k">實際結果（系統驗證）</div>
+            <div class="v" id="resTruth">--</div>
+          </div>
+          <div class="result-item">
+            <div class="k">跑者觸壘時間</div>
+            <div class="v" id="resRunnerTime">--</div>
+          </div>
+          <div class="result-item">
+            <div class="k">球進手套時間</div>
+            <div class="v" id="resBallTime">--</div>
+          </div>
+          <div class="result-item">
+            <div class="k">時間差（勝負關鍵）</div>
+            <div class="v" id="resDelta">--</div>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="btn-ghost" id="btnInspectAfter">🔎 自由操作重播確認</button>
+          <button class="btn-primary" id="btnNextPlay">▶ 下一球 (空白鍵)</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      判決規則：球完全進入守備員手套（一壘為腳踩壘包接球、二三壘為接球觸殺）早於跑者碰觸壘包則為 OUT；跑者先觸碰壘包則為 SAFE。
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+
+      const ui = {
+        statTotal: document.getElementById('statTotal'),
+        statInitial: document.getElementById('statInitial'),
+        statFinal: document.getElementById('statFinal'),
+        statStreak: document.getElementById('statStreak'),
+        baseBtns: document.querySelectorAll('.btn-tab'),
+        btnSound: document.getElementById('btnSound'),
+        btnResetStats: document.getElementById('btnResetStats'),
+        challengeBanner: document.getElementById('challengeBanner'),
+        challengeTitle: document.getElementById('challengeTitle'),
+        challengeDesc: document.getElementById('challengeDesc'),
+        btnEnterReplay: document.getElementById('btnEnterReplay'),
+        statusText: document.getElementById('statusText'),
+        hintText: document.getElementById('hintText'),
+        startRow: document.getElementById('startRow'),
+        btnStart: document.getElementById('btnStart'),
+        judgeRow: document.getElementById('judgeRow'),
+        btnSafe: document.getElementById('btnSafe'),
+        btnOut: document.getElementById('btnOut'),
+        replayBox: document.getElementById('replayBox'),
+        replayBadge: document.getElementById('replayBadge'),
+        replaySubInfo: document.getElementById('replaySubInfo'),
+        replayTimeDisplay: document.getElementById('replayTimeDisplay'),
+        replayScrubber: document.getElementById('replayScrubber'),
+        btnReplayPlay: document.getElementById('btnReplayPlay'),
+        btnStepBack: document.getElementById('btnStepBack'),
+        btnStepFwd: document.getElementById('btnStepFwd'),
+        btnJumpImpact: document.getElementById('btnJumpImpact'),
+        btnZoom: document.getElementById('btnZoom'),
+        speedBtns: document.querySelectorAll('.speed-btn'),
+        replayDecisionRow: document.getElementById('replayDecisionRow'),
+        btnCallStands: document.getElementById('btnCallStands'),
+        btnCallOverturned: document.getElementById('btnCallOverturned'),
+        resultBox: document.getElementById('resultBox'),
+        resultHeadline: document.getElementById('resultHeadline'),
+        resTruth: document.getElementById('resTruth'),
+        resRunnerTime: document.getElementById('resRunnerTime'),
+        resBallTime: document.getElementById('resBallTime'),
+        resDelta: document.getElementById('resDelta'),
+        btnInspectAfter: document.getElementById('btnInspectAfter'),
+        btnNextPlay: document.getElementById('btnNextPlay')
+      };
+
+      const DURATION = 2.1; // seconds
+      const BASE_NAMES = { 1: '一壘', 2: '二壘', 3: '三壘' };
+
+      const state = {
+        phase: 'IDLE', // IDLE, LIVE, AWAIT_JUDGE, CHALLENGE_BANNER, REPLAY_REVIEW, RESULT
+        selectedBaseMode: '1', // '1', '2', '3', 'random'
+        soundEnabled: true,
+        stats: {
+          total: 0,
+          initialCorrect: 0,
+          finalCorrect: 0,
+          streak: 0
+        },
+        play: null,
+        t: 0,
+        lastTimestamp: 0,
+        playing: false,
+        playbackRate: 1,
+        replayZoom: true,
+        freeInspectMode: false,
+        initialCall: null,
+        finalCall: null,
+        challenged: false,
+        triggeredCatchSound: false,
+        triggeredTouchSound: false,
+        triggeredSlideSound: false
+      };
+
+      // ================= Web Audio API 音效引擎 =================
+      let audioCtx = null;
+
+      function ensureAudio() {
+        if (!state.soundEnabled) return null;
+        if (!audioCtx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) {
+            audioCtx = new AudioContextClass();
+          }
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        return audioCtx;
+      }
+
+      function playGlovePop(slowMo = false) {
+        const ctxA = ensureAudio();
+        if (!ctxA) return;
+        const now = ctxA.currentTime;
+
+        // 皮革撞擊低頻
+        const osc = ctxA.createOscillator();
+        const gain = ctxA.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(slowMo ? 170 : 240, now);
+        osc.frequency.exponentialRampToValueAtTime(52, now + 0.085);
+
+        gain.gain.setValueAtTime(0.55, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.095);
+
+        osc.connect(gain);
+        gain.connect(ctxA.destination);
+        osc.start(now);
+        osc.stop(now + 0.1);
+
+        // 清脆「啪」聲雜訊
+        const bufferSize = Math.floor(ctxA.sampleRate * 0.06);
+        const buffer = ctxA.createBuffer(1, bufferSize, ctxA.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.25));
+        }
+
+        const noise = ctxA.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = ctxA.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = slowMo ? 950 : 1400;
+        filter.Q.value = 1.4;
+
+        const nGain = ctxA.createGain();
+        nGain.gain.setValueAtTime(0.65, now);
+        nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+
+        noise.connect(filter);
+        filter.connect(nGain);
+        nGain.connect(ctxA.destination);
+        noise.start(now);
+      }
+
+      function playBaseTouch(slowMo = false) {
+        const ctxA = ensureAudio();
+        if (!ctxA) return;
+        const now = ctxA.currentTime;
+
+        // 踩壘包悶響
+        const osc = ctxA.createOscillator();
+        const gain = ctxA.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(slowMo ? 95 : 135, now);
+        osc.frequency.exponentialRampToValueAtTime(38, now + 0.11);
+
+        gain.gain.setValueAtTime(0.45, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+        osc.connect(gain);
+        gain.connect(ctxA.destination);
+        osc.start(now);
+        osc.stop(now + 0.13);
+
+        // 紅土摩擦微聲
+        const bufferSize = Math.floor(ctxA.sampleRate * 0.09);
+        const buffer = ctxA.createBuffer(1, bufferSize, ctxA.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.45));
+        }
+        const noise = ctxA.createBufferSource();
+        noise.buffer = buffer;
+        const filter = ctxA.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 650;
+
+        const nGain = ctxA.createGain();
+        nGain.gain.setValueAtTime(0.28, now);
+        nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+
+        noise.connect(filter);
+        filter.connect(nGain);
+        nGain.connect(ctxA.destination);
+        noise.start(now);
+      }
+
+      function playSlideDirt() {
+        const ctxA = ensureAudio();
+        if (!ctxA) return;
+        const now = ctxA.currentTime;
+        const dur = 0.32;
+        const bufferSize = Math.floor(ctxA.sampleRate * dur);
+        const buffer = ctxA.createBuffer(1, bufferSize, ctxA.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          const env = Math.sin((i / bufferSize) * Math.PI);
+          data[i] = (Math.random() * 2 - 1) * env;
+        }
+        const noise = ctxA.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = ctxA.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(1100, now);
+        filter.frequency.linearRampToValueAtTime(450, now + dur);
+
+        const gain = ctxA.createGain();
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctxA.destination);
+        noise.start(now);
+      }
+
+      function playCueTone(freq, dur = 0.12, type = 'sine', vol = 0.2) {
+        const ctxA = ensureAudio();
+        if (!ctxA) return;
+        const now = ctxA.currentTime;
+        const osc = ctxA.createOscillator();
+        const gain = ctxA.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(vol, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+        osc.connect(gain);
+        gain.connect(ctxA.destination);
+        osc.start(now);
+        osc.stop(now + dur + 0.01);
+      }
+
+      function playChallengeAlarm() {
+        playCueTone(520, 0.14, 'sawtooth', 0.14);
+        setTimeout(() => playCueTone(390, 0.24, 'sawtooth', 0.16), 150);
+      }
+
+      function playResultChime(isCorrect) {
+        if (isCorrect) {
+          playCueTone(587.33, 0.12, 'triangle', 0.22);
+          setTimeout(() => playCueTone(880, 0.22, 'triangle', 0.22), 110);
+        } else {
+          playCueTone(260, 0.16, 'sawtooth', 0.14);
+          setTimeout(() => playCueTone(195, 0.26, 'sawtooth', 0.14), 160);
+        }
+      }
+
+      // ================= 產生隨機 Play =================
+      function pickActiveBase() {
+        if (state.selectedBaseMode === 'random') {
+          return Math.floor(Math.random() * 3) + 1;
+        }
+        return parseInt(state.selectedBaseMode, 10);
+      }
+
+      function generatePlay() {
+        const base = pickActiveBase();
+        const baseTouchTime = 1.18 + Math.random() * 0.26; // 1.18s ~ 1.44s
+
+        // 隨機時間差分布：高比例出現緊張的接近球 (Bang-Bang Play)
+        const r = Math.random();
+        let absDelta;
+        if (r < 0.45) {
+          // 極接近球：0.015s ~ 0.055s
+          absDelta = 0.015 + Math.random() * 0.04;
+        } else if (r < 0.80) {
+          // 接近球：0.055s ~ 0.125s
+          absDelta = 0.055 + Math.random() * 0.07;
+        } else {
+          // 較明確球：0.125s ~ 0.22s
+          absDelta = 0.125 + Math.random() * 0.095;
+        }
+
+        const isSafe = Math.random() < 0.5;
+        // delta = ballCatchTime - baseTouchTime；大於 0 代表跑者先到 (SAFE)
+        const delta = isSafe ? absDelta : -absDelta;
+        const ballCatchTime = baseTouchTime + delta;
+
+        // 各壘包的座標設定（畫布 960x540，壘包中心 480, 270）
+        const basePos = { x: 480, y: 270 };
+        let config;
+
+        if (base === 1) {
+          config = {
+            base: 1,
+            baseLabel: '一壘 1B',
+            runnerAction: 'sprint',
+            // 跑者從下方本壘方向直衝一壘
+            runnerStart: { x: 492, y: 580 },
+            runnerContact: { x: 492, y: 294 }, // 踩在一壘壘包前緣
+            runnerEnd: { x: 492, y: 40 },
+            // 球從內野左側傳來
+            throwStart: { x: 40, y: 360 },
+            glovePos: { x: 428, y: 270 },
+            fielderPos: { x: 452, y: 270 },
+            fielderFootOnBase: { x: 462, y: 272 },
+            throwDuration: 0.72
+          };
+        } else if (base === 2) {
+          config = {
+            base: 2,
+            baseLabel: '二壘 2B',
+            runnerAction: 'slide',
+            // 跑者從右下方（一壘方向）滑向二壘
+            runnerStart: { x: 860, y: 490 },
+            runnerContact: { x: 506, y: 288 },
+            runnerEnd: { x: 498, y: 284 },
+            // 球從左下方（本壘/游擊方向）傳向二壘
+            throwStart: { x: 70, y: 470 },
+            glovePos: { x: 468, y: 266 },
+            fielderPos: { x: 454, y: 242 },
+            fielderFootOnBase: { x: 472, y: 264 },
+            throwDuration: 0.76
+          };
+        } else {
+          config = {
+            base: 3,
+            baseLabel: '三壘 3B',
+            runnerAction: 'slide',
+            // 跑者從右側（二壘方向）滑向三壘
+            runnerStart: { x: 890, y: 282 },
+            runnerContact: { x: 506, y: 274 },
+            runnerEnd: { x: 498, y: 274 },
+            // 球從右外野/游擊上方傳來
+            throwStart: { x: 140, y: 70 },
+            glovePos: { x: 468, y: 268 },
+            fielderPos: { x: 446, y: 256 },
+            fielderFootOnBase: { x: 466, y: 268 },
+            throwDuration: 0.74
+          };
+        }
+
+        return {
+          ...config,
+          basePos,
+          baseTouchTime,
+          ballCatchTime,
+          delta,
+          truth: isSafe ? 'SAFE' : 'OUT',
+          throwStartTime: ballCatchTime - config.throwDuration
+        };
+      }
+
+      // ================= 遊戲流程控制 =================
+      function updateStatsUI() {
+        const s = state.stats;
+        ui.statTotal.textContent = s.total;
+        ui.statInitial.textContent = s.total ? Math.round((s.initialCorrect / s.total) * 100) + '%' : '--%';
+        ui.statFinal.textContent = s.total ? Math.round((s.finalCorrect / s.total) * 100) + '%' : '--%';
+        ui.statStreak.textContent = s.streak;
+      }
+
+      function updateStartButtonLabel() {
+        const label = state.selectedBaseMode === 'random' ? '隨機壘包' : BASE_NAMES[state.selectedBaseMode];
+        ui.btnStart.textContent = `▶ 開始這一球（目前：${label}）`;
+      }
+
+      function startNewPlay() {
+        ensureAudio();
+        state.play = generatePlay();
+        state.phase = 'LIVE';
+        state.t = 0;
+        state.playing = true;
+        state.playbackRate = 1;
+        state.freeInspectMode = false;
+        state.initialCall = null;
+        state.finalCall = null;
+        state.challenged = false;
+        state.triggeredCatchSound = false;
+        state.triggeredTouchSound = false;
+        state.triggeredSlideSound = false;
+
+        ui.challengeBanner.classList.add('hidden');
+        ui.replayBox.classList.add('hidden');
+        ui.resultBox.classList.add('hidden');
+        ui.startRow.style.display = 'none';
+        ui.judgeRow.style.display = 'grid';
+        ui.btnSafe.disabled = true;
+        ui.btnOut.disabled = true;
+
+        ui.statusText.textContent = `【${state.play.baseLabel}】比賽進行中！專注看壘包並聽接球聲...`;
+        playCueTone(660, 0.08, 'sine', 0.14);
+      }
+
+      function handleInitialCall(call) {
+        if (state.phase !== 'AWAIT_JUDGE' && state.phase !== 'LIVE') return;
+        state.initialCall = call;
+        state.playing = false;
+        ui.judgeRow.style.display = 'none';
+
+        const isInitialCorrect = call === state.play.truth;
+        const absDelta = Math.abs(state.play.delta);
+
+        // 決定教練是否提出挑戰：
+        // 1. 判錯時高機率（90%）提出挑戰
+        // 2. 判對但非常接近（<= 0.07s）時 55% 機率提出挑戰（讓玩家不能盲猜「被挑戰就是判錯」）
+        // 3. 一般接近球（<= 0.12s）25% 機率提出挑戰
+        let challengeProb = 0.08;
+        if (!isInitialCorrect) {
+          challengeProb = 0.90;
+        } else if (absDelta <= 0.07) {
+          challengeProb = 0.55;
+        } else if (absDelta <= 0.12) {
+          challengeProb = 0.25;
+        }
+
+        if (Math.random() < challengeProb) {
+          state.challenged = true;
+          state.phase = 'CHALLENGE_BANNER';
+          const opposingCoach = call === 'SAFE' ? '守備方總教練' : '進攻方總教練';
+          ui.challengeTitle.textContent = `${opposingCoach}不服判決，提出挑戰！`;
+          ui.challengeDesc.textContent = `你剛才的原始判決為「${call === 'SAFE' ? 'SAFE 安全上壘' : 'OUT 出局'}」。請親自進入重播室，使用慢動作與逐格功能做出最終裁決。`;
+          ui.challengeBanner.classList.remove('hidden');
+          ui.statusText.textContent = `教練提出重播輔助判決挑戰！原判：${call}`;
+          playChallengeAlarm();
+        } else {
+          state.challenged = false;
+          state.finalCall = call;
+          finalizeRound();
+        }
+      }
+
+      function enterReplayReview() {
+        ui.challengeBanner.classList.add('hidden');
+        state.phase = 'REPLAY_REVIEW';
+        state.freeInspectMode = false;
+        state.replayZoom = true;
+        state.playbackRate = 0.25;
+        setSpeedBtnActive(0.25);
+        ui.btnZoom.textContent = '🔍 放大特寫：開';
+
+        const keyMoment = Math.min(state.play.baseTouchTime, state.play.ballCatchTime);
+        jumpReplayTime(Math.max(0, keyMoment - 0.28));
+        state.playing = true;
+        ui.btnReplayPlay.textContent = '⏸ 暫停';
+
+        ui.replayBadge.textContent = '● REPLAY REVIEW 重播輔助判決';
+        ui.replaySubInfo.textContent = `原始判決：${state.initialCall === 'SAFE' ? 'SAFE 安全上壘' : 'OUT 出局'}`;
+        ui.replayDecisionRow.style.display = 'grid';
+        const overturnedCall = state.initialCall === 'SAFE' ? 'OUT' : 'SAFE';
+        ui.btnCallStands.textContent = `維持原判（${state.initialCall}）`;
+        ui.btnCallOverturned.textContent = `改判（改為 ${overturnedCall}）`;
+
+        ui.replayBox.classList.remove('hidden');
+        ui.statusText.textContent = '請操作慢動作與逐格重播，確認後選擇「維持原判」或「改判」。';
+      }
+
+      function handleReplayDecision(overturn) {
+        if (state.phase !== 'REPLAY_REVIEW') return;
+        state.playing = false;
+        state.finalCall = overturn
+          ? (state.initialCall === 'SAFE' ? 'OUT' : 'SAFE')
+          : state.initialCall;
+        finalizeRound();
+      }
+
+      function finalizeRound() {
+        state.phase = 'RESULT';
+        state.playing = false;
+        ui.replayBox.classList.add('hidden');
+        ui.resultBox.classList.remove('hidden');
+
+        const truth = state.play.truth;
+        const initOk = state.initialCall === truth;
+        const finalOk = state.finalCall === truth;
+
+        state.stats.total += 1;
+        if (initOk) state.stats.initialCorrect += 1;
+        if (finalOk) {
+          state.stats.finalCorrect += 1;
+          state.stats.streak += 1;
+        } else {
+          state.stats.streak = 0;
+        }
+        updateStatsUI();
+
+        playResultChime(finalOk);
+
+        let headline = '';
+        if (!state.challenged) {
+          headline = finalOk
+            ? `✅ 判決精準！（原判 ${state.finalCall} 正確）`
+            : `❌ 誤判了！（你判 ${state.finalCall}，實際為 ${truth}）`;
+        } else {
+          if (finalOk && initOk) {
+            headline = `✅ 挑戰失敗！經重播確認，維持原判 ${truth} 正確！`;
+          } else if (finalOk && !initOk) {
+            headline = `✅ 挑戰成功！經重播即時修正，改判 ${truth} 正確！`;
+          } else if (!finalOk && initOk) {
+            headline = `❌ 重播改錯了！原本判 ${state.initialCall} 其實才是對的！`;
+          } else {
+            headline = `❌ 維持誤判！實際結果應為 ${truth}。`;
+          }
+        }
+
+        ui.resultHeadline.textContent = headline;
+        ui.resultHeadline.className = 'result-headline ' + (finalOk ? 'good' : 'bad');
+
+        ui.resTruth.textContent = truth === 'SAFE' ? 'SAFE（安全上壘）' : 'OUT（出局）';
+        ui.resTruth.style.color = truth === 'SAFE' ? '#46e095' : '#ff6b6b';
+        ui.resRunnerTime.textContent = `${state.play.baseTouchTime.toFixed(3)} 秒`;
+        ui.resBallTime.textContent = `${state.play.ballCatchTime.toFixed(3)} 秒`;
+
+        const diffMs = Math.round(Math.abs(state.play.delta) * 1000);
+        const whoFirst = state.play.delta > 0 ? '跑者領先' : '球先入套';
+        ui.resDelta.textContent = `${diffMs} 毫秒（${whoFirst}）`;
+
+        ui.statusText.textContent = '本球判決結束，可點擊下方自由重播檢視或進入下一球。';
+      }
+
+      function openFreeInspect() {
+        state.freeInspectMode = true;
+        state.replayZoom = true;
+        state.playbackRate = 0.25;
+        setSpeedBtnActive(0.25);
+        ui.btnZoom.textContent = '🔍 放大特寫：開';
+        ui.replayBadge.textContent = '● 賽後自由檢視模式';
+        ui.replaySubInfo.textContent = `正確答案：${state.play.truth}`;
+        ui.replayDecisionRow.style.display = 'none';
+        ui.replayBox.classList.remove('hidden');
+
+        const keyMoment = Math.min(state.play.baseTouchTime, state.play.ballCatchTime);
+        jumpReplayTime(Math.max(0, keyMoment - 0.25));
+        state.playing = false;
+        ui.btnReplayPlay.textContent = '▶ 播放';
+      }
+
+      function jumpReplayTime(newT) {
+        state.t = Math.max(0, Math.min(DURATION, newT));
+        state.triggeredCatchSound = state.t >= state.play.ballCatchTime;
+        state.triggeredTouchSound = state.t >= state.play.baseTouchTime;
+        state.triggeredSlideSound = state.t >= state.play.baseTouchTime - 0.34;
+        updateReplayScrubberUI();
+      }
+
+      function updateReplayScrubberUI() {
+        ui.replayScrubber.value = Math.round(state.t * 1000);
+        ui.replayTimeDisplay.textContent = `${state.t.toFixed(3)}s / ${DURATION.toFixed(3)}s`;
+      }
+
+      function setSpeedBtnActive(speed) {
+        ui.speedBtns.forEach(btn => {
+          btn.classList.toggle('active', parseFloat(btn.dataset.speed) === speed);
+        });
+      }
+
+      // ================= 繪圖系統 =================
+      function lerp(a, b, t) {
+        return a + (b - a) * t;
+      }
+
+      function clamp01(v) {
+        return Math.max(0, Math.min(1, v));
+      }
+
+      function getRunnerPos(play, t) {
+        const approachStart = play.baseTouchTime - 0.95;
+        if (t <= play.baseTouchTime) {
+          const p = clamp01((t - approachStart) / 0.95);
+          // 滑壘在最後稍微減速，衝刺則等速
+          const eased = play.runnerAction === 'slide'
+            ? 1 - Math.pow(1 - p, 1.35)
+            : p;
+          return {
+            x: lerp(play.runnerStart.x, play.runnerContact.x, eased),
+            y: lerp(play.runnerStart.y, play.runnerContact.y, eased),
+            sliding: play.runnerAction === 'slide' && t >= play.baseTouchTime - 0.36
+          };
+        } else {
+          const afterP = clamp01((t - play.baseTouchTime) / 0.65);
+          if (play.runnerAction === 'sprint') {
+            return {
+              x: lerp(play.runnerContact.x, play.runnerEnd.x, afterP),
+              y: lerp(play.runnerContact.y, play.runnerEnd.y, afterP),
+              sliding: false
+            };
+          } else {
+            const slideStop = 1 - Math.pow(1 - afterP, 3);
+            return {
+              x: lerp(play.runnerContact.x, play.runnerEnd.x, slideStop),
+              y: lerp(play.runnerContact.y, play.runnerEnd.y, slideStop),
+              sliding: true
+            };
+          }
+        }
+      }
+
+      function getBallPos(play, t) {
+        if (t < play.throwStartTime) {
+          return { visible: false, x: play.throwStart.x, y: play.throwStart.y, caught: false };
+        }
+        if (t >= play.ballCatchTime) {
+          return { visible: true, x: play.glovePos.x, y: play.glovePos.y, caught: true };
+        }
+        const p = clamp01((t - play.throwStartTime) / play.throwDuration);
+        const x = lerp(play.throwStart.x, play.glovePos.x, p);
+        const y = lerp(play.throwStart.y, play.glovePos.y, p);
+        // 模擬傳球微微拋物線高度（視覺縮放與陰影）
+        const arc = Math.sin(p * Math.PI) * 18;
+        return { visible: true, x, y: y - arc * 0.4, shadowY: y + 8, scale: 1 + arc * 0.015, caught: false };
+      }
+
+      function drawField(play) {
+        const w = canvas.width;
+        const h = canvas.height;
+
+        // 草皮底色
+        ctx.fillStyle = '#246b38';
+        ctx.fillRect(0, 0, w, h);
+
+        // 草皮條紋
+        ctx.fillStyle = '#29753f';
+        for (let i = 0; i < w; i += 64) {
+          ctx.fillRect(i, 0, 32, h);
+        }
+
+        // 紅土區域（依各壘包繪製）
+        ctx.fillStyle = '#b7794a';
+        if (!play || play.base === 1) {
+          // 一壘壘道與紅土區
+          ctx.fillRect(435, 0, 115, h);
+          ctx.beginPath();
+          ctx.arc(480, 270, 128, 0, Math.PI * 2);
+          ctx.fill();
+          // 左側內野草皮弧線修飾
+          ctx.fillStyle = '#a96d40';
+          ctx.fillRect(442, 0, 100, h);
+          // 一壘邊線（白線）
+          ctx.strokeStyle = 'rgba(255,255,255,0.92)';
+          ctx.lineWidth = 6;
+          ctx.beginPath();
+          ctx.moveTo(504, 0);
+          ctx.lineTo(504, h);
+          ctx.stroke();
+        } else if (play.base === 2) {
+          // 二壘大紅土區
+          ctx.beginPath();
+          ctx.ellipse(480, 320, 420, 230, 0, 0, Math.PI * 2);
+          ctx.fill();
+          // 壘道方向提示線（淡色紅土紋理）
+          ctx.strokeStyle = 'rgba(130, 78, 40, 0.35)';
+          ctx.lineWidth = 52;
+          ctx.beginPath();
+          ctx.moveTo(860, 490);
+          ctx.lineTo(480, 270);
+          ctx.lineTo(100, 490);
+          ctx.stroke();
+        } else {
+          // 三壘紅土與邊線
+          ctx.fillRect(420, 0, 125, h);
+          ctx.fillRect(420, 215, 540, 115);
+          ctx.beginPath();
+          ctx.arc(480, 270, 130, 0, Math.PI * 2);
+          ctx.fill();
+          // 三壘邊線（垂直白線）
+          ctx.strokeStyle = 'rgba(255,255,255,0.92)';
+          ctx.lineWidth = 6;
+          ctx.beginPath();
+          ctx.moveTo(456, 0);
+          ctx.lineTo(456, h);
+          ctx.stroke();
+        }
+
+        // 繪製白色壘包（48x48）
+        ctx.save();
+        ctx.translate(480, 270);
+        if (play && play.base === 2) {
+          ctx.rotate(Math.PI / 4);
+        }
+        // 壘包陰影
+        ctx.fillStyle = 'rgba(0,0,0,0.28)';
+        ctx.fillRect(-22, -20, 48, 48);
+        // 壘包本體
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(-24, -24, 48, 48);
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(-24, -24, 48, 48);
+        ctx.restore();
+      }
+
+      function drawFielder(play, t) {
+        const caught = t >= play.ballCatchTime;
+        const catchAge = t - play.ballCatchTime;
+
+        // 守備員踩壘腳 / 身體延伸
+        ctx.save();
+        // 陰影
+        ctx.fillStyle = 'rgba(0,0,0,0.28)';
+        ctx.beginPath();
+        ctx.ellipse(play.fielderPos.x, play.fielderPos.y + 14, 24, 14, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 踩在壘包上的腳
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 9;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(play.fielderPos.x, play.fielderPos.y);
+        ctx.lineTo(play.fielderFootOnBase.x, play.fielderFootOnBase.y);
+        ctx.stroke();
+
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.ellipse(play.fielderFootOnBase.x, play.fielderFootOnBase.y, 9, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 守備員球衣（深藍色隊）
+        ctx.fillStyle = '#1d4ed8';
+        ctx.beginPath();
+        ctx.arc(play.fielderPos.x, play.fielderPos.y, 20, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#93c5fd';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // 頭盔/球帽
+        ctx.fillStyle = '#1e3a8a';
+        ctx.beginPath();
+        ctx.arc(play.fielderPos.x, play.fielderPos.y - 2, 11, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 伸向接球點的手臂
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(play.fielderPos.x, play.fielderPos.y);
+        ctx.lineTo(play.glovePos.x, play.glovePos.y);
+        ctx.stroke();
+
+        // 棒球手套
+        ctx.save();
+        ctx.translate(play.glovePos.x, play.glovePos.y);
+        const squeeze = caught && catchAge < 0.15 ? 0.85 : 1;
+        ctx.scale(squeeze, squeeze);
+        ctx.fillStyle = '#7c431d';
+        ctx.beginPath();
+        ctx.arc(0, 0, 14, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#4a250d';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+        // 手套球擋內側
+        ctx.fillStyle = '#5c2f12';
+        ctx.beginPath();
+        ctx.arc(0, 0, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // 接球瞬間衝擊波
+        if (caught && catchAge >= 0 && catchAge <= 0.22) {
+          const p = catchAge / 0.22;
+          ctx.strokeStyle = `rgba(255, 224, 102, ${1 - p})`;
+          ctx.lineWidth = 3.5 * (1 - p) + 1;
+          ctx.beginPath();
+          ctx.arc(play.glovePos.x, play.glovePos.y, 14 + p * 26, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        ctx.restore();
+      }
+
+      function drawRunner(play, t) {
+        const pos = getRunnerPos(play, t);
+        const touchAge = t - play.baseTouchTime;
+
+        ctx.save();
+
+        // 計算跑動方向角（由起點指向觸壘點）
+        const angle = Math.atan2(
+          play.runnerContact.y - play.runnerStart.y,
+          play.runnerContact.x - play.runnerStart.x
+        );
+
+        ctx.translate(pos.x, pos.y);
+        ctx.rotate(angle);
+
+        // 說明：局部座標中，x = 0 即為跑者最前端鞋尖/手尖觸壘點！
+        // 這樣當 pos === runnerContact（即 t === baseTouchTime）時，鞋尖會分毫不差碰到壘包邊緣。
+
+        if (pos.sliding) {
+          // 滑壘姿勢：腳尖在 (0, 0)，身體往負 x 延伸
+          ctx.fillStyle = 'rgba(0,0,0,0.24)';
+          ctx.beginPath();
+          ctx.ellipse(-28, 6, 32, 13, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          // 前伸的腿
+          ctx.strokeStyle = '#f8fafc';
+          ctx.lineWidth = 9;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(-28, 0);
+          ctx.lineTo(-4, 0);
+          ctx.stroke();
+
+          // 紅白球鞋（前緣正好在 x = 0）
+          ctx.fillStyle = '#111827';
+          ctx.beginPath();
+          ctx.ellipse(-4, 0, 7, 4.5, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#f8fafc';
+          ctx.fillRect(-2, -2, 3, 4);
+
+          // 身體（紅色隊球衣）
+          ctx.fillStyle = '#dc2626';
+          ctx.beginPath();
+          ctx.ellipse(-38, 0, 18, 13, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#fca5a5';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          // 打擊頭盔
+          ctx.fillStyle = '#991b1b';
+          ctx.beginPath();
+          ctx.arc(-54, 0, 10.5, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          // 衝刺姿勢（一壘跑壘）：前腳鞋尖在 (0, 0)，身體在後方 (-20, 0)
+          const stride = Math.sin(t * 28) * 6;
+
+          ctx.fillStyle = 'rgba(0,0,0,0.25)';
+          ctx.beginPath();
+          ctx.ellipse(-20, 10, 20, 14, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          // 前跨腳（踩壘腳尖準確對齊 x = 0）
+          ctx.strokeStyle = '#f8fafc';
+          ctx.lineWidth = 8;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(-18, -5);
+          ctx.lineTo(-4, -3);
+          ctx.stroke();
+
+          // 後腳
+          ctx.beginPath();
+          ctx.moveTo(-22, 6);
+          ctx.lineTo(-32 + stride, 8);
+          ctx.stroke();
+
+          // 前腳鞋尖（最前端位於 x = 0）
+          ctx.fillStyle = '#111827';
+          ctx.beginPath();
+          ctx.ellipse(-4, -3, 7, 4.5, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(-1, -5, 2, 4);
+
+          // 身體（紅色隊）
+          ctx.fillStyle = '#dc2626';
+          ctx.beginPath();
+          ctx.arc(-22, 0, 18, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#fca5a5';
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+
+          // 頭盔
+          ctx.fillStyle = '#991b1b';
+          ctx.beginPath();
+          ctx.arc(-20, 0, 10.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.restore();
+
+        // 觸壘瞬間揚塵效果
+        if (touchAge >= 0 && touchAge <= 0.25) {
+          const p = touchAge / 0.25;
+          ctx.save();
+          ctx.fillStyle = `rgba(245, 222, 179, ${(1 - p) * 0.7})`;
+          for (let i = 0; i < 6; i++) {
+            const a = (i / 6) * Math.PI * 2 + 0.3;
+            const r = 6 + p * 22;
+            ctx.beginPath();
+            ctx.arc(
+              play.runnerContact.x + Math.cos(a) * r,
+              play.runnerContact.y + Math.sin(a) * r,
+              5 * (1 - p) + 2,
+              0,
+              Math.PI * 2
+            );
+            ctx.fill();
+          }
+          ctx.restore();
+        }
+      }
+
+      function drawBall(play, t) {
+        const b = getBallPos(play, t);
+        if (!b.visible) return;
+
+        ctx.save();
+        if (!b.caught) {
+          // 球影
+          ctx.fillStyle = 'rgba(0,0,0,0.28)';
+          ctx.beginPath();
+          ctx.ellipse(b.x, b.shadowY, 7, 4, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // 棒球本體
+        const radius = b.caught ? 6.5 : 7 * (b.scale || 1);
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#dc2626';
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.arc(b.x - 2, b.y, radius * 0.65, -0.8, 0.8);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawHUD() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const isReplay = state.phase === 'REPLAY_REVIEW' || state.freeInspectMode;
+
+        // 左上角壘包資訊
+        ctx.save();
+        ctx.fillStyle = 'rgba(13, 21, 32, 0.78)';
+        ctx.fillRect(16, 16, 168, 38);
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.strokeRect(16, 16, 168, 38);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 16px sans-serif';
+        const label = state.play
+          ? state.play.baseLabel
+          : (state.selectedBaseMode === 'random' ? '隨機壘包' : BASE_NAMES[state.selectedBaseMode]);
+        ctx.fillText(`執法位置：${label}`, 28, 41);
+
+        // 重播室專用畫面邊框與時間碼
+        if (isReplay) {
+          ctx.strokeStyle = 'rgba(230, 69, 69, 0.85)';
+          ctx.lineWidth = 6;
+          ctx.strokeRect(3, 3, w - 6, h - 6);
+
+          ctx.fillStyle = 'rgba(201, 42, 42, 0.9)';
+          ctx.fillRect(w - 230, 16, 214, 38);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 15px monospace';
+          ctx.fillText(`● REPLAY ${state.playbackRate}x  ${state.t.toFixed(3)}s`, w - 218, 40);
+
+          if (state.replayZoom) {
+            ctx.fillStyle = 'rgba(13, 21, 32, 0.75)';
+            ctx.fillRect(w - 146, h - 46, 130, 30);
+            ctx.fillStyle = '#f5b942';
+            ctx.font = 'bold 13px sans-serif';
+            ctx.fillText('🔍 2.1x 壘包特寫', w - 134, h - 26);
+          }
+        }
+
+        // 圖例提示（右下角）
+        if (!isReplay) {
+          ctx.fillStyle = 'rgba(13, 21, 32, 0.72)';
+          ctx.fillRect(w - 225, h - 42, 209, 28);
+          ctx.fillStyle = '#dc2626';
+          ctx.beginPath();
+          ctx.arc(w - 208, h - 28, 6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#eef4fb';
+          ctx.font = '13px sans-serif';
+          ctx.fillText('跑者', w - 196, h - 23);
+
+          ctx.fillStyle = '#1d4ed8';
+          ctx.beginPath();
+          ctx.arc(w - 138, h - 28, 6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#eef4fb';
+          ctx.fillText('守備員', w - 126, h - 23);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(w - 64, h - 28, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillText('棒球', w - 53, h - 23);
+        }
+
+        ctx.restore();
+      }
+
+      function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const isReplayZoom = (state.phase === 'REPLAY_REVIEW' || state.freeInspectMode) && state.replayZoom && state.play;
+
+        ctx.save();
+        if (isReplayZoom) {
+          // 聚焦在壘包與手套附近（放大 2.1 倍）
+          const zoom = 2.1;
+          const cx = 480;
+          const cy = 270;
+          ctx.translate(canvas.width / 2, canvas.height / 2);
+          ctx.scale(zoom, zoom);
+          ctx.translate(-cx, -cy);
+        }
+
+        drawField(state.play);
+
+        if (state.play) {
+          drawFielder(state.play, state.t);
+          drawRunner(state.play, state.t);
+          drawBall(state.play, state.t);
+        }
+
+        ctx.restore();
+        drawHUD();
+      }
+
+      // ================= 主動畫迴圈 =================
+      function loop(timestamp) {
+        if (!state.lastTimestamp) state.lastTimestamp = timestamp;
+        const dt = Math.min(0.05, (timestamp - state.lastTimestamp) / 1000);
+        state.lastTimestamp = timestamp;
+
+        if (state.playing && state.play) {
+          const prevT = state.t;
+          state.t += dt * state.playbackRate;
+
+          const isSlow = state.playbackRate < 0.8;
+
+          // 滑壘音效
+          if (
+            state.play.runnerAction === 'slide' &&
+            !state.triggeredSlideSound &&
+            prevT < state.play.baseTouchTime - 0.34 &&
+            state.t >= state.play.baseTouchTime - 0.34
+          ) {
+            state.triggeredSlideSound = true;
+            if (!isSlow) playSlideDirt();
+          }
+
+          // 手套接球音效
+          if (!state.triggeredCatchSound && prevT < state.play.ballCatchTime && state.t >= state.play.ballCatchTime) {
+            state.triggeredCatchSound = true;
+            playGlovePop(isSlow);
+          }
+
+          // 跑者觸壘音效
+          if (!state.triggeredTouchSound && prevT < state.play.baseTouchTime && state.t >= state.play.baseTouchTime) {
+            state.triggeredTouchSound = true;
+            playBaseTouch(isSlow);
+          }
+
+          // 即時模式允許在關鍵瞬間後就按下判決
+          if (state.phase === 'LIVE') {
+            const firstEvent = Math.min(state.play.ballCatchTime, state.play.baseTouchTime);
+            if (state.t >= firstEvent + 0.08 && ui.btnSafe.disabled) {
+              ui.btnSafe.disabled = false;
+              ui.btnOut.disabled = false;
+              ui.statusText.textContent = '關鍵瞬間已發生！請立刻宣判 SAFE 或 OUT！';
+            }
+          }
+
+          if (state.t >= DURATION) {
+            state.t = DURATION;
+            state.playing = false;
+
+            if (state.phase === 'LIVE') {
+              state.phase = 'AWAIT_JUDGE';
+              ui.btnSafe.disabled = false;
+              ui.btnOut.disabled = false;
+              ui.statusText.textContent = '請做出你的壘審判決：SAFE 或 OUT？';
+            } else if (state.phase === 'REPLAY_REVIEW' || state.freeInspectMode) {
+              ui.btnReplayPlay.textContent = '▶ 重播';
+            }
+          }
+
+          if (state.phase === 'REPLAY_REVIEW' || state.freeInspectMode) {
+            updateReplayScrubberUI();
+          }
+        }
+
+        render();
+        requestAnimationFrame(loop);
+      }
+
+      // ================= 事件綁定 =================
+      ui.baseBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          ui.baseBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          state.selectedBaseMode = btn.dataset.base;
+          updateStartButtonLabel();
+          if (state.phase === 'IDLE') {
+            state.play = null;
+            render();
+          }
+        });
+      });
+
+      ui.btnSound.addEventListener('click', () => {
+        state.soundEnabled = !state.soundEnabled;
+        ui.btnSound.textContent = state.soundEnabled ? '🔊 音效：開' : '🔇 音效：關';
+      });
+
+      ui.btnResetStats.addEventListener('click', () => {
+        state.stats = { total: 0, initialCorrect: 0, finalCorrect: 0, streak: 0 };
+        updateStatsUI();
+      });
+
+      ui.btnStart.addEventListener('click', startNewPlay);
+      ui.btnNextPlay.addEventListener('click', startNewPlay);
+
+      ui.btnSafe.addEventListener('click', () => handleInitialCall('SAFE'));
+      ui.btnOut.addEventListener('click', () => handleInitialCall('OUT'));
+
+      ui.btnEnterReplay.addEventListener('click', enterReplayReview);
+      ui.btnCallStands.addEventListener('click', () => handleReplayDecision(false));
+      ui.btnCallOverturned.addEventListener('click', () => handleReplayDecision(true));
+      ui.btnInspectAfter.addEventListener('click', openFreeInspect);
+
+      ui.btnReplayPlay.addEventListener('click', () => {
+        if (!state.play) return;
+        ensureAudio();
+        if (state.t >= DURATION - 0.01) {
+          jumpReplayTime(0);
+        }
+        state.playing = !state.playing;
+        ui.btnReplayPlay.textContent = state.playing ? '⏸ 暫停' : '▶ 播放';
+      });
+
+      ui.btnStepBack.addEventListener('click', () => {
+        if (!state.play) return;
+        state.playing = false;
+        ui.btnReplayPlay.textContent = '▶ 播放';
+        jumpReplayTime(state.t - 0.01);
+      });
+
+      ui.btnStepFwd.addEventListener('click', () => {
+        if (!state.play) return;
+        state.playing = false;
+        ui.btnReplayPlay.textContent = '▶ 播放';
+        jumpReplayTime(state.t + 0.01);
+      });
+
+      ui.btnJumpImpact.addEventListener('click', () => {
+        if (!state.play) return;
+        const keyMoment = Math.min(state.play.baseTouchTime, state.play.ballCatchTime);
+        jumpReplayTime(Math.max(0, keyMoment - 0.12));
+        state.playing = false;
+        ui.btnReplayPlay.textContent = '▶ 播放';
+      });
+
+      ui.btnZoom.addEventListener('click', () => {
+        state.replayZoom = !state.replayZoom;
+        ui.btnZoom.textContent = state.replayZoom ? '🔍 放大特寫：開' : '🔍 放大特寫：關';
+      });
+
+      ui.speedBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const sp = parseFloat(btn.dataset.speed);
+          state.playbackRate = sp;
+          setSpeedBtnActive(sp);
+        });
+      });
+
+      ui.replayScrubber.addEventListener('input', (e) => {
+        if (!state.play) return;
+        state.playing = false;
+        ui.btnReplayPlay.textContent = '▶ 播放';
+        jumpReplayTime(parseInt(e.target.value, 10) / 1000);
+      });
+
+      // 鍵盤快捷鍵
+      window.addEventListener('keydown', (e) => {
+        if (e.repeat && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+        const key = e.key.toLowerCase();
+
+        if (key === ' ') {
+          e.preventDefault();
+          if (state.phase === 'IDLE' || state.phase === 'RESULT') {
+            startNewPlay();
+          } else if (state.phase === 'CHALLENGE_BANNER') {
+            enterReplayReview();
+          } else if (state.phase === 'REPLAY_REVIEW' || state.freeInspectMode) {
+            ui.btnReplayPlay.click();
+          }
+        } else if (key === 'a' && !ui.btnSafe.disabled && (state.phase === 'LIVE' || state.phase === 'AWAIT_JUDGE')) {
+          handleInitialCall('SAFE');
+        } else if (key === 'd' && !ui.btnOut.disabled && (state.phase === 'LIVE' || state.phase === 'AWAIT_JUDGE')) {
+          handleInitialCall('OUT');
+        } else if (e.key === 'ArrowLeft' && (state.phase === 'REPLAY_REVIEW' || state.freeInspectMode)) {
+          e.preventDefault();
+          ui.btnStepBack.click();
+        } else if (e.key === 'ArrowRight' && (state.phase === 'REPLAY_REVIEW' || state.freeInspectMode)) {
+          e.preventDefault();
+          ui.btnStepFwd.click();
+        }
+      });
+
+      updateStartButtonLabel();
+      updateStatsUI();
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>
