@@ -1448,7 +1448,24 @@
         });
       }
 
-      // ================= Web Audio API 音效 =================
+      // ================= Web Audio API 音效與判決語音檔 =================
+      const callVoices = {
+        OUT: new Audio('out.mp3'),
+        SAFE: new Audio('safe.mp3'),
+        FOUL: new Audio('foul.mp3')
+      };
+      Object.values(callVoices).forEach((audio) => {
+        audio.preload = 'auto';
+      });
+
+      function playCallVoice(call) {
+        if (!state.soundEnabled) return;
+        const audio = callVoices[call];
+        if (!audio) return;
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+      }
+
       let audioCtx = null;
 
       function ensureAudio() {
@@ -2033,21 +2050,18 @@
         const impactTime = 1.0 + Math.random() * 0.25;
         const startTime = 0.08;
 
-        // 落點 X 座標位在壘包附近至外野草皮邊緣
         const impactX = base === 1
           ? (485 + Math.random() * 235)
           : (240 + Math.random() * 235);
         const lineY = getFoulLineY(base, impactX);
 
-        // 難度分布：接近線邊、中等、明確
         const r = Math.random();
         let impactY;
-        let marginPx; // 正值代表界內距離（含壓線），負值代表界外距離
+        let marginPx;
         let isOnChalk = false;
 
         if (isFair) {
           if (r < 0.45) {
-            // 極度接近（壓線邊緣）
             const off = Math.random() * 4.5;
             impactY = lineY + 2.4 - off;
             marginPx = off + 1;
@@ -2063,7 +2077,6 @@
           }
         } else {
           if (r < 0.45) {
-            // 極度接近的界外球（離白線外緣 2~7 px）
             const off = 2 + Math.random() * 5;
             impactY = lineY + 6.5 + off;
             marginPx = -off;
@@ -2083,7 +2096,6 @@
         const isHighFly = Math.random() < 0.5;
         const arcHeight = isHighFly ? (115 + Math.random() * 45) : (32 + Math.random() * 25);
 
-        // 彈跳後延伸方向
         const dx = impactX - startX;
         const dy = impactY - startY;
         const endX = impactX + dx * 0.45;
@@ -2256,7 +2268,6 @@
         const isInitialCorrect = initialCall === state.play.truth;
 
         if (state.gameMode === 'fair_foul') {
-          // 界內/界外模式：挑戰權無限次
           const absMargin = Math.abs(state.play.marginPx);
           const challenger = initialCall === 'FAIR' ? 'home' : 'away';
           let prob = 0;
@@ -2338,6 +2349,7 @@
 
       function handleInitialCall(call) {
         if (state.phase !== 'AWAIT_JUDGE' && state.phase !== 'LIVE') return;
+        playCallVoice(call);
         state.initialCall = call;
         state.playing = false;
         ui.judgeRow.style.display = 'none';
@@ -2569,10 +2581,8 @@
       function drawFairFoulBall(play, t) {
         if (t < play.startTime) return;
 
-        // 落地後留下落點記號與揚塵/白粉
         if (t >= play.impactTime) {
           const age = t - play.impactTime;
-          // 落點痕跡（重播檢視時最關鍵的參考點）
           ctx.save();
           ctx.fillStyle = play.isOnChalk ? 'rgba(255,255,255,0.65)' : 'rgba(65, 40, 20, 0.55)';
           ctx.beginPath();
@@ -2611,13 +2621,11 @@
         }
 
         ctx.save();
-        // 地面陰影
         ctx.fillStyle = 'rgba(0,0,0,0.32)';
         ctx.beginPath();
         ctx.ellipse(gx, gy, 6.5 * scale, 3 * scale, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // 棒球本體
         const r = 6.2 * scale;
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
