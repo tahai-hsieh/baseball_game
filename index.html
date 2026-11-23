@@ -37,28 +37,36 @@
     html, body {
       margin: 0;
       padding: 0;
+      width: 100%;
+      min-height: 100%;
       overscroll-behavior: none;
       -webkit-user-select: none;
       user-select: none;
     }
 
     body {
-      padding: 12px;
+      padding-top: calc(14px + env(safe-area-inset-top));
+      padding-bottom: calc(14px + env(safe-area-inset-bottom));
+      padding-left: calc(12px + env(safe-area-inset-left));
+      padding-right: calc(12px + env(safe-area-inset-right));
       background: radial-gradient(circle at top, #17283d 0%, var(--bg) 75%);
+      background-attachment: fixed;
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
       min-height: 100vh;
+      min-height: 100dvh;
       display: flex;
-      justify-content: center;
-      align-items: flex-start;
+      flex-direction: column;
+      align-items: center;
     }
 
     .screen {
       width: 100%;
-      max-width: 960px;
+      max-width: min(960px, 100%);
+      margin: auto;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: clamp(8px, 1.4vh, 12px);
     }
 
     .hidden {
@@ -88,11 +96,11 @@
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 18px;
-      padding: 24px;
+      padding: clamp(14px, 2.5vh, 24px);
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: clamp(12px, 2vh, 20px);
     }
 
     .start-header {
@@ -101,20 +109,20 @@
 
     .start-header h1 {
       margin: 0;
-      font-size: 1.75rem;
+      font-size: clamp(1.3rem, 3vw, 1.75rem);
       letter-spacing: 1px;
     }
 
     .start-header p {
-      margin: 8px 0 0;
+      margin: 6px 0 0;
       color: var(--muted);
-      font-size: 0.94rem;
+      font-size: clamp(0.82rem, 1.8vw, 0.94rem);
     }
 
     .home-mode-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      gap: clamp(10px, 2vw, 16px);
     }
 
     .home-mode-card {
@@ -122,7 +130,7 @@
       color: var(--text);
       border: 2px solid var(--border);
       border-radius: 16px;
-      padding: 24px 18px;
+      padding: clamp(16px, 2.6vh, 24px) clamp(14px, 2vw, 18px);
       text-align: left;
       display: flex;
       flex-direction: column;
@@ -135,17 +143,17 @@
     }
 
     .home-mode-icon {
-      font-size: 2.2rem;
+      font-size: clamp(1.8rem, 3.5vw, 2.2rem);
     }
 
     .home-mode-title {
-      font-size: 1.25rem;
+      font-size: clamp(1.05rem, 2.2vw, 1.25rem);
       font-weight: 900;
       color: #fff;
     }
 
     .home-mode-desc {
-      font-size: 0.88rem;
+      font-size: clamp(0.8rem, 1.6vw, 0.88rem);
       color: var(--muted);
       line-height: 1.5;
       font-weight: 500;
@@ -155,14 +163,14 @@
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 16px;
+      padding: clamp(12px, 1.8vh, 16px);
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: clamp(8px, 1.4vh, 12px);
     }
 
     .setup-title {
-      font-size: 0.96rem;
+      font-size: clamp(0.88rem, 1.7vw, 0.96rem);
       font-weight: 800;
       color: var(--accent);
       display: flex;
@@ -173,14 +181,14 @@
     .mode-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 10px;
     }
 
     .mode-btn {
       background: var(--panel);
       color: var(--text);
       border: 2px solid var(--border);
-      padding: 14px;
+      padding: clamp(10px, 1.6vh, 14px);
       text-align: left;
       display: flex;
       flex-direction: column;
@@ -194,12 +202,12 @@
     }
 
     .mode-btn .m-title {
-      font-size: 1.05rem;
+      font-size: clamp(0.95rem, 1.9vw, 1.05rem);
       font-weight: 800;
     }
 
     .mode-btn .m-desc {
-      font-size: 0.82rem;
+      font-size: clamp(0.76rem, 1.5vw, 0.82rem);
       color: var(--muted);
       font-weight: 500;
     }
@@ -207,7 +215,7 @@
     .teams-pick-wrap {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 14px;
+      gap: 12px;
     }
 
     .team-col {
@@ -217,7 +225,7 @@
     }
 
     .team-col-label {
-      font-size: 0.88rem;
+      font-size: 0.86rem;
       font-weight: 700;
       color: #dbeafe;
     }
@@ -232,8 +240,8 @@
       background: var(--panel);
       color: var(--text);
       border: 2px solid var(--border);
-      padding: 10px 10px;
-      font-size: 0.88rem;
+      padding: clamp(8px, 1.2vh, 10px) 10px;
+      font-size: clamp(0.8rem, 1.6vw, 0.88rem);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -255,8 +263,8 @@
     .btn-launch {
       background: linear-gradient(135deg, #2563eb, #1d4ed8);
       color: #fff;
-      padding: 16px;
-      font-size: 1.15rem;
+      padding: clamp(12px, 1.8vh, 16px);
+      font-size: clamp(1rem, 2vw, 1.15rem);
       letter-spacing: 1px;
       box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
     }
@@ -269,7 +277,7 @@
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 10px 14px;
+      padding: clamp(8px, 1.2vh, 10px) 14px;
       align-items: center;
     }
 
@@ -282,7 +290,7 @@
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 12px 14px;
+      padding: 10px 14px;
     }
 
     .ff-title-block {
@@ -292,13 +300,13 @@
     }
 
     .ff-title-block .t1 {
-      font-size: 1.05rem;
+      font-size: 1.02rem;
       font-weight: 800;
       color: #fff;
     }
 
     .ff-title-block .t2 {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--muted);
     }
 
@@ -335,7 +343,7 @@
       align-items: center;
       gap: 8px;
       font-weight: 700;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
     }
 
     .team-meta {
@@ -353,7 +361,7 @@
     }
 
     .team-runs {
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       font-weight: 800;
       color: var(--accent);
       min-width: 24px;
@@ -364,11 +372,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 16px;
+      gap: 14px;
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 8px 12px;
+      padding: 6px 12px;
       height: 100%;
     }
 
@@ -376,11 +384,11 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
     }
 
     .inning-label {
-      font-size: 1.08rem;
+      font-size: 1.05rem;
       font-weight: 800;
       color: #fff;
     }
@@ -445,7 +453,7 @@
       border-radius: 8px;
       padding: 6px 8px;
       text-align: center;
-      min-width: 72px;
+      min-width: 68px;
     }
 
     .stat-label {
@@ -454,7 +462,7 @@
     }
 
     .stat-value {
-      font-size: 0.96rem;
+      font-size: 0.94rem;
       font-weight: 700;
       color: #7cc4ff;
       margin-top: 2px;
@@ -469,7 +477,7 @@
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 8px 12px;
+      padding: 7px 12px;
     }
 
     .base-selector {
@@ -508,18 +516,24 @@
 
     .stage-wrap {
       position: relative;
+      width: 100%;
       background: #0b121b;
       border: 2px solid var(--border);
       border-radius: 14px;
       overflow: hidden;
       box-shadow: 0 12px 28px rgba(0, 0, 0, 0.48);
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     canvas {
       display: block;
       width: 100%;
+      max-width: 100%;
       height: auto;
       aspect-ratio: 16 / 9;
+      object-fit: contain;
     }
 
     .overlay-banner {
@@ -549,13 +563,13 @@
     }
 
     .banner-title {
-      font-size: 1.5rem;
+      font-size: clamp(1.2rem, 2.5vw, 1.5rem);
       font-weight: 800;
       margin: 0 0 8px;
     }
 
     .banner-desc {
-      font-size: 0.94rem;
+      font-size: clamp(0.84rem, 1.7vw, 0.94rem);
       color: #d6e4f5;
       max-width: 540px;
       line-height: 1.5;
@@ -566,7 +580,7 @@
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 12px 14px;
+      padding: clamp(10px, 1.5vh, 12px) 14px;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -611,16 +625,16 @@
     .btn-safe {
       background: var(--safe);
       color: #fff;
-      padding: 15px;
-      font-size: 1.12rem;
+      padding: 14px;
+      font-size: 1.1rem;
       box-shadow: 0 4px 0 var(--safe-dark);
     }
 
     .btn-out {
       background: var(--out);
       color: #fff;
-      padding: 15px;
-      font-size: 1.12rem;
+      padding: 14px;
+      font-size: 1.1rem;
       box-shadow: 0 4px 0 var(--out-dark);
     }
 
@@ -748,11 +762,11 @@
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 18px;
+      padding: 16px;
     }
 
     .final-score-big {
-      font-size: 2rem;
+      font-size: clamp(1.5rem, 3.5vw, 2rem);
       font-weight: 900;
       color: var(--accent);
       margin: 6px 0;
@@ -763,19 +777,19 @@
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 12px;
+      padding: 10px;
     }
 
     .linescore-table {
       width: 100%;
       border-collapse: collapse;
       text-align: center;
-      font-size: 0.92rem;
+      font-size: 0.9rem;
     }
 
     .linescore-table th,
     .linescore-table td {
-      padding: 9px 8px;
+      padding: 8px 6px;
       border-bottom: 1px solid #243850;
     }
 
@@ -787,8 +801,8 @@
     .linescore-table td:first-child,
     .linescore-table th:first-child {
       text-align: left;
-      padding-left: 12px;
-      min-width: 125px;
+      padding-left: 10px;
+      min-width: 115px;
     }
 
     .linescore-table td.total-col {
@@ -800,7 +814,7 @@
 
     .end-stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
       gap: 10px;
     }
 
@@ -808,7 +822,7 @@
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 14px;
+      padding: 12px;
       text-align: center;
     }
 
@@ -818,13 +832,41 @@
     }
 
     .end-stat-card .val {
-      font-size: 1.25rem;
+      font-size: 1.2rem;
       font-weight: 800;
       color: #7cc4ff;
       margin-top: 4px;
       line-height: 1.35;
     }
 
+    /* 橫屏 / 高度較矮裝置自適應（如平板橫放、手機橫放） */
+    @media (orientation: landscape) and (max-height: 860px) {
+      .stage-wrap canvas {
+        max-height: 50dvh;
+        width: auto;
+      }
+    }
+
+    @media (orientation: landscape) and (max-height: 600px) {
+      .stage-wrap canvas {
+        max-height: 44dvh;
+        width: auto;
+      }
+      .start-card, .end-card {
+        padding: 12px 16px;
+        gap: 10px;
+      }
+      .setup-section {
+        padding: 10px 12px;
+        gap: 8px;
+      }
+      .btn-safe, .btn-out, .btn-primary, .btn-launch {
+        padding: 10px 14px;
+        font-size: 0.96rem;
+      }
+    }
+
+    /* 手機 / 窄螢幕豎屏自適應 */
     @media (max-width: 720px) {
       .scoreboard, .teams-pick-wrap, .mode-grid, .action-row, .home-mode-grid {
         grid-template-columns: 1fr;
@@ -1331,13 +1373,13 @@
       };
 
       const state = {
-        gameMode: 'safe_out', // 'safe_out' | 'fair_foul'
+        gameMode: 'safe_out',
         setup: {
           modeInnings: 9,
           awayTeamId: 'brothers',
           homeTeamId: 'dragons'
         },
-        phase: 'HOME', // HOME, START, IDLE, LIVE, AWAIT_JUDGE, CHALLENGE_BANNER, REPLAY_REVIEW, RESULT, GAME_OVER
+        phase: 'HOME',
         selectedBaseMode: '1',
         previewBase: 1,
         soundEnabled: true,
@@ -1753,7 +1795,6 @@
         const play = state.play;
         markHalfInningPlayed();
 
-        // 同步計算「無誤判情況下」的真實半局進度
         applyTruePlayToSim(play);
 
         let impactText = '';
@@ -1787,7 +1828,6 @@
           }
         }
 
-        // 檢查九局下或十局下主隊再見分
         if (!g.isTop && g.inning >= g.regularEndInning && g.scoreHome > g.scoreAway) {
           commitHalfInningBlownRuns();
           impactText += ` ${g.homeTeam.name} 攻下再見分獲勝！`;
@@ -1796,7 +1836,6 @@
           return impactText;
         }
 
-        // 檢查三出局換邊或結束
         if (g.outs >= 3) {
           commitHalfInningBlownRuns();
           const endedHalf = `${g.inning}局${g.isTop ? '上' : '下'}`;
