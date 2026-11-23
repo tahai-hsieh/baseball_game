@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>棒球壘審判決模擬器｜九局實戰視角版</title>
+  <title>中職棒球壘審判決模擬器｜實戰視角版</title>
   <style>
     :root {
       --bg: #0b131e;
@@ -37,18 +37,178 @@
       align-items: flex-start;
     }
 
-    .app {
+    .screen {
       width: 100%;
       max-width: 960px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
 
-    /* 記分板 */
+    .hidden {
+      display: none !important;
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      transition: transform 0.08s ease, background 0.15s ease, opacity 0.15s ease, border-color 0.15s ease;
+    }
+
+    button:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+
+    button:disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+    }
+
+    /* ================= 起始頁面 ================= */
+    .start-card, .end-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .start-header {
+      text-align: center;
+    }
+
+    .start-header h1 {
+      margin: 0;
+      font-size: 1.75rem;
+      letter-spacing: 1px;
+    }
+
+    .start-header p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .setup-section {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .setup-title {
+      font-size: 0.96rem;
+      font-weight: 800;
+      color: var(--accent);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .mode-btn {
+      background: var(--panel);
+      color: var(--text);
+      border: 2px solid var(--border);
+      padding: 14px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .mode-btn.active {
+      border-color: var(--accent);
+      background: #1d3048;
+      box-shadow: 0 0 0 1px rgba(245, 185, 66, 0.35);
+    }
+
+    .mode-btn .m-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+    }
+
+    .mode-btn .m-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .teams-pick-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .team-col {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .team-col-label {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #dbeafe;
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .team-btn {
+      background: var(--panel);
+      color: var(--text);
+      border: 2px solid var(--border);
+      padding: 10px 10px;
+      font-size: 0.88rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .team-btn.active {
+      border-color: #ffffff;
+      background: #203652;
+    }
+
+    .swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,0.45);
+    }
+
+    .btn-launch {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+      padding: 16px;
+      font-size: 1.15rem;
+      letter-spacing: 1px;
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+    }
+
+    /* ================= 遊戲主畫面 ================= */
     .scoreboard {
       display: grid;
-      grid-template-columns: 1.4fr 1fr 1.2fr;
+      grid-template-columns: 1.45fr 1fr 1.15fr;
       gap: 10px;
       background: var(--panel);
       border: 1px solid var(--border);
@@ -83,19 +243,13 @@
       align-items: center;
       gap: 8px;
       font-weight: 700;
-      font-size: 0.92rem;
-    }
-
-    .team-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
+      font-size: 0.9rem;
     }
 
     .team-meta {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     .challenge-tag {
@@ -134,7 +288,7 @@
     }
 
     .inning-label {
-      font-size: 1.1rem;
+      font-size: 1.08rem;
       font-weight: 800;
       color: #fff;
     }
@@ -143,7 +297,7 @@
       display: flex;
       align-items: center;
       gap: 5px;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       color: var(--muted);
     }
 
@@ -161,7 +315,6 @@
       box-shadow: 0 0 6px rgba(230, 69, 69, 0.7);
     }
 
-    /* 迷你壘包狀態圖 */
     .diamond-mini {
       position: relative;
       width: 56px;
@@ -198,7 +351,7 @@
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 6px 6px;
+      padding: 6px 4px;
       text-align: center;
     }
 
@@ -208,13 +361,12 @@
     }
 
     .stat-value {
-      font-size: 0.98rem;
+      font-size: 0.96rem;
       font-weight: 700;
       color: #7cc4ff;
       margin-top: 2px;
     }
 
-    /* 工具列 */
     .toolbar {
       display: flex;
       flex-wrap: wrap;
@@ -235,34 +387,16 @@
     }
 
     .base-selector span {
-      font-size: 0.84rem;
+      font-size: 0.82rem;
       color: var(--muted);
-    }
-
-    button {
-      font-family: inherit;
-      cursor: pointer;
-      border: none;
-      border-radius: 9px;
-      font-weight: 600;
-      transition: transform 0.08s ease, background 0.15s ease, opacity 0.15s ease;
-    }
-
-    button:active:not(:disabled) {
-      transform: scale(0.97);
-    }
-
-    button:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
     }
 
     .btn-tab {
       background: var(--bg);
       color: var(--text);
       border: 1px solid var(--border);
-      padding: 6px 12px;
-      font-size: 0.84rem;
+      padding: 6px 11px;
+      font-size: 0.82rem;
     }
 
     .btn-tab.active {
@@ -279,7 +413,6 @@
       font-size: 0.82rem;
     }
 
-    /* 畫布區 */
     .stage-wrap {
       position: relative;
       background: #0b121b;
@@ -303,15 +436,11 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      background: rgba(8, 13, 21, 0.82);
+      background: rgba(8, 13, 21, 0.84);
       backdrop-filter: blur(3px);
       text-align: center;
       padding: 20px;
       z-index: 10;
-    }
-
-    .overlay-banner.hidden {
-      display: none;
     }
 
     .banner-tag {
@@ -327,7 +456,7 @@
     }
 
     .banner-title {
-      font-size: 1.55rem;
+      font-size: 1.5rem;
       font-weight: 800;
       margin: 0 0 8px;
     }
@@ -340,7 +469,6 @@
       margin: 0 0 16px;
     }
 
-    /* 控制面板 */
     .control-panel {
       background: var(--panel);
       border: 1px solid var(--border);
@@ -357,7 +485,7 @@
       align-items: center;
       flex-wrap: wrap;
       gap: 8px;
-      font-size: 0.94rem;
+      font-size: 0.92rem;
     }
 
     .status-text {
@@ -366,7 +494,7 @@
     }
 
     .hint-text {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--muted);
     }
 
@@ -418,11 +546,6 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-    }
-
-    .replay-box.hidden,
-    .result-box.hidden {
-      display: none;
     }
 
     .replay-top {
@@ -495,7 +618,7 @@
     }
 
     .result-headline {
-      font-size: 1.08rem;
+      font-size: 1.06rem;
       font-weight: 800;
     }
 
@@ -504,7 +627,7 @@
 
     .result-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
       gap: 8px;
     }
 
@@ -526,38 +649,162 @@
       margin-top: 2px;
     }
 
+    /* ================= 結束頁面 ================= */
+    .final-banner {
+      text-align: center;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .final-score-big {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--accent);
+      margin: 6px 0;
+    }
+
+    .linescore-wrap {
+      overflow-x: auto;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .linescore-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+      font-size: 0.92rem;
+    }
+
+    .linescore-table th,
+    .linescore-table td {
+      padding: 9px 8px;
+      border-bottom: 1px solid #243850;
+    }
+
+    .linescore-table th {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .linescore-table td:first-child,
+    .linescore-table th:first-child {
+      text-align: left;
+      padding-left: 12px;
+      min-width: 125px;
+    }
+
+    .linescore-table td.total-col {
+      font-weight: 900;
+      color: var(--accent);
+      font-size: 1.05rem;
+      border-left: 1px solid #2c4563;
+    }
+
+    .end-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+    }
+
+    .end-stat-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .end-stat-card .label {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .end-stat-card .val {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #7cc4ff;
+      margin-top: 4px;
+    }
+
     @media (max-width: 720px) {
-      .scoreboard {
-        grid-template-columns: 1fr;
-      }
-      .action-row {
+      .scoreboard, .teams-pick-wrap, .mode-grid, .action-row {
         grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
 <body>
-  <div class="app">
-    <!-- 九局記分板 -->
+
+  <!-- ================= 1. 起始頁面 ================= -->
+  <div class="screen" id="startScreen">
+    <div class="start-card">
+      <div class="start-header">
+        <h1>⚾ 棒球壘審判決模擬器</h1>
+        <p>站上實際壘審位置執法，體驗一二三壘實戰視角、牽制球與電視輔助判決系統</p>
+      </div>
+
+      <div class="setup-section">
+        <div class="setup-title">
+          <span>1. 選擇賽制（平手自動延長一局）</span>
+        </div>
+        <div class="mode-grid">
+          <button class="mode-btn active" data-innings="9">
+            <span class="m-title">九局完整賽</span>
+            <span class="m-desc">從 1 局上開始執法至 9 局結束，平手延長至 10 局</span>
+          </button>
+          <button class="mode-btn" data-innings="4">
+            <span class="m-title">四局精華賽</span>
+            <span class="m-desc">從 6 局上開始直接進入後半段激戰，平手延長至 10 局</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="setup-section">
+        <div class="setup-title">
+          <span>2. 選擇對戰球隊（六隊任選主客隊）</span>
+        </div>
+        <div class="teams-pick-wrap">
+          <div class="team-col">
+            <div class="team-col-label">客隊（先攻）</div>
+            <div class="team-grid" id="awayTeamGrid"></div>
+          </div>
+          <div class="team-col">
+            <div class="team-col-label">主隊（後攻）</div>
+            <div class="team-grid" id="homeTeamGrid"></div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-launch" id="btnLaunchGame">▶ 開始遊戲</button>
+    </div>
+  </div>
+
+  <!-- ================= 2. 遊戲主畫面 ================= -->
+  <div class="screen hidden" id="gameScreen">
     <div class="scoreboard">
       <div class="teams-score">
         <div class="team-row batting" id="rowAway">
           <div class="team-name">
-            <span class="team-dot" style="background:#e64545;"></span>
-            <span>客隊（紅鷹）</span>
+            <span class="swatch" id="dotAway"></span>
+            <span id="nameAway">客隊</span>
           </div>
           <div class="team-meta">
-            <span class="challenge-tag" id="chalAway">挑戰權：1</span>
+            <span class="challenge-tag" id="chalAway">挑戰權：2</span>
             <span class="team-runs" id="scoreAway">0</span>
           </div>
         </div>
         <div class="team-row" id="rowHome">
           <div class="team-name">
-            <span class="team-dot" style="background:#3b9cff;"></span>
-            <span>主隊（藍鯨）</span>
+            <span class="swatch" id="dotHome"></span>
+            <span id="nameHome">主隊</span>
           </div>
           <div class="team-meta">
-            <span class="challenge-tag" id="chalHome">挑戰權：1</span>
+            <span class="challenge-tag" id="chalHome">挑戰權：2</span>
             <span class="team-runs" id="scoreHome">0</span>
           </div>
         </div>
@@ -596,47 +843,35 @@
       </div>
     </div>
 
-    <!-- 工具列 -->
     <div class="toolbar">
       <div class="base-selector">
-        <span>執法壘審視角：</span>
-        <button class="btn-tab active" data-base="1">一壘審</button>
-        <button class="btn-tab" data-base="2">二壘審</button>
-        <button class="btn-tab" data-base="3">三壘審</button>
-        <button class="btn-tab" data-base="random">隨機切換</button>
+        <span>執法壘審：</span>
+        <button class="btn-tab active" data-base="1" id="tabBase1">一壘審</button>
+        <button class="btn-tab" data-base="2" id="tabBase2" disabled title="需一壘有人才能開啟">二壘審</button>
+        <button class="btn-tab" data-base="3" id="tabBase3" disabled title="需二壘有人才能開啟">三壘審</button>
+        <button class="btn-tab" data-base="random" id="tabBaseRandom">隨機切換</button>
       </div>
       <div class="btn-group">
         <button class="btn-ghost" id="btnSound">🔊 音效：開</button>
-        <button class="btn-ghost" id="btnNewGame">重新開賽（九局）</button>
+        <button class="btn-ghost" id="btnBackToStartTop">返回起始頁</button>
       </div>
     </div>
 
-    <!-- 主畫布 -->
     <div class="stage-wrap">
       <canvas id="gameCanvas" width="960" height="540"></canvas>
 
-      <!-- 教練挑戰彈窗 -->
       <div class="overlay-banner hidden" id="challengeBanner">
         <div class="banner-tag">COACH CHALLENGE</div>
         <h2 class="banner-title" id="challengeTitle">總教練提出重播挑戰！</h2>
         <p class="banner-desc" id="challengeDesc"></p>
         <button class="btn-accent" id="btnEnterReplay">進入慢動作重播室檢視</button>
       </div>
-
-      <!-- 九局比賽結束彈窗 -->
-      <div class="overlay-banner hidden" id="gameOverBanner">
-        <div class="banner-tag" style="background: var(--blue);">FINAL｜九局比賽結束</div>
-        <h2 class="banner-title" id="gameOverTitle">比賽結束</h2>
-        <p class="banner-desc" id="gameOverDesc"></p>
-        <button class="btn-primary" id="btnRestartAfterEnd">開始全新九局比賽</button>
-      </div>
     </div>
 
-    <!-- 控制區 -->
     <div class="control-panel">
       <div class="status-line">
-        <div class="status-text" id="statusText">按下「開始這一球」或空白鍵，以一壘審視角執法。</div>
-        <div class="hint-text">快捷鍵：空白鍵開始/播放、A 判 Safe、D 判 Out、左右鍵逐格微調</div>
+        <div class="status-text" id="statusText">按下「開始這一球」或空白鍵，準備進行判決。</div>
+        <div class="hint-text">快捷鍵：空白鍵開始/播放、A 判 Safe、D 判 Out、左右鍵微調影格</div>
       </div>
 
       <div class="action-row single" id="startRow">
@@ -686,6 +921,10 @@
         <div class="result-headline" id="resultHeadline">判決結果</div>
         <div class="result-grid">
           <div class="result-item">
+            <div class="k">本球類型</div>
+            <div class="v" id="resPlayType">--</div>
+          </div>
+          <div class="result-item">
             <div class="k">系統實際結果</div>
             <div class="v" id="resTruth">--</div>
           </div>
@@ -714,14 +953,76 @@
     </div>
   </div>
 
+  <!-- ================= 3. 結束頁面 ================= -->
+  <div class="screen hidden" id="endScreen">
+    <div class="end-card">
+      <div class="final-banner">
+        <div class="banner-tag" style="background: var(--blue);">FINAL｜比賽結束</div>
+        <h2 id="endWinnerTitle" style="margin: 4px 0;">比賽結果</h2>
+        <div class="final-score-big" id="endScoreBig">0 : 0</div>
+        <div id="endSubtitle" style="color: var(--muted); font-size: 0.9rem;"></div>
+      </div>
+
+      <div class="linescore-wrap">
+        <table class="linescore-table" id="linescoreTable"></table>
+      </div>
+
+      <div class="end-stats-grid">
+        <div class="end-stat-card">
+          <div class="label">總執法球數</div>
+          <div class="val" id="endStatTotal">0</div>
+        </div>
+        <div class="end-stat-card">
+          <div class="label">初判準確率</div>
+          <div class="val" id="endStatInit">--%</div>
+        </div>
+        <div class="end-stat-card">
+          <div class="label">最終正確率</div>
+          <div class="val" id="endStatFinal">--%</div>
+        </div>
+        <div class="end-stat-card">
+          <div class="label">挑戰改判次數</div>
+          <div class="val" id="endStatOverturn">0</div>
+        </div>
+        <div class="end-stat-card">
+          <div class="label">壘審綜合評價</div>
+          <div class="val" id="endStatGrade" style="color: var(--accent);">--</div>
+        </div>
+      </div>
+
+      <button class="btn-launch" id="btnReturnStart">↩ 回到起始頁面</button>
+    </div>
+  </div>
+
   <script>
     (() => {
+      const TEAMS = [
+        { id: 'brothers', name: '中信兄弟', color: '#f5c518', cap: '#1e3a5f', accent: '#fef08a', textDark: true },
+        { id: 'hawks',    name: '台鋼雄鷹', color: '#1b7a46', cap: '#0d4727', accent: '#86efac', textDark: false },
+        { id: 'dragons',  name: '味全龍',   color: '#ef233c', cap: '#9b0f21', accent: '#fca5a5', textDark: false },
+        { id: 'lions',    name: '統一獅',   color: '#f97316', cap: '#9a3412', accent: '#fed7aa', textDark: false },
+        { id: 'guardians',name: '富邦悍將', color: '#2563eb', cap: '#1e3a8a', accent: '#93c5fd', textDark: false },
+        { id: 'monkeys',  name: '樂天桃猿', color: '#881337', cap: '#4c0519', accent: '#fda4af', textDark: false }
+      ];
+
       const canvas = document.getElementById('gameCanvas');
       const ctx = canvas.getContext('2d');
 
       const ui = {
+        startScreen: document.getElementById('startScreen'),
+        gameScreen: document.getElementById('gameScreen'),
+        endScreen: document.getElementById('endScreen'),
+        modeBtns: document.querySelectorAll('.mode-btn'),
+        awayTeamGrid: document.getElementById('awayTeamGrid'),
+        homeTeamGrid: document.getElementById('homeTeamGrid'),
+        btnLaunchGame: document.getElementById('btnLaunchGame'),
+
         rowAway: document.getElementById('rowAway'),
         rowHome: document.getElementById('rowHome'),
+        dotAway: document.getElementById('dotAway'),
+        dotHome: document.getElementById('dotHome'),
+        nameAway: document.getElementById('nameAway'),
+        nameHome: document.getElementById('nameHome'),
         scoreAway: document.getElementById('scoreAway'),
         scoreHome: document.getElementById('scoreHome'),
         chalAway: document.getElementById('chalAway'),
@@ -738,23 +1039,27 @@
         statTotal: document.getElementById('statTotal'),
         statInitial: document.getElementById('statInitial'),
         statFinal: document.getElementById('statFinal'),
+
+        tabBase1: document.getElementById('tabBase1'),
+        tabBase2: document.getElementById('tabBase2'),
+        tabBase3: document.getElementById('tabBase3'),
+        tabBaseRandom: document.getElementById('tabBaseRandom'),
         baseBtns: document.querySelectorAll('.btn-tab'),
         btnSound: document.getElementById('btnSound'),
-        btnNewGame: document.getElementById('btnNewGame'),
+        btnBackToStartTop: document.getElementById('btnBackToStartTop'),
+
         challengeBanner: document.getElementById('challengeBanner'),
         challengeTitle: document.getElementById('challengeTitle'),
         challengeDesc: document.getElementById('challengeDesc'),
         btnEnterReplay: document.getElementById('btnEnterReplay'),
-        gameOverBanner: document.getElementById('gameOverBanner'),
-        gameOverTitle: document.getElementById('gameOverTitle'),
-        gameOverDesc: document.getElementById('gameOverDesc'),
-        btnRestartAfterEnd: document.getElementById('btnRestartAfterEnd'),
+
         statusText: document.getElementById('statusText'),
         startRow: document.getElementById('startRow'),
         btnStart: document.getElementById('btnStart'),
         judgeRow: document.getElementById('judgeRow'),
         btnSafe: document.getElementById('btnSafe'),
         btnOut: document.getElementById('btnOut'),
+
         replayBox: document.getElementById('replayBox'),
         replayBadge: document.getElementById('replayBadge'),
         replaySubInfo: document.getElementById('replaySubInfo'),
@@ -769,42 +1074,74 @@
         replayDecisionRow: document.getElementById('replayDecisionRow'),
         btnCallStands: document.getElementById('btnCallStands'),
         btnCallOverturned: document.getElementById('btnCallOverturned'),
+
         resultBox: document.getElementById('resultBox'),
         resultHeadline: document.getElementById('resultHeadline'),
+        resPlayType: document.getElementById('resPlayType'),
         resTruth: document.getElementById('resTruth'),
         resRunnerTime: document.getElementById('resRunnerTime'),
         resBallTime: document.getElementById('resBallTime'),
         resDelta: document.getElementById('resDelta'),
         resImpact: document.getElementById('resImpact'),
         btnInspectAfter: document.getElementById('btnInspectAfter'),
-        btnNextPlay: document.getElementById('btnNextPlay')
+        btnNextPlay: document.getElementById('btnNextPlay'),
+
+        endWinnerTitle: document.getElementById('endWinnerTitle'),
+        endScoreBig: document.getElementById('endScoreBig'),
+        endSubtitle: document.getElementById('endSubtitle'),
+        linescoreTable: document.getElementById('linescoreTable'),
+        endStatTotal: document.getElementById('endStatTotal'),
+        endStatInit: document.getElementById('endStatInit'),
+        endStatFinal: document.getElementById('endStatFinal'),
+        endStatOverturn: document.getElementById('endStatOverturn'),
+        endStatGrade: document.getElementById('endStatGrade'),
+        btnReturnStart: document.getElementById('btnReturnStart')
       };
 
       const DURATION = 2.1;
-      const BASE_LABELS = { 1: '一壘審視角', 2: '二壘審視角', 3: '三壘審視角' };
+      const BASE_LABELS = {
+        1: '一壘審視角（一壘界外後方）',
+        2: '二壘審視角（內野中線看二壘）',
+        3: '三壘審視角（三壘界外後方）'
+      };
 
       const state = {
-        phase: 'IDLE', // IDLE, LIVE, AWAIT_JUDGE, CHALLENGE_BANNER, REPLAY_REVIEW, RESULT, GAME_OVER
-        selectedBaseMode: '1', // '1', '2', '3', 'random'
+        setup: {
+          modeInnings: 9, // 9 or 4 (starts at 6th)
+          awayTeamId: 'brothers',
+          homeTeamId: 'dragons'
+        },
+        phase: 'START', // START, IDLE, LIVE, AWAIT_JUDGE, CHALLENGE_BANNER, REPLAY_REVIEW, RESULT, GAME_OVER
+        selectedBaseMode: '1',
         previewBase: 1,
         soundEnabled: true,
 
-        // 九局制比賽狀態
         game: {
+          startInning: 1,
+          regularEndInning: 9,
+          maxExtraInning: 10,
           inning: 1,
-          isTop: true, // true: 客隊(紅)進攻, false: 主隊(藍)進攻
+          isTop: true,
           outs: 0,
-          bases: [false, false, false], // [1B, 2B, 3B]
+          bases: [false, false, false],
           scoreAway: 0,
           scoreHome: 0,
-          challengesAway: 1,
-          challengesHome: 1
+          challengesAway: 2,
+          challengesHome: 2,
+          awayTeam: TEAMS[0],
+          homeTeam: TEAMS[2],
+          inningRunsAway: {},
+          inningRunsHome: {},
+          playedTop: {},
+          playedBottom: {},
+          bottomSkipped: {}
         },
 
         stats: {
           total: 0,
           initialCorrect: 0,
-          finalCorrect: 0
+          finalCorrect: 0,
+          overturns: 0
         },
 
         play: null,
@@ -817,13 +1154,45 @@
         initialCall: null,
         finalCall: null,
         challenged: false,
-        challengingSide: null, // 'away' | 'home'
+        challengingSide: null,
         triggeredCatchSound: false,
         triggeredTouchSound: false,
         triggeredSlideSound: false
       };
 
-      // ================= Web Audio API 音效引擎 =================
+      // ================= 起始頁球隊選擇渲染 =================
+      function renderTeamSelectors() {
+        ui.awayTeamGrid.innerHTML = '';
+        ui.homeTeamGrid.innerHTML = '';
+
+        TEAMS.forEach(t => {
+          const btnA = document.createElement('button');
+          btnA.className = 'team-btn' + (state.setup.awayTeamId === t.id ? ' active' : '');
+          btnA.innerHTML = `<span class="swatch" style="background:${t.color}"></span><span>${t.name}</span>`;
+          btnA.addEventListener('click', () => {
+            if (state.setup.homeTeamId === t.id) {
+              state.setup.homeTeamId = state.setup.awayTeamId;
+            }
+            state.setup.awayTeamId = t.id;
+            renderTeamSelectors();
+          });
+          ui.awayTeamGrid.appendChild(btnA);
+
+          const btnH = document.createElement('button');
+          btnH.className = 'team-btn' + (state.setup.homeTeamId === t.id ? ' active' : '');
+          btnH.innerHTML = `<span class="swatch" style="background:${t.color}"></span><span>${t.name}</span>`;
+          btnH.addEventListener('click', () => {
+            if (state.setup.awayTeamId === t.id) {
+              state.setup.awayTeamId = state.setup.homeTeamId;
+            }
+            state.setup.homeTeamId = t.id;
+            renderTeamSelectors();
+          });
+          ui.homeTeamGrid.appendChild(btnH);
+        });
+      }
+
+      // ================= Web Audio API 音效 =================
       let audioCtx = null;
 
       function ensureAudio() {
@@ -944,9 +1313,43 @@
         }
       }
 
-      // ================= 九局記分板與賽況更新 =================
+      // ================= 壘審模式權限控制 =================
+      function updateBaseButtonsState() {
+        const has1B = state.game.bases[0];
+        const has2B = state.game.bases[1];
+
+        ui.tabBase2.disabled = !has1B;
+        ui.tabBase3.disabled = !has2B;
+
+        // 若目前選中的壘審因壘上無人而失效，自動切回可用壘審
+        if (state.selectedBaseMode === '2' && !has1B) {
+          state.selectedBaseMode = '1';
+          state.previewBase = 1;
+        } else if (state.selectedBaseMode === '3' && !has2B) {
+          state.selectedBaseMode = has1B ? '2' : '1';
+          state.previewBase = has1B ? 2 : 1;
+        }
+
+        ui.baseBtns.forEach(b => {
+          b.classList.toggle('active', b.dataset.base === state.selectedBaseMode);
+        });
+        updateStartButtonLabel();
+      }
+
+      function updateStartButtonLabel() {
+        const label = state.selectedBaseMode === 'random'
+          ? '隨機切換（依壘上狀況）'
+          : BASE_LABELS[state.selectedBaseMode];
+        ui.btnStart.textContent = `▶ 開始這一球（${label}）`;
+      }
+
+      // ================= 記分板與賽局推進 =================
       function updateScoreboardUI() {
         const g = state.game;
+        ui.dotAway.style.background = g.awayTeam.color;
+        ui.dotHome.style.background = g.homeTeam.color;
+        ui.nameAway.textContent = `${g.awayTeam.name}（客）`;
+        ui.nameHome.textContent = `${g.homeTeam.name}（主）`;
         ui.scoreAway.textContent = g.scoreAway;
         ui.scoreHome.textContent = g.scoreHome;
         ui.chalAway.textContent = `挑戰權：${g.challengesAway}`;
@@ -954,12 +1357,9 @@
 
         ui.rowAway.classList.toggle('batting', g.isTop);
         ui.rowHome.classList.toggle('batting', !g.isTop);
-        ui.inningDisplay.textContent = `${g.inning}局${g.isTop ? '上' : '下'}`;
+        ui.inningDisplay.textContent = `${g.inning}局${g.isTop ? '上' : '下'}${g.inning > 9 ? ' (延長)' : ''}`;
 
-        ui.outDots.forEach((dot, idx) => {
-          dot.classList.toggle('on', idx < g.outs);
-        });
-
+        ui.outDots.forEach((dot, idx) => dot.classList.toggle('on', idx < g.outs));
         ui.miniB1.classList.toggle('on', g.bases[0]);
         ui.miniB2.classList.toggle('on', g.bases[1]);
         ui.miniB3.classList.toggle('on', g.bases[2]);
@@ -968,203 +1368,383 @@
         ui.statTotal.textContent = s.total;
         ui.statInitial.textContent = s.total ? Math.round((s.initialCorrect / s.total) * 100) + '%' : '--%';
         ui.statFinal.textContent = s.total ? Math.round((s.finalCorrect / s.total) * 100) + '%' : '--%';
+
+        updateBaseButtonsState();
+      }
+
+      function markHalfInningPlayed() {
+        const g = state.game;
+        if (g.isTop) {
+          g.playedTop[g.inning] = true;
+          if (g.inningRunsAway[g.inning] === undefined) g.inningRunsAway[g.inning] = 0;
+        } else {
+          g.playedBottom[g.inning] = true;
+          if (g.inningRunsHome[g.inning] === undefined) g.inningRunsHome[g.inning] = 0;
+        }
+      }
+
+      function addRun(side) {
+        const g = state.game;
+        if (side === 'away') {
+          g.scoreAway += 1;
+          g.inningRunsAway[g.inning] = (g.inningRunsAway[g.inning] || 0) + 1;
+        } else {
+          g.scoreHome += 1;
+          g.inningRunsHome[g.inning] = (g.inningRunsHome[g.inning] || 0) + 1;
+        }
       }
 
       function applyCallToGame(finalCall) {
         const g = state.game;
+        const play = state.play;
+        markHalfInningPlayed();
         let impactText = '';
 
-        if (finalCall === 'SAFE') {
-          if (g.bases[0] && g.bases[1] && g.bases[2]) {
-            // 滿壘情況下 SAFE -> 得分 +1，維持滿壘
-            if (g.isTop) g.scoreAway += 1;
-            else g.scoreHome += 1;
-            impactText = `滿壘推進！${g.isTop ? '客隊' : '主隊'} 攻下 1 分！`;
-          } else if (g.bases[0] && g.bases[1]) {
-            g.bases[2] = true;
-            impactText = '安全上壘，形成滿壘危機！';
-          } else if (g.bases[0]) {
-            g.bases[1] = true;
-            impactText = '安全上壘，攻佔一、二壘！';
+        if (play.isPickoff) {
+          // 牽制球邏輯
+          if (finalCall === 'SAFE') {
+            impactText = `牽制 SAFE！跑者驚險撲回${play.base}壘包。`;
           } else {
-            g.bases[0] = true;
-            impactText = '安全上壘，跑者站上一壘！';
+            g.bases[play.base - 1] = false;
+            g.outs += 1;
+            impactText = `牽制 OUT！${play.base}壘跑者遭到牽制出局！`;
           }
         } else {
-          g.outs += 1;
-          if (g.outs >= 3) {
-            const endedHalf = `${g.inning}局${g.isTop ? '上' : '下'}`;
-            g.outs = 0;
-            g.bases = [false, false, false];
-
-            if (g.isTop) {
-              // 9局上結束且主隊已領先 -> 提前結束比賽
-              if (g.inning === 9 && g.scoreHome > g.scoreAway) {
-                impactText = `三出局！${endedHalf}結束，主隊領先贏得比賽！`;
-                updateScoreboardUI();
-                showGameOver();
-                return impactText;
-              }
-              g.isTop = false;
-              impactText = `三出局！${endedHalf}結束，攻守交換進入 ${g.inning}局下。`;
+          // 一般打擊/跑壘邏輯
+          if (finalCall === 'SAFE') {
+            if (g.bases[0] && g.bases[1] && g.bases[2]) {
+              addRun(g.isTop ? 'away' : 'home');
+              impactText = `滿壘推進！${g.isTop ? g.awayTeam.name : g.homeTeam.name} 攻下 1 分！`;
+            } else if (g.bases[0] && g.bases[1]) {
+              g.bases[2] = true;
+              impactText = '安全上壘，形成滿壘！';
+            } else if (g.bases[0]) {
+              g.bases[1] = true;
+              impactText = '安全上壘，攻佔一、二壘！';
             } else {
-              if (g.inning >= 9) {
-                impactText = `三出局！九局比賽正式結束！`;
-                updateScoreboardUI();
-                showGameOver();
-                return impactText;
-              }
-              g.isTop = true;
-              g.inning += 1;
-              impactText = `三出局！${endedHalf}結束，進入 ${g.inning}局上。`;
+              g.bases[0] = true;
+              impactText = '安全上壘，跑者站上一壘！';
             }
           } else {
+            g.outs += 1;
             impactText = `出局！目前 ${g.outs} 出局。`;
           }
         }
 
-        // 若九局下主隊靠滿壘得分超前（再見分）
-        if (!g.isTop && g.inning === 9 && g.scoreHome > g.scoreAway) {
-          impactText += ' 主隊攻下再見分獲勝！';
+        // 檢查九局下或十局下主隊再見分
+        if (!g.isTop && g.inning >= g.regularEndInning && g.scoreHome > g.scoreAway) {
+          impactText += ` ${g.homeTeam.name} 攻下再見分獲勝！`;
           updateScoreboardUI();
-          showGameOver();
+          setTimeout(showEndScreen, 1100);
           return impactText;
+        }
+
+        // 檢查三出局換邊或結束
+        if (g.outs >= 3) {
+          const endedHalf = `${g.inning}局${g.isTop ? '上' : '下'}`;
+          g.outs = 0;
+          g.bases = [false, false, false];
+
+          if (g.isTop) {
+            // 九局上或十局上結束且主隊已領先 -> 不必打下半局直接結束
+            if (g.inning >= g.regularEndInning && g.scoreHome > g.scoreAway) {
+              g.bottomSkipped[g.inning] = true;
+              impactText = `三出局！${endedHalf}結束，${g.homeTeam.name}領先贏得比賽！`;
+              updateScoreboardUI();
+              setTimeout(showEndScreen, 1100);
+              return impactText;
+            }
+            g.isTop = false;
+            markHalfInningPlayed();
+            impactText = `三出局！${endedHalf}結束，攻守交換進入 ${g.inning}局下。`;
+          } else {
+            // 下半局結束
+            if (g.inning === g.regularEndInning) {
+              if (g.scoreAway !== g.scoreHome) {
+                impactText = `三出局！九局比賽正式結束！`;
+                updateScoreboardUI();
+                setTimeout(showEndScreen, 1100);
+                return impactText;
+              } else {
+                // 平手延長一局（進入第 10 局）
+                g.inning = g.maxExtraInning;
+                g.isTop = true;
+                markHalfInningPlayed();
+                impactText = `三出局！九局結束雙方平手，進入延長賽第 10 局！`;
+              }
+            } else if (g.inning >= g.maxExtraInning) {
+              impactText = `三出局！延長賽第 10 局結束，比賽終了！`;
+              updateScoreboardUI();
+              setTimeout(showEndScreen, 1100);
+              return impactText;
+            } else {
+              g.inning += 1;
+              g.isTop = true;
+              markHalfInningPlayed();
+              impactText = `三出局！${endedHalf}結束，進入 ${g.inning}局上。`;
+            }
+          }
         }
 
         updateScoreboardUI();
         return impactText;
       }
 
-      function showGameOver() {
-        state.phase = 'GAME_OVER';
-        const g = state.game;
-        let winner = '雙方握手言和！';
-        if (g.scoreAway > g.scoreHome) winner = '客隊（紅鷹）獲勝！';
-        else if (g.scoreHome > g.scoreAway) winner = '主隊（藍鯨）獲勝！';
+      // ================= 起始與結束畫面切換 =================
+      function launchGame() {
+        const awayTeam = TEAMS.find(t => t.id === state.setup.awayTeamId);
+        const homeTeam = TEAMS.find(t => t.id === state.setup.homeTeamId);
+        const startInning = state.setup.modeInnings === 4 ? 6 : 1;
 
-        const acc = state.stats.total ? Math.round((state.stats.finalCorrect / state.stats.total) * 100) : 0;
-        let grade = 'C';
-        if (acc >= 95) grade = 'S（大聯盟級金眼）';
-        else if (acc >= 85) grade = 'A（優秀執法）';
-        else if (acc >= 70) grade = 'B（合格壘審）';
-        else grade = 'C（需要多練眼力）';
-
-        ui.gameOverTitle.textContent = `${winner}（客 ${g.scoreAway} : ${g.scoreHome} 主）`;
-        ui.gameOverDesc.textContent = `本場共執法 ${state.stats.total} 球，最終判決正確率 ${acc}%，壘審評價：${grade}。`;
-        ui.gameOverBanner.classList.remove('hidden');
-      }
-
-      function resetFullGame() {
         state.phase = 'IDLE';
-        state.playing = false;
+        state.selectedBaseMode = '1';
+        state.previewBase = 1;
         state.play = null;
+        state.playing = false;
+
         state.game = {
-          inning: 1,
+          startInning,
+          regularEndInning: 9,
+          maxExtraInning: 10,
+          inning: startInning,
           isTop: true,
           outs: 0,
           bases: [false, false, false],
           scoreAway: 0,
           scoreHome: 0,
-          challengesAway: 1,
-          challengesHome: 1
+          challengesAway: 2,
+          challengesHome: 2,
+          awayTeam,
+          homeTeam,
+          inningRunsAway: { [startInning]: 0 },
+          inningRunsHome: {},
+          playedTop: { [startInning]: true },
+          playedBottom: {},
+          bottomSkipped: {}
         };
-        state.stats = { total: 0, initialCorrect: 0, finalCorrect: 0 };
+
+        state.stats = { total: 0, initialCorrect: 0, finalCorrect: 0, overturns: 0 };
+
+        ui.startScreen.classList.add('hidden');
+        ui.endScreen.classList.add('hidden');
+        ui.gameScreen.classList.remove('hidden');
+
         ui.challengeBanner.classList.add('hidden');
-        ui.gameOverBanner.classList.add('hidden');
         ui.replayBox.classList.add('hidden');
         ui.resultBox.classList.add('hidden');
         ui.judgeRow.style.display = 'none';
         ui.startRow.style.display = 'grid';
+
         updateScoreboardUI();
-        updateStartButtonLabel();
-        ui.statusText.textContent = '新賽局已就緒！按下「開始這一球」開始九局執法。';
+        ui.statusText.textContent = `比賽開始！${awayTeam.name} vs ${homeTeam.name}（${startInning}局上）。按下「開始這一球」執法！`;
       }
 
-      // ================= 產生三種獨立壘審視角 Play =================
-      function pickActiveBase() {
-        if (state.selectedBaseMode === 'random') {
-          return Math.floor(Math.random() * 3) + 1;
+      function showEndScreen() {
+        state.phase = 'GAME_OVER';
+        state.playing = false;
+        const g = state.game;
+
+        ui.gameScreen.classList.add('hidden');
+        ui.endScreen.classList.remove('hidden');
+
+        let winnerText = '雙方握手言和！';
+        if (g.scoreAway > g.scoreHome) winnerText = `${g.awayTeam.name}（客隊）獲勝！`;
+        else if (g.scoreHome > g.scoreAway) winnerText = `${g.homeTeam.name}（主隊）獲勝！`;
+
+        ui.endWinnerTitle.textContent = winnerText;
+        ui.endScoreBig.textContent = `${g.awayTeam.name} ${g.scoreAway} : ${g.scoreHome} ${g.homeTeam.name}`;
+        ui.endSubtitle.textContent = g.inning >= 10 ? '經過延長賽第 10 局激戰分出勝負' : '正規局數比賽結束';
+
+        // 產生各局記分表
+        const lastInning = Math.max(g.regularEndInning, g.inning);
+        let headHtml = '<thead><tr><th>球隊</th>';
+        for (let i = g.startInning; i <= lastInning; i++) {
+          headHtml += `<th>${i}</th>`;
         }
-        return parseInt(state.selectedBaseMode, 10);
+        headHtml += '<th>R</th></tr></thead>';
+
+        let rowA = `<tr><td><span class="swatch" style="display:inline-block;vertical-align:middle;margin-right:6px;background:${g.awayTeam.color}"></span>${g.awayTeam.name}</td>`;
+        for (let i = g.startInning; i <= lastInning; i++) {
+          const val = g.playedTop[i] ? (g.inningRunsAway[i] || 0) : '-';
+          rowA += `<td>${val}</td>`;
+        }
+        rowA += `<td class="total-col">${g.scoreAway}</td></tr>`;
+
+        let rowH = `<tr><td><span class="swatch" style="display:inline-block;vertical-align:middle;margin-right:6px;background:${g.homeTeam.color}"></span>${g.homeTeam.name}</td>`;
+        for (let i = g.startInning; i <= lastInning; i++) {
+          let val = '-';
+          if (g.bottomSkipped[i]) val = 'X';
+          else if (g.playedBottom[i]) val = g.inningRunsHome[i] || 0;
+          rowH += `<td>${val}</td>`;
+        }
+        rowH += `<td class="total-col">${g.scoreHome}</td></tr>`;
+
+        ui.linescoreTable.innerHTML = `${headHtml}<tbody>${rowA}${rowH}</tbody>`;
+
+        // 裁判表現數據
+        const s = state.stats;
+        const initAcc = s.total ? Math.round((s.initialCorrect / s.total) * 100) : 0;
+        const finalAcc = s.total ? Math.round((s.finalCorrect / s.total) * 100) : 0;
+        let grade = 'C';
+        if (finalAcc >= 95) grade = 'S 金眼裁判';
+        else if (finalAcc >= 85) grade = 'A 優秀執法';
+        else if (finalAcc >= 70) grade = 'B 合格壘審';
+        else grade = 'C 仍須磨練';
+
+        ui.endStatTotal.textContent = s.total;
+        ui.endStatInit.textContent = s.total ? initAcc + '%' : '--%';
+        ui.endStatFinal.textContent = s.total ? finalAcc + '%' : '--%';
+        ui.endStatOverturn.textContent = s.overturns;
+        ui.endStatGrade.textContent = grade;
+      }
+
+      function returnToStart() {
+        state.phase = 'START';
+        state.playing = false;
+        ui.gameScreen.classList.add('hidden');
+        ui.endScreen.classList.add('hidden');
+        ui.startScreen.classList.remove('hidden');
+      }
+
+      // ================= 產生 Play（含牽制與實際壘審視角） =================
+      function pickActiveBase() {
+        const eligible = [1];
+        if (state.game.bases[0]) eligible.push(2);
+        if (state.game.bases[1]) eligible.push(3);
+
+        if (state.selectedBaseMode === 'random') {
+          return eligible[Math.floor(Math.random() * eligible.length)];
+        }
+        const chosen = parseInt(state.selectedBaseMode, 10);
+        return eligible.includes(chosen) ? chosen : 1;
       }
 
       function generatePlay() {
         const base = pickActiveBase();
         state.previewBase = base;
-        const baseTouchTime = 1.15 + Math.random() * 0.25;
 
-        // 隨機時間差：高比例緊張接近球
+        // 若該壘包上目前有跑者，35% 機率觸發「投手牽制」
+        const canPickoff = state.game.bases[base - 1];
+        const isPickoff = canPickoff && Math.random() < 0.35;
+
+        const baseTouchTime = isPickoff ? (0.95 + Math.random() * 0.2) : (1.15 + Math.random() * 0.25);
+
         const r = Math.random();
         let absDelta;
-        if (r < 0.45) {
-          absDelta = 0.015 + Math.random() * 0.035; // 15~50ms 極接近
-        } else if (r < 0.80) {
-          absDelta = 0.05 + Math.random() * 0.065;  // 50~115ms 接近
-        } else {
-          absDelta = 0.115 + Math.random() * 0.10;  // 115~215ms 較明顯
-        }
+        if (r < 0.45) absDelta = 0.015 + Math.random() * 0.035;
+        else if (r < 0.80) absDelta = 0.05 + Math.random() * 0.065;
+        else absDelta = 0.115 + Math.random() * 0.095;
 
         const isSafe = Math.random() < 0.5;
         const delta = isSafe ? absDelta : -absDelta;
         const ballCatchTime = baseTouchTime + delta;
 
-        // 依上下半局決定攻守隊伍顏色
-        const runnerTeam = state.game.isTop
-          ? { jersey: '#dc2626', helmet: '#991b1b', accent: '#fca5a5', name: '客隊' }
-          : { jersey: '#2563eb', helmet: '#1e3a8a', accent: '#93c5fd', name: '主隊' };
-        const fielderTeam = state.game.isTop
-          ? { jersey: '#2563eb', cap: '#1e3a8a', accent: '#93c5fd', name: '主隊' }
-          : { jersey: '#dc2626', cap: '#991b1b', accent: '#fca5a5', name: '客隊' };
+        const g = state.game;
+        const runnerTeam = g.isTop ? g.awayTeam : g.homeTeam;
+        const fielderTeam = g.isTop ? g.homeTeam : g.awayTeam;
 
-        // 三個壘審視角的專屬 2.5D 幾何座標（壘包皆位於畫面焦點 480, 382）
         const basePos = { x: 480, y: 382 };
         let cfg;
 
         if (base === 1) {
-          // 一壘審視角：站在界外區看一壘，跑者從左下方本壘衝向右上方，傳球從右上方內野飛來
-          cfg = {
-            base: 1,
-            viewLabel: '一壘審視角（界外低角度）',
-            runnerAction: 'sprint',
-            runnerStart: { x: 85, y: 500 },
-            runnerContact: { x: 454, y: 388 }, // 踩上一壘壘包左前緣
-            runnerEnd: { x: 760, y: 295 },
-            throwStart: { x: 890, y: 245 },
-            glovePos: { x: 526, y: 325 },     // 一壘手向右上方拉弓接球
-            fielderAnchor: { x: 492, y: 376 }, // 一壘手腳踩壘包內側
-            fielderFacing: 1,                  // 面向右（內野方向）
-            throwDuration: 0.72
-          };
+          // 一壘審站在一壘界外後方：本壘在左下方，二壘/外野在右上方，一壘邊線由左下穿過壘包往右上延伸
+          if (isPickoff) {
+            cfg = {
+              base: 1,
+              isPickoff: true,
+              playTypeLabel: '一壘牽制（Pickoff）',
+              runnerAction: 'dive_back',
+              runnerStart: { x: 640, y: 330 },   // 離壘在二壘方向
+              runnerContact: { x: 504, y: 374 }, // 撲回一壘壘包右後緣
+              runnerEnd: { x: 492, y: 378 },
+              throwStart: { x: 260, y: 270 },    // 投手丘在左上方
+              glovePos: { x: 486, y: 368 },      // 一壘手接球順勢下壓觸殺
+              fielderAnchor: { x: 468, y: 374 },
+              fielderFacing: 1,
+              throwDuration: 0.48
+            };
+          } else {
+            cfg = {
+              base: 1,
+              isPickoff: false,
+              playTypeLabel: '一壘封殺（衝刺）',
+              runnerAction: 'sprint',
+              runnerStart: { x: 85, y: 505 },
+              runnerContact: { x: 454, y: 388 },
+              runnerEnd: { x: 760, y: 292 },
+              throwStart: { x: 310, y: 235 },    // 游擊/三壘方向傳向一壘
+              glovePos: { x: 446, y: 326 },      // 一壘手向左上方拉弓接球
+              fielderAnchor: { x: 484, y: 376 },
+              fielderFacing: -1,
+              throwDuration: 0.72
+            };
+          }
         } else if (base === 2) {
-          // 二壘審視角：站在內野草皮看二壘與中外野大牆，跑者從右側（一壘方向）滑向二壘，球從左下方傳來
-          cfg = {
-            base: 2,
-            viewLabel: '二壘審視角（內野正面看中外野）',
-            runnerAction: 'slide',
-            runnerStart: { x: 880, y: 405 },
-            runnerContact: { x: 506, y: 382 }, // 腳尖碰觸二壘右側
-            runnerEnd: { x: 492, y: 382 },
-            throwStart: { x: 75, y: 485 },
-            glovePos: { x: 484, y: 360 },      // 守備員接球並下壓觸殺
-            fielderAnchor: { x: 462, y: 374 },
-            fielderFacing: 1,
-            throwDuration: 0.74
-          };
+          // 二壘審站在內野中線（投手丘後方看二壘與中外野）
+          if (isPickoff) {
+            cfg = {
+              base: 2,
+              isPickoff: true,
+              playTypeLabel: '二壘牽制（Pickoff）',
+              runnerAction: 'dive_back',
+              runnerStart: { x: 310, y: 382 },   // 往三壘方向離壘
+              runnerContact: { x: 454, y: 382 }, // 撲回二壘左側
+              runnerEnd: { x: 468, y: 382 },
+              throwStart: { x: 480, y: 515 },    // 投手從正前方轉身牽制
+              glovePos: { x: 472, y: 366 },
+              fielderAnchor: { x: 492, y: 374 },
+              fielderFacing: -1,
+              throwDuration: 0.48
+            };
+          } else {
+            cfg = {
+              base: 2,
+              isPickoff: false,
+              playTypeLabel: '二壘滑壘攻防',
+              runnerAction: 'slide',
+              runnerStart: { x: 880, y: 405 },   // 從一壘方向滑向二壘
+              runnerContact: { x: 506, y: 382 },
+              runnerEnd: { x: 492, y: 382 },
+              throwStart: { x: 480, y: 525 },    // 捕手阻殺或內野傳球
+              glovePos: { x: 484, y: 362 },
+              fielderAnchor: { x: 462, y: 374 },
+              fielderFacing: 1,
+              throwDuration: 0.72
+            };
+          }
         } else {
-          // 三壘審視角：站在三壘界外區看三壘與外野，跑者從右上方（二壘方向）滑向三壘，球從左上方外野傳來
-          cfg = {
-            base: 3,
-            viewLabel: '三壘審視角（三壘界外看外野）',
-            runnerAction: 'slide',
-            runnerStart: { x: 830, y: 290 },
-            runnerContact: { x: 502, y: 374 }, // 腳尖碰觸三壘右上緣
-            runnerEnd: { x: 492, y: 378 },
-            throwStart: { x: 110, y: 225 },
-            glovePos: { x: 472, y: 356 },
-            fielderAnchor: { x: 454, y: 376 },
-            fielderFacing: -1,
-            throwDuration: 0.74
-          };
+          // 三壘審站在三壘界外後方：本壘在右下方，左外野標竿在左上方，三壘邊線由右下穿過三壘往左上延伸
+          if (isPickoff) {
+            cfg = {
+              base: 3,
+              isPickoff: true,
+              playTypeLabel: '三壘牽制（Pickoff）',
+              runnerAction: 'dive_back',
+              runnerStart: { x: 640, y: 432 },   // 往本壘方向離壘
+              runnerContact: { x: 504, y: 390 }, // 撲回三壘
+              runnerEnd: { x: 492, y: 384 },
+              throwStart: { x: 700, y: 270 },    // 投手丘在右上方
+              glovePos: { x: 482, y: 368 },
+              fielderAnchor: { x: 466, y: 374 },
+              fielderFacing: 1,
+              throwDuration: 0.48
+            };
+          } else {
+            cfg = {
+              base: 3,
+              isPickoff: false,
+              playTypeLabel: '三壘滑壘攻防',
+              runnerAction: 'slide',
+              runnerStart: { x: 830, y: 285 },   // 從二壘方向滑向三壘
+              runnerContact: { x: 502, y: 374 },
+              runnerEnd: { x: 492, y: 378 },
+              throwStart: { x: 850, y: 235 },    // 外野長傳三壘
+              glovePos: { x: 476, y: 358 },
+              fielderAnchor: { x: 454, y: 376 },
+              fielderFacing: 1,
+              throwDuration: 0.74
+            };
+          }
         }
 
         return {
@@ -1180,48 +1760,33 @@
         };
       }
 
-      // ================= 嚴謹的教練挑戰邏輯 =================
+      // ================= 嚴謹教練挑戰判定（挑戰權 2 次） =================
       function shouldCoachChallenge(initialCall) {
         const isInitialCorrect = initialCall === state.play.truth;
         const absDelta = Math.abs(state.play.delta);
 
-        // 誰會提出挑戰？判 SAFE -> 守備方不服；判 OUT -> 進攻方不服
         const offenseSide = state.game.isTop ? 'away' : 'home';
         const defenseSide = state.game.isTop ? 'home' : 'away';
         const challenger = initialCall === 'SAFE' ? defenseSide : offenseSide;
 
-        // 檢查該隊是否還有挑戰權
         const remaining = challenger === 'away' ? state.game.challengesAway : state.game.challengesHome;
-        if (remaining <= 0) {
-          return { challenged: false, challenger: null };
-        }
+        if (remaining <= 0) return { challenged: false, challenger: null };
 
-        // 嚴謹條件：
-        // 1. 若玩家判對：只有在「極度接近（<= 42 毫秒）」的肉眼難辨球才有可能挑戰（45% 機率）；差距超過 42ms 絕不亂挑戰！
-        // 2. 若玩家判錯：教練在場邊看回放發現明顯誤判，只要差距 >= 25ms 幾乎必挑戰（92%），極接近球也有 75% 挑戰。
         let prob = 0;
         if (isInitialCorrect) {
-          prob = absDelta <= 0.042 ? 0.45 : 0;
+          // 判對時：只有極度接近（<= 40ms）的球才有可能挑戰
+          prob = absDelta <= 0.04 ? 0.42 : 0;
         } else {
-          prob = absDelta >= 0.025 ? 0.92 : 0.75;
+          // 判錯時：教練幾乎必挑戰
+          prob = absDelta >= 0.025 ? 0.92 : 0.78;
         }
 
-        return {
-          challenged: Math.random() < prob,
-          challenger
-        };
+        return { challenged: Math.random() < prob, challenger };
       }
 
-      // ================= 遊戲流程控制 =================
-      function updateStartButtonLabel() {
-        const label = state.selectedBaseMode === 'random'
-          ? '隨機壘審視角'
-          : BASE_LABELS[state.selectedBaseMode];
-        ui.btnStart.textContent = `▶ 開始這一球（${label}）`;
-      }
-
+      // ================= 遊戲流程 =================
       function startNewPlay() {
-        if (state.phase === 'GAME_OVER') return;
+        if (state.phase === 'GAME_OVER' || state.phase === 'START') return;
         ensureAudio();
         state.play = generatePlay();
         state.phase = 'LIVE';
@@ -1245,8 +1810,8 @@
         ui.btnSafe.disabled = true;
         ui.btnOut.disabled = true;
 
-        ui.statusText.textContent = `【${state.play.viewLabel}】比賽進行中！緊盯壘包與接球瞬間...`;
-        playTone(660, 0.08, 'sine', 0.14);
+        ui.statusText.textContent = `【${state.play.playTypeLabel}】比賽進行中！緊盯壘包與接球聲...`;
+        playTone(state.play.isPickoff ? 780 : 660, 0.08, 'sine', 0.14);
       }
 
       function handleInitialCall(call) {
@@ -1260,11 +1825,11 @@
           state.challenged = true;
           state.challengingSide = check.challenger;
           state.phase = 'CHALLENGE_BANNER';
-          const coachName = check.challenger === 'away' ? '客隊（紅鷹）總教練' : '主隊（藍鯨）總教練';
-          ui.challengeTitle.textContent = `${coachName}提出重播輔助判決！`;
-          ui.challengeDesc.textContent = `你剛才宣判「${call === 'SAFE' ? 'SAFE 安全上壘' : 'OUT 出局'}」。請親自進入重播室使用慢動作與逐格功能做出最終裁決。`;
+          const teamObj = check.challenger === 'away' ? state.game.awayTeam : state.game.homeTeam;
+          ui.challengeTitle.textContent = `${teamObj.name} 總教練提出挑戰！`;
+          ui.challengeDesc.textContent = `你剛才宣判「${call === 'SAFE' ? 'SAFE 安全上壘' : 'OUT 出局'}」。請進入重播室使用慢動作與逐格功能做出最終裁決（改判成功不扣挑戰權，維持原判扣 1 次）。`;
           ui.challengeBanner.classList.remove('hidden');
-          ui.statusText.textContent = `${coachName}不服原判（${call}），提出電視輔助判決！`;
+          ui.statusText.textContent = `${teamObj.name} 提出電視輔助判決！`;
           playChallengeAlarm();
         } else {
           state.challenged = false;
@@ -1288,14 +1853,14 @@
         ui.btnReplayPlay.textContent = '⏸ 暫停';
 
         ui.replayBadge.textContent = '● REPLAY REVIEW 重播輔助判決';
-        ui.replaySubInfo.textContent = `原判：${state.initialCall === 'SAFE' ? 'SAFE 安全上壘' : 'OUT 出局'}`;
+        ui.replaySubInfo.textContent = `原判：${state.initialCall === 'SAFE' ? 'SAFE' : 'OUT'}`;
         ui.replayDecisionRow.style.display = 'grid';
         const overturnedCall = state.initialCall === 'SAFE' ? 'OUT' : 'SAFE';
         ui.btnCallStands.textContent = `維持原判（${state.initialCall}）`;
         ui.btnCallOverturned.textContent = `改判（改為 ${overturnedCall}）`;
 
         ui.replayBox.classList.remove('hidden');
-        ui.statusText.textContent = '操作慢動作與逐格重播，確認後選擇「維持原判」或「改判」。';
+        ui.statusText.textContent = '請操作慢動作與逐格重播，確認後選擇「維持原判」或「改判」。';
       }
 
       function handleReplayDecision(overturn) {
@@ -1305,8 +1870,10 @@
           ? (state.initialCall === 'SAFE' ? 'OUT' : 'SAFE')
           : state.initialCall;
 
-        // 若維持原判，提出挑戰的球隊消耗 1 次挑戰權；改判則保留挑戰權
-        if (!overturn && state.challengingSide) {
+        if (overturn) {
+          state.stats.overturns += 1;
+        } else if (state.challengingSide) {
+          // 挑戰失敗（維持原判）才扣 1 次挑戰權
           if (state.challengingSide === 'away') state.game.challengesAway = Math.max(0, state.game.challengesAway - 1);
           else state.game.challengesHome = Math.max(0, state.game.challengesHome - 1);
         }
@@ -1338,27 +1905,22 @@
             ? `✅ 判決精準！（原判 ${state.finalCall} 正確）`
             : `❌ 誤判了！（你判 ${state.finalCall}，實際為 ${truth}）`;
         } else {
-          if (finalOk && initOk) {
-            headline = `✅ 挑戰失敗！重播維持原判 ${truth} 正確（對方失去挑戰權）`;
-          } else if (finalOk && !initOk) {
-            headline = `✅ 挑戰成功！重播即時改判 ${truth} 正確（對方保留挑戰權）`;
-          } else if (!finalOk && initOk) {
-            headline = `❌ 重播改錯了！原本判 ${state.initialCall} 才是正確的！`;
-          } else {
-            headline = `❌ 維持誤判！實際結果應為 ${truth}。`;
-          }
+          if (finalOk && initOk) headline = `✅ 挑戰失敗！維持原判 ${truth} 正確（對方扣 1 次挑戰權）`;
+          else if (finalOk && !initOk) headline = `✅ 挑戰成功！即時改判 ${truth} 正確（對方保留挑戰權）`;
+          else if (!finalOk && initOk) headline = `❌ 重播改錯了！原本判 ${state.initialCall} 才是正確的！`;
+          else headline = `❌ 維持誤判！實際結果應為 ${truth}。`;
         }
 
         ui.resultHeadline.textContent = headline;
         ui.resultHeadline.className = 'result-headline ' + (finalOk ? 'good' : 'bad');
+        ui.resPlayType.textContent = state.play.playTypeLabel;
         ui.resTruth.textContent = truth === 'SAFE' ? 'SAFE（安全上壘）' : 'OUT（出局）';
         ui.resTruth.style.color = truth === 'SAFE' ? '#46e095' : '#ff6b6b';
         ui.resRunnerTime.textContent = `${state.play.baseTouchTime.toFixed(3)} 秒`;
         ui.resBallTime.textContent = `${state.play.ballCatchTime.toFixed(3)} 秒`;
 
         const diffMs = Math.round(Math.abs(state.play.delta) * 1000);
-        const whoFirst = state.play.delta > 0 ? '跑者先到' : '球先入套';
-        ui.resDelta.textContent = `${diffMs} 毫秒（${whoFirst}）`;
+        ui.resDelta.textContent = `${diffMs} 毫秒（${state.play.delta > 0 ? '跑者先到' : '球先入套'}）`;
         ui.resImpact.textContent = impactText;
 
         if (state.phase !== 'GAME_OVER') {
@@ -1397,24 +1959,24 @@
       }
 
       function setSpeedBtnActive(speed) {
-        ui.speedBtns.forEach(btn => {
-          btn.classList.toggle('active', parseFloat(btn.dataset.speed) === speed);
-        });
+        ui.speedBtns.forEach(btn => btn.classList.toggle('active', parseFloat(btn.dataset.speed) === speed));
       }
 
-      // ================= 2.5D 壘審真實視角與公仔繪圖引擎 =================
+      // ================= 2.5D 實際球場壘審視角繪圖 =================
       function lerp(a, b, t) { return a + (b - a) * t; }
       function clamp01(v) { return Math.max(0, Math.min(1, v)); }
 
       function getRunnerPos(play, t) {
-        const approachStart = play.baseTouchTime - 0.95;
+        const approachDur = play.isPickoff ? 0.55 : 0.95;
+        const approachStart = play.baseTouchTime - approachDur;
         if (t <= play.baseTouchTime) {
-          const p = clamp01((t - approachStart) / 0.95);
-          const eased = play.runnerAction === 'slide' ? 1 - Math.pow(1 - p, 1.35) : p;
+          const p = clamp01((t - approachStart) / approachDur);
+          const eased = play.runnerAction === 'sprint' ? p : 1 - Math.pow(1 - p, 1.35);
           return {
             x: lerp(play.runnerStart.x, play.runnerContact.x, eased),
             y: lerp(play.runnerStart.y, play.runnerContact.y, eased),
-            sliding: play.runnerAction === 'slide' && t >= play.baseTouchTime - 0.38
+            sliding: play.runnerAction === 'slide' && t >= play.baseTouchTime - 0.38,
+            diving: play.runnerAction === 'dive_back' && t >= play.baseTouchTime - 0.36
           };
         } else {
           const afterP = clamp01((t - play.baseTouchTime) / 0.65);
@@ -1422,14 +1984,16 @@
             return {
               x: lerp(play.runnerContact.x, play.runnerEnd.x, afterP),
               y: lerp(play.runnerContact.y, play.runnerEnd.y, afterP),
-              sliding: false
+              sliding: false,
+              diving: false
             };
           } else {
             const stopP = 1 - Math.pow(1 - afterP, 3);
             return {
               x: lerp(play.runnerContact.x, play.runnerEnd.x, stopP),
               y: lerp(play.runnerContact.y, play.runnerEnd.y, stopP),
-              sliding: true
+              sliding: play.runnerAction === 'slide',
+              diving: play.runnerAction === 'dive_back'
             };
           }
         }
@@ -1443,79 +2007,67 @@
         const p = clamp01((t - play.throwStartTime) / play.throwDuration);
         const x = lerp(play.throwStart.x, play.glovePos.x, p);
         const y = lerp(play.throwStart.y, play.glovePos.y, p);
-        const arc = Math.sin(p * Math.PI) * 38;
-        return {
-          visible: true,
-          x,
-          y: y - arc,
-          groundY: y + 18,
-          scale: 0.72 + p * 0.35,
-          caught: false
-        };
+        const arc = Math.sin(p * Math.PI) * (play.isPickoff ? 18 : 38);
+        return { visible: true, x, y: y - arc, groundY: y + 18, scale: 0.72 + p * 0.35, caught: false };
       }
 
-      // 繪製三種不同壘審視角的球場背景與透視地平面
       function drawStadiumPerspective(baseNum) {
         const w = canvas.width;
         const h = canvas.height;
         const horizon = 195;
 
-        // 1. 夜賽/傍晚球場天空漸層
         const skyGrad = ctx.createLinearGradient(0, 0, 0, horizon);
         skyGrad.addColorStop(0, '#0f2138');
         skyGrad.addColorStop(1, '#24476e');
         ctx.fillStyle = skyGrad;
         ctx.fillRect(0, 0, w, horizon);
 
-        // 球場照明燈柱
-        ctx.fillStyle = 'rgba(255, 248, 220, 0.9)';
-        const lights = baseNum === 1 ? [180, 720] : baseNum === 2 ? [150, 480, 810] : [240, 780];
+        const lights = baseNum === 1 ? [190, 740] : baseNum === 2 ? [150, 480, 810] : [220, 770];
         lights.forEach(lx => {
           ctx.fillStyle = '#334155';
           ctx.fillRect(lx - 4, 28, 8, 90);
           ctx.fillStyle = '#fff9db';
           ctx.fillRect(lx - 22, 18, 44, 16);
-          const glow = ctx.createRadialGradient(lx, 26, 4, lx, 26, 75);
-          glow.addColorStop(0, 'rgba(255,250,220,0.42)');
+          const glow = ctx.createRadialGradient(lx, 26, 4, lx, 26, 72);
+          glow.addColorStop(0, 'rgba(255,250,220,0.4)');
           glow.addColorStop(1, 'rgba(255,250,220,0)');
           ctx.fillStyle = glow;
           ctx.beginPath();
-          ctx.arc(lx, 26, 75, 0, Math.PI * 2);
+          ctx.arc(lx, 26, 72, 0, Math.PI * 2);
           ctx.fill();
         });
 
-        // 2. 依不同壘審視角繪製觀眾席 / 外野全壘打牆 / 記分板
         if (baseNum === 1) {
-          // 一壘審視角：遠方為三壘側看台與右外野界外標竿
+          // 一壘審視角：面向內野/三壘側看台，右側遠處為右外野界外標竿
           ctx.fillStyle = '#1e293b';
           ctx.fillRect(0, 105, w, 90);
-          // 觀眾席層次與點狀觀眾
           for (let row = 0; row < 5; row++) {
             ctx.fillStyle = row % 2 === 0 ? '#28364a' : '#33445c';
             ctx.fillRect(0, 112 + row * 15, w, 13);
           }
-          // 內野綠色護牆
-          ctx.fillStyle = '#164e32';
-          ctx.fillRect(0, 178, w, 22);
-          ctx.fillStyle = '#f5b942';
-          ctx.fillRect(0, 176, w, 3);
+          ctx.fillStyle = '#14532d';
+          ctx.fillRect(0, 174, w, 24);
+          ctx.fillStyle = '#facc15';
+          ctx.fillRect(0, 172, w, 3);
+          ctx.fillRect(885, 45, 6, 150); // 右外野標竿
         } else if (baseNum === 2) {
-          // 二壘審視角：正對中外野全壘打牆與大螢幕
+          // 二壘審視角：站在內野中線正對二壘與中外野全壘打牆、大螢幕
           ctx.fillStyle = '#1a2738';
           ctx.fillRect(0, 115, w, 80);
-          // 中外野大螢幕
           ctx.fillStyle = '#0b121b';
-          ctx.fillRect(365, 62, 230, 88);
+          ctx.fillRect(350, 62, 260, 88);
           ctx.strokeStyle = '#475569';
           ctx.lineWidth = 3;
-          ctx.strokeRect(365, 62, 230, 88);
+          ctx.strokeRect(350, 62, 260, 88);
           ctx.fillStyle = '#38bdf8';
-          ctx.font = 'bold 16px monospace';
-          ctx.fillText('BASEBALL STADIUM', 398, 92);
+          ctx.font = 'bold 14px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`${state.game.awayTeam.name} vs ${state.game.homeTeam.name}`, 480, 92);
           ctx.fillStyle = '#f5b942';
-          ctx.font = 'bold 20px monospace';
-          ctx.fillText(`AWAY ${state.game.scoreAway}  -  ${state.game.scoreHome} HOME`, 396, 126);
-          // 中外野綠色全壘打牆（含打者之眼）
+          ctx.font = 'bold 22px monospace';
+          ctx.fillText(`${state.game.scoreAway}  -  ${state.game.scoreHome}`, 480, 128);
+          ctx.textAlign = 'left';
+
           ctx.fillStyle = '#14532d';
           ctx.fillRect(0, 165, w, 34);
           ctx.fillStyle = '#0f3d21';
@@ -1523,30 +2075,27 @@
           ctx.fillStyle = '#facc15';
           ctx.fillRect(0, 163, w, 3);
         } else {
-          // 三壘審視角：面對右外野看台與一壘側休息室
+          // 三壘審視角：站在三壘界外後方，面對內野與左外野界外標竿
           ctx.fillStyle = '#1e293b';
           ctx.fillRect(0, 110, w, 85);
-          // 右側看台階梯
           for (let row = 0; row < 4; row++) {
             ctx.fillStyle = row % 2 === 0 ? '#2b3a4f' : '#374863';
-            ctx.fillRect(300, 118 + row * 16, 660, 14);
+            ctx.fillRect(260, 118 + row * 16, 700, 14);
           }
-          // 左側外野全壘打牆與黃色界外標竿
           ctx.fillStyle = '#14532d';
           ctx.fillRect(0, 168, w, 30);
           ctx.fillStyle = '#facc15';
-          ctx.fillRect(108, 45, 6, 152); // 界外標竿
+          ctx.fillRect(108, 45, 6, 152); // 左外野標竿
           ctx.fillRect(0, 166, w, 3);
         }
 
-        // 3. 透視草皮地平面
+        // 草皮地平面
         const grassGrad = ctx.createLinearGradient(0, horizon, 0, h);
         grassGrad.addColorStop(0, '#1e5b31');
         grassGrad.addColorStop(1, '#2f8245');
         ctx.fillStyle = grassGrad;
         ctx.fillRect(0, horizon, w, h - horizon);
 
-        // 透視草皮深淺條紋
         ctx.fillStyle = 'rgba(255,255,255,0.045)';
         for (let i = -3; i <= 6; i++) {
           ctx.beginPath();
@@ -1558,10 +2107,10 @@
           ctx.fill();
         }
 
-        // 4. 依不同壘審視角繪製透視紅土與邊線
+        // 實際球場紅土與標線
         ctx.fillStyle = '#b47445';
         if (baseNum === 1) {
-          // 一壘透視紅土區 + 跑壘道（由左下往右上延伸）
+          // 一壘紅土區與跑壘道
           ctx.beginPath();
           ctx.moveTo(0, 445);
           ctx.lineTo(960, 215);
@@ -1571,21 +2120,28 @@
           ctx.closePath();
           ctx.fill();
 
-          // 壘包周圍較深紅土圓盤（透視橢圓）
           ctx.fillStyle = '#a36438';
           ctx.beginPath();
           ctx.ellipse(480, 388, 175, 58, -0.22, 0, Math.PI * 2);
           ctx.fill();
 
-          // 一壘白色界線（從左下穿過一壘延伸至右上方）
+          // 一壘邊線（白線）
           ctx.strokeStyle = 'rgba(255,255,255,0.92)';
-          ctx.lineWidth = 7;
+          ctx.lineWidth = 6.5;
           ctx.beginPath();
           ctx.moveTo(15, 512);
           ctx.lineTo(960, 240);
           ctx.stroke();
+
+          // 三呎跑壘指導線（界外平行線）
+          ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+          ctx.lineWidth = 3.5;
+          ctx.beginPath();
+          ctx.moveTo(155, 535);
+          ctx.lineTo(485, 430);
+          ctx.stroke();
         } else if (baseNum === 2) {
-          // 二壘正面紅土弧形（左右寬闊滑壘區）
+          // 二壘內野紅土弧
           ctx.beginPath();
           ctx.ellipse(480, 415, 470, 125, 0, 0, Math.PI * 2);
           ctx.fill();
@@ -1593,13 +2149,8 @@
           ctx.beginPath();
           ctx.ellipse(480, 386, 180, 48, 0, 0, Math.PI * 2);
           ctx.fill();
-          // 遠方投手丘小土堆提示（左下角）
-          ctx.fillStyle = '#9c5f34';
-          ctx.beginPath();
-          ctx.ellipse(90, 515, 80, 26, 0, 0, Math.PI * 2);
-          ctx.fill();
         } else {
-          // 三壘透視紅土區（界線由右下穿過三壘往左上方延伸）
+          // 三壘紅土區與邊線
           ctx.beginPath();
           ctx.moveTo(0, 225);
           ctx.lineTo(960, 255);
@@ -1614,29 +2165,26 @@
           ctx.ellipse(480, 386, 175, 55, 0.2, 0, Math.PI * 2);
           ctx.fill();
 
-          // 三壘白色界線（由右下穿過三壘往左上方延伸至界外標竿）
+          // 三壘白色界線（從右下本壘穿過三壘往左上方延伸至左外野標竿）
           ctx.strokeStyle = 'rgba(255,255,255,0.92)';
-          ctx.lineWidth = 7;
+          ctx.lineWidth = 6.5;
           ctx.beginPath();
           ctx.moveTo(920, 525);
           ctx.lineTo(110, 196);
           ctx.stroke();
         }
 
-        // 5. 立體白色壘包（透視厚度感）
         draw3DBaseBag(480, 382);
       }
 
       function draw3DBaseBag(x, y) {
         ctx.save();
         ctx.translate(x, y);
-        // 陰影
         ctx.fillStyle = 'rgba(0,0,0,0.32)';
         ctx.beginPath();
         ctx.ellipse(2, 10, 34, 13, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // 壘包側面厚度
         ctx.fillStyle = '#cbd5e1';
         ctx.beginPath();
         ctx.moveTo(-28, 2);
@@ -1648,7 +2196,6 @@
         ctx.closePath();
         ctx.fill();
 
-        // 壘包頂面
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         ctx.moveTo(0, -10);
@@ -1663,7 +2210,6 @@
         ctx.restore();
       }
 
-      // 繪製擬真棒球守備員公仔
       function drawFielderFigurine(play, t) {
         const caught = t >= play.ballCatchTime;
         const catchAge = t - play.ballCatchTime;
@@ -1674,61 +2220,25 @@
         const team = play.fielderTeam;
 
         ctx.save();
-
-        // 地面陰影
         ctx.fillStyle = 'rgba(0,0,0,0.32)';
         ctx.beginPath();
-        ctx.ellipse(ax + (play.base === 1 ? 16 : -6), ay + 6, 36, 13, 0, 0, Math.PI * 2);
+        ctx.ellipse(ax, ay + 6, 34, 12, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        if (play.base === 1) {
-          // 一壘手：左腳踩壘包 (ax, ay)，身體向右大幅度拉弓劈腿接球
-          const hipX = ax + 24;
-          const hipY = ay - 36;
-          const shoulderX = hipX + 16;
-          const shoulderY = hipY - 34;
+        const dir = play.fielderFacing;
+        const hipX = ax + (play.base === 1 && !play.isPickoff ? -18 : -4 * dir);
+        const hipY = ay - 36;
+        const shoulderX = hipX + (dir * 10);
+        const shoulderY = hipY - 34;
 
-          // 踩壘後腳（延伸到壘包上）
-          drawLimb(hipX, hipY, ax + 6, ay - 14, ax, ay, '#f1f5f9', '#1e293b', 10);
-          // 前跨撐地腳
-          drawLimb(hipX, hipY, hipX + 26, ay - 16, hipX + 36, ay + 6, '#f1f5f9', '#1e293b', 10);
+        drawLimb(hipX, hipY, ax - 4 * dir, ay - 14, ax, ay, '#f1f5f9', '#1e293b', 10);
+        drawLimb(hipX, hipY, hipX + dir * 22, ay - 16, hipX + dir * 28, ay + 5, '#f1f5f9', '#1e293b', 10);
 
-          // 軀幹球衣
-          drawTorso(hipX, hipY, shoulderX, shoulderY, team.jersey, team.accent, '23');
+        drawTorso(hipX, hipY, shoulderX, shoulderY, team.color, team.textDark ? '#111827' : '#ffffff', play.base === 1 ? '23' : (play.base === 2 ? '6' : '5'));
+        drawLimb(shoulderX - 4 * dir, shoulderY + 4, shoulderX - 20 * dir, shoulderY + 12, shoulderX - 30 * dir, shoulderY + 4, team.color, '#f1c29b', 7);
+        drawHead(shoulderX + 3 * dir, shoulderY - 15, team.cap, false, dir);
+        drawLimb(shoulderX + 4 * dir, shoulderY + 4, (shoulderX + gx) / 2, (shoulderY + gy) / 2 + 4, gx, gy, team.color, '#f1c29b', 8);
 
-          // 平衡手臂（向後伸展）
-          drawLimb(shoulderX - 4, shoulderY + 4, shoulderX - 24, shoulderY + 12, shoulderX - 38, shoulderY + 4, team.jersey, '#f1c29b', 7);
-
-          // 頭部與球帽
-          drawHead(shoulderX + 4, shoulderY - 15, team.cap, false, 1);
-
-          // 接球手臂伸向 glovePos
-          drawLimb(shoulderX + 4, shoulderY + 4, (shoulderX + gx) / 2, (shoulderY + gy) / 2 + 4, gx, gy, team.jersey, '#f1c29b', 8);
-        } else {
-          // 二、三壘手：蹲低接球準備觸殺
-          const hipX = ax - 8;
-          const hipY = ay - 36;
-          const shoulderX = hipX + (play.fielderFacing * 6);
-          const shoulderY = hipY - 34;
-
-          // 雙腳微蹲站穩
-          drawLimb(hipX - 6, hipY, hipX - 18, ay - 16, hipX - 20, ay + 4, '#f1f5f9', '#1e293b', 10);
-          drawLimb(hipX + 6, hipY, ax + 2, ay - 16, ax + 6, ay + 2, '#f1f5f9', '#1e293b', 10);
-
-          // 軀幹球衣
-          drawTorso(hipX, hipY, shoulderX, shoulderY, team.jersey, team.accent, play.base === 2 ? '6' : '5');
-
-          // 輔助扶手套的手
-          drawLimb(shoulderX - 6, shoulderY + 6, gx - 10, gy - 6, gx - 4, gy + 2, team.jersey, '#f1c29b', 7);
-
-          // 頭部與球帽
-          drawHead(shoulderX, shoulderY - 15, team.cap, false, play.fielderFacing);
-
-          // 接球觸殺手套臂
-          drawLimb(shoulderX + 6, shoulderY + 6, (shoulderX + gx) / 2 + 6, (shoulderY + gy) / 2, gx, gy, team.jersey, '#f1c29b', 8);
-        }
-
-        // 棒球手套
         ctx.save();
         ctx.translate(gx, gy);
         const sq = caught && catchAge < 0.14 ? 0.86 : 1;
@@ -1746,7 +2256,6 @@
         ctx.fill();
         ctx.restore();
 
-        // 接球衝擊光圈
         if (caught && catchAge >= 0 && catchAge <= 0.22) {
           const p = catchAge / 0.22;
           ctx.strokeStyle = `rgba(255, 224, 102, ${1 - p})`;
@@ -1755,29 +2264,40 @@
           ctx.arc(gx, gy, 12 + p * 26, 0, Math.PI * 2);
           ctx.stroke();
         }
-
         ctx.restore();
       }
 
-      // 繪製擬真跑者公仔（精準對齊鞋尖 = pos.x, pos.y）
       function drawRunnerFigurine(play, t) {
         const pos = getRunnerPos(play, t);
         const touchAge = t - play.baseTouchTime;
         const team = play.runnerTeam;
 
         ctx.save();
-
-        // 依距離透視微調大小（y 越大越靠近鏡頭）
         const depthScale = clamp01((pos.y - 180) / 360) * 0.42 + 0.78;
-
         ctx.translate(pos.x, pos.y);
         ctx.scale(depthScale, depthScale);
 
-        // 跑動方向：1B 是往右跑 (+1)；2B 和 3B 是往左滑壘 (-1)
-        const dir = play.base === 1 ? 1 : -1;
+        // 決定跑者朝向
+        const dir = play.runnerContact.x >= play.runnerStart.x ? 1 : -1;
 
-        if (pos.sliding) {
-          // 滑壘公仔：前腳鞋尖精準位於 (0, 0)，身體向後方 (-dir) 延伸
+        if (pos.diving) {
+          // 牽制撲壘回壘：雙手前伸，指尖正好在 (0, 0)
+          ctx.fillStyle = 'rgba(0,0,0,0.3)';
+          ctx.beginPath();
+          ctx.ellipse(-dir * 38, 6, 46, 11, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          const shoulderX = -dir * 26;
+          const shoulderY = -10;
+          const hipX = -dir * 58;
+          const hipY = -12;
+
+          drawLimb(hipX, hipY, -dir * 78, -6, -dir * 92, 0, '#f1f5f9', '#111827', 9.5);
+          drawTorso(hipX, hipY, shoulderX, shoulderY, team.color, team.textDark ? '#111827' : '#ffffff', '17');
+          drawLimb(shoulderX, shoulderY, -dir * 12, -4, 0, 0, team.color, '#f1c29b', 8);
+          drawHead(shoulderX + dir * 6, shoulderY - 12, team.cap, true, dir);
+        } else if (pos.sliding) {
+          // 滑壘：前腳鞋尖在 (0, 0)
           ctx.fillStyle = 'rgba(0,0,0,0.3)';
           ctx.beginPath();
           ctx.ellipse(-dir * 42, 6, 48, 12, 0, 0, Math.PI * 2);
@@ -1788,25 +2308,17 @@
           const shoulderX = -dir * 72;
           const shoulderY = -28;
 
-          // 彎曲的後腳
           drawLimb(hipX, hipY, -dir * 26, -20, -dir * 20, -2, '#f1f5f9', '#111827', 9.5);
-          // 筆直前伸的滑壘前腳（鞋尖正好在 0, 0！）
           drawLimb(hipX, hipY, -dir * 22, -4, 0, 0, '#f1f5f9', '#111827', 10);
-
-          // 身體後仰
-          drawTorso(hipX, hipY, shoulderX, shoulderY, team.jersey, team.accent, '17');
-
-          // 雙手舉起保持平衡
-          drawLimb(shoulderX, shoulderY, shoulderX - dir * 10, shoulderY - 16, shoulderX + dir * 4, shoulderY - 26, team.jersey, '#f1c29b', 7);
-
-          // 打擊頭盔
-          drawHead(shoulderX - dir * 6, shoulderY - 14, team.helmet, true, dir);
+          drawTorso(hipX, hipY, shoulderX, shoulderY, team.color, team.textDark ? '#111827' : '#ffffff', '17');
+          drawLimb(shoulderX, shoulderY, shoulderX - dir * 10, shoulderY - 16, shoulderX + dir * 4, shoulderY - 26, team.color, '#f1c29b', 7);
+          drawHead(shoulderX - dir * 6, shoulderY - 14, team.cap, true, dir);
         } else {
-          // 衝刺公仔（一壘直衝）：前跨腳鞋尖精準位於 (0, 0)
+          // 衝刺：前跨腳鞋尖在 (0, 0)
           const cycle = Math.sin(t * 26);
           const hipX = -dir * 22;
           const hipY = -44;
-          const shoulderX = hipX + dir * 10; // 前傾衝刺
+          const shoulderX = hipX + dir * 10;
           const shoulderY = hipY - 34;
 
           ctx.fillStyle = 'rgba(0,0,0,0.3)';
@@ -1814,28 +2326,16 @@
           ctx.ellipse(hipX + dir * 6, 4, 28, 10, 0, 0, Math.PI * 2);
           ctx.fill();
 
-          // 後擺腿
           drawLimb(hipX, hipY, hipX - dir * 18, hipY + 20, hipX - dir * (28 + cycle * 12), -6, '#f1f5f9', '#111827', 9.5);
-
-          // 前跨踩壘腿（鞋尖鎖定於 0, 0，讓觸壘點分毫不差）
           drawLimb(hipX, hipY, -dir * 10, -22, 0, 0, '#f1f5f9', '#111827', 10);
-
-          // 擺動後臂
-          drawLimb(shoulderX, shoulderY + 4, shoulderX - dir * 16, shoulderY + 18, shoulderX - dir * (22 - cycle * 10), shoulderY + 10, team.jersey, '#f1c29b', 7);
-
-          // 軀幹球衣
-          drawTorso(hipX, hipY, shoulderX, shoulderY, team.jersey, team.accent, '17');
-
-          // 前擺臂
-          drawLimb(shoulderX + dir * 2, shoulderY + 4, shoulderX + dir * 16, shoulderY + 16, shoulderX + dir * (24 + cycle * 10), shoulderY + 4, team.jersey, '#f1c29b', 7.5);
-
-          // 打擊頭盔
-          drawHead(shoulderX + dir * 4, shoulderY - 14, team.helmet, true, dir);
+          drawLimb(shoulderX, shoulderY + 4, shoulderX - dir * 16, shoulderY + 18, shoulderX - dir * (22 - cycle * 10), shoulderY + 10, team.color, '#f1c29b', 7);
+          drawTorso(hipX, hipY, shoulderX, shoulderY, team.color, team.textDark ? '#111827' : '#ffffff', '17');
+          drawLimb(shoulderX + dir * 2, shoulderY + 4, shoulderX + dir * 16, shoulderY + 16, shoulderX + dir * (24 + cycle * 10), shoulderY + 4, team.color, '#f1c29b', 7.5);
+          drawHead(shoulderX + dir * 4, shoulderY - 14, team.cap, true, dir);
         }
 
         ctx.restore();
 
-        // 觸壘瞬間揚塵
         if (touchAge >= 0 && touchAge <= 0.28) {
           const p = touchAge / 0.28;
           ctx.save();
@@ -1844,20 +2344,13 @@
             const ang = Math.PI + (i / 6) * Math.PI;
             const r = 8 + p * 28;
             ctx.beginPath();
-            ctx.arc(
-              play.runnerContact.x + Math.cos(ang) * r,
-              play.runnerContact.y + Math.sin(ang) * r * 0.5,
-              6 * (1 - p) + 2,
-              0,
-              Math.PI * 2
-            );
+            ctx.arc(play.runnerContact.x + Math.cos(ang) * r, play.runnerContact.y + Math.sin(ang) * r * 0.5, 6 * (1 - p) + 2, 0, Math.PI * 2);
             ctx.fill();
           }
           ctx.restore();
         }
       }
 
-      // 公仔元件繪製輔助函式
       function drawLimb(x1, y1, mx, my, x2, y2, upperColor, endColor, width) {
         ctx.save();
         ctx.lineCap = 'round';
@@ -1869,8 +2362,6 @@
         ctx.lineTo(mx, my);
         ctx.lineTo(x2, y2);
         ctx.stroke();
-
-        // 末端球鞋或手掌
         ctx.fillStyle = endColor;
         ctx.beginPath();
         ctx.arc(x2, y2, width * 0.55, 0, Math.PI * 2);
@@ -1878,7 +2369,7 @@
         ctx.restore();
       }
 
-      function drawTorso(hx, hy, sx, sy, jerseyColor, accentColor, num) {
+      function drawTorso(hx, hy, sx, sy, jerseyColor, numColor, num) {
         ctx.save();
         ctx.strokeStyle = jerseyColor;
         ctx.lineWidth = 22;
@@ -1887,17 +2378,13 @@
         ctx.moveTo(hx, hy);
         ctx.lineTo(sx, sy);
         ctx.stroke();
-
-        // 腰帶
         ctx.strokeStyle = '#1e293b';
         ctx.lineWidth = 4;
         ctx.beginPath();
         ctx.moveTo(hx - 8, hy);
         ctx.lineTo(hx + 8, hy);
         ctx.stroke();
-
-        // 球衣背號
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = numColor;
         ctx.font = 'bold 11px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(num, (hx + sx) / 2, (hy + sy) / 2 + 4);
@@ -1906,22 +2393,16 @@
 
       function drawHead(x, y, hatColor, isHelmet, dir) {
         ctx.save();
-        // 臉部
         ctx.fillStyle = '#f1c29b';
         ctx.beginPath();
         ctx.arc(x, y, 10.5, 0, Math.PI * 2);
         ctx.fill();
-
-        // 頭盔或球帽
         ctx.fillStyle = hatColor;
         ctx.beginPath();
         ctx.arc(x, y - 2, 11.2, Math.PI, Math.PI * 2);
         ctx.fill();
-
-        // 帽簷
         ctx.fillRect(dir > 0 ? x : x - 14, y - 5, 14, 3.5);
         if (isHelmet) {
-          // 護耳蓋
           ctx.beginPath();
           ctx.arc(x - dir * 4, y + 2, 5, 0, Math.PI * 2);
           ctx.fill();
@@ -1934,7 +2415,6 @@
         if (!b.visible) return;
         ctx.save();
         if (!b.caught) {
-          // 地面陰影
           ctx.fillStyle = 'rgba(0,0,0,0.28)';
           ctx.beginPath();
           ctx.ellipse(b.x, b.groundY, 7, 3, 0, 0, Math.PI * 2);
@@ -1960,13 +2440,21 @@
         const activeBase = state.play ? state.play.base : state.previewBase;
 
         ctx.save();
-        ctx.fillStyle = 'rgba(11, 19, 30, 0.78)';
-        ctx.fillRect(14, 14, 246, 34);
+        ctx.fillStyle = 'rgba(11, 19, 30, 0.8)';
+        ctx.fillRect(14, 14, 275, 34);
         ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-        ctx.strokeRect(14, 14, 246, 34);
+        ctx.strokeRect(14, 14, 275, 34);
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 14px sans-serif';
-        ctx.fillText(`🎥 ${BASE_LABELS[activeBase]}（${activeBase}B）`, 24, 36);
+        ctx.fillText(`🎥 ${BASE_LABELS[activeBase]}`, 24, 36);
+
+        if (state.play && state.play.isPickoff) {
+          ctx.fillStyle = 'rgba(245, 185, 66, 0.92)';
+          ctx.fillRect(14, 54, 130, 28);
+          ctx.fillStyle = '#111827';
+          ctx.font = 'bold 13px sans-serif';
+          ctx.fillText('⚡ 投手牽制球！', 24, 73);
+        }
 
         if (isReplay) {
           ctx.strokeStyle = 'rgba(230, 69, 69, 0.9)';
@@ -1991,6 +2479,7 @@
       }
 
       function render() {
+        if (state.phase === 'START' || state.phase === 'GAME_OVER') return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         const activeBase = state.play ? state.play.base : state.previewBase;
         const isReplayZoom = (state.phase === 'REPLAY_REVIEW' || state.freeInspectMode) && state.replayZoom && state.play;
@@ -1998,27 +2487,22 @@
         ctx.save();
         if (isReplayZoom) {
           const zoom = 2.1;
-          const cx = 480;
-          const cy = 360;
           ctx.translate(canvas.width / 2, canvas.height / 2);
           ctx.scale(zoom, zoom);
-          ctx.translate(-cx, -cy);
+          ctx.translate(-480, -362);
         }
 
         drawStadiumPerspective(activeBase);
-
         if (state.play) {
-          // 依前後層次繪製守備員、跑者與球
           drawFielderFigurine(state.play, state.t);
           drawRunnerFigurine(state.play, state.t);
           drawBall(state.play, state.t);
         }
-
         ctx.restore();
         drawHUD();
       }
 
-      // ================= 主動畫迴圈 =================
+      // ================= 主迴圈 =================
       function loop(timestamp) {
         if (!state.lastTimestamp) state.lastTimestamp = timestamp;
         const dt = Math.min(0.05, (timestamp - state.lastTimestamp) / 1000);
@@ -2030,7 +2514,7 @@
           const isSlow = state.playbackRate < 0.8;
 
           if (
-            state.play.runnerAction === 'slide' &&
+            (state.play.runnerAction === 'slide' || state.play.runnerAction === 'dive_back') &&
             !state.triggeredSlideSound &&
             prevT < state.play.baseTouchTime - 0.34 &&
             state.t >= state.play.baseTouchTime - 0.34
@@ -2081,8 +2565,21 @@
       }
 
       // ================= 事件綁定 =================
+      ui.modeBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          ui.modeBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          state.setup.modeInnings = parseInt(btn.dataset.innings, 10);
+        });
+      });
+
+      ui.btnLaunchGame.addEventListener('click', launchGame);
+      ui.btnReturnStart.addEventListener('click', returnToStart);
+      ui.btnBackToStartTop.addEventListener('click', returnToStart);
+
       ui.baseBtns.forEach(btn => {
         btn.addEventListener('click', () => {
+          if (btn.disabled) return;
           ui.baseBtns.forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
           state.selectedBaseMode = btn.dataset.base;
@@ -2090,9 +2587,8 @@
             state.previewBase = parseInt(btn.dataset.base, 10);
           }
           updateStartButtonLabel();
-          // 若目前不在進行中，立刻切換畫面預覽該壘審視角
-          if (state.phase === 'IDLE' || state.phase === 'RESULT') {
-            if (state.phase === 'IDLE') state.play = null;
+          if (state.phase === 'IDLE') {
+            state.play = null;
             render();
           }
         });
@@ -2103,15 +2599,10 @@
         ui.btnSound.textContent = state.soundEnabled ? '🔊 音效：開' : '🔇 音效：關';
       });
 
-      ui.btnNewGame.addEventListener('click', resetFullGame);
-      ui.btnRestartAfterEnd.addEventListener('click', resetFullGame);
-
       ui.btnStart.addEventListener('click', startNewPlay);
       ui.btnNextPlay.addEventListener('click', startNewPlay);
-
       ui.btnSafe.addEventListener('click', () => handleInitialCall('SAFE'));
       ui.btnOut.addEventListener('click', () => handleInitialCall('OUT'));
-
       ui.btnEnterReplay.addEventListener('click', enterReplayReview);
       ui.btnCallStands.addEventListener('click', () => handleReplayDecision(false));
       ui.btnCallOverturned.addEventListener('click', () => handleReplayDecision(true));
@@ -2168,6 +2659,7 @@
       });
 
       window.addEventListener('keydown', (e) => {
+        if (state.phase === 'START' || state.phase === 'GAME_OVER') return;
         if (e.repeat && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
         const key = e.key.toLowerCase();
 
@@ -2189,8 +2681,7 @@
         }
       });
 
-      updateScoreboardUI();
-      updateStartButtonLabel();
+      renderTeamSelectors();
       requestAnimationFrame(loop);
     })();
   </script>
