@@ -1,9 +1,12 @@
-const CACHE_NAME = 'baseball-umpire-v1';
+const CACHE_NAME = 'baseball-umpire-v2';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  './icon_baseball.png'
+  './icon_baseball.png',
+  './out.mp3',
+  './safe.mp3',
+  './foul.mp3'
 ];
 
 self.addEventListener('install', (event) => {
