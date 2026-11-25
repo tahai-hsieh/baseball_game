@@ -897,7 +897,7 @@
           <div class="home-mode-icon">⚾</div>
           <div class="home-mode-title">界內 / 界外 判決</div>
           <div class="home-mode-desc">
-            自由切換一壘審與三壘審視角，緊盯飛向邊線的小白球判定界內或界外。每輪 50 球、總教練無限次挑戰。
+            自由切換一壘審與三壘審視角，緊盯飛向邊線與全壘打標竿的小白球判定界內、界外或全壘打。每輪 50 球、總教練無限次挑戰。
           </div>
         </button>
       </div>
@@ -1030,8 +1030,8 @@
     <!-- 界內/界外 狀態列 -->
     <div class="ff-header-bar hidden" id="fairFoulHeaderBar">
       <div class="ff-title-block">
-        <div class="t1">⚾ 界內 / 界外 判決模式（挑戰權：無限次）</div>
-        <div class="t2" id="ffMatchupLabel">單純線邊落點判決，每滿 50 球結束本輪</div>
+        <div class="t1">⚾ 界內 / 界外 / 全壘打標竿 判決模式（挑戰權：無限次）</div>
+        <div class="t2" id="ffMatchupLabel">單純線邊落點與標竿判決，每滿 50 球結束本輪</div>
       </div>
       <div class="ff-stats-row">
         <div class="stat-box">
@@ -1468,7 +1468,7 @@
         state.phase = 'START';
         ui.startModeSubtitle.textContent = mode === 'safe_out'
           ? '目前模式：Safe / Out 判決（含牽制、堆壘包、九局/四局賽制）'
-          : '目前模式：界內 / 界外 判決（一三壘線邊落點、每輪 50 球、無限挑戰）';
+          : '目前模式：界內 / 界外 / 全壘打標竿 判決（每輪 50 球、無限挑戰）';
         ui.homeScreen.classList.add('hidden');
         ui.endScreen.classList.add('hidden');
         ui.gameScreen.classList.add('hidden');
@@ -1520,7 +1520,8 @@
         OUT: new Audio('out.mp3'),
         SAFE: new Audio('safe.mp3'),
         FOUL: new Audio('foul.mp3'),
-        FAIR: new Audio('fair.mp3')
+        FAIR: new Audio('fair.mp3'),
+        HOMERUN: new Audio('homerun.mp3')
       };
       Object.values(callVoices).forEach((audio) => {
         audio.preload = 'auto';
@@ -1561,6 +1562,25 @@
         gain.connect(ctxA.destination);
         osc.start(now);
         osc.stop(now + 0.08);
+      }
+
+      function playPoleClang(slowMo = false) {
+        const ctxA = ensureAudio();
+        if (!ctxA) return;
+        const now = ctxA.currentTime;
+        const freqs = slowMo ? [520, 780, 1140] : [760, 1180, 1720];
+        freqs.forEach((f, idx) => {
+          const osc = ctxA.createOscillator();
+          const gain = ctxA.createGain();
+          osc.type = idx === 0 ? 'triangle' : 'sine';
+          osc.frequency.setValueAtTime(f, now);
+          gain.gain.setValueAtTime(0.28 / (idx + 1), now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+          osc.connect(gain);
+          gain.connect(ctxA.destination);
+          osc.start(now);
+          osc.stop(now + 0.36);
+        });
       }
 
       function playGlovePop(slowMo = false) {
@@ -1972,8 +1992,8 @@
           ui.ffMatchupLabel.textContent = `${awayTeam.name} vs ${homeTeam.name}｜${replayModeText}｜每滿 50 球結束`;
           ui.btnSafe.textContent = '界內 FAIR (A)';
           ui.btnOut.textContent = '界外 FOUL (D)';
-          ui.hintText.textContent = '快捷鍵：空白鍵開始/播放、A 判界內、D 判界外、左右鍵微調影格';
-          ui.statusText.textContent = `界內/界外判決模式就緒（${replayModeText}）！可自由切換一壘審或三壘審，按下「開始這一球」開始執法。`;
+          ui.hintText.textContent = '快捷鍵：空白鍵開始/播放、A 判界內/全壘打、D 判界外、左右鍵微調影格';
+          ui.statusText.textContent = `界內/界外/全壘打標竿模式就緒（${replayModeText}）！可自由切換一壘審或三壘審，按下「開始這一球」開始執法。`;
         } else {
           ui.safeOutScoreboard.classList.remove('hidden');
           ui.fairFoulHeaderBar.classList.add('hidden');
@@ -2023,7 +2043,7 @@
         if (state.gameMode === 'fair_foul') {
           ui.linescoreWrap.classList.add('hidden');
           ui.endBlownRunsCard.classList.add('hidden');
-          ui.endWinnerTitle.textContent = '界內 / 界外 判決測驗結束';
+          ui.endWinnerTitle.textContent = '界內 / 界外 / 全壘打標竿 測驗結束';
           ui.endScoreBig.textContent = `已完成 ${s.total} / ${FF_MAX_BALLS} 球`;
           ui.endSubtitle.textContent = s.total >= FF_MAX_BALLS ? '已完成全部 50 球執法考核' : '玩家提早結束本輪測驗';
         } else {
@@ -2079,8 +2099,11 @@
         ui.startScreen.classList.remove('hidden');
       }
 
-      // ================= 邊線幾何與碰觸壘包強制檢查 =================
-      // 一壘、三壘白線皆緊貼壘包外緣 (480, 396)，整顆壘包完整位於界內區
+      // ================= 邊線幾何、標竿位置與碰觸壘包強制檢查 =================
+      function getPoleX(base) {
+        return base === 1 ? 860 : 100;
+      }
+
       function getFoulLineY(base, x) {
         if (base === 1) {
           return 528 + (260 - 528) * ((x - 15) / (960 - 15));
@@ -2089,19 +2112,36 @@
         }
       }
 
-      // 檢查球是否碰觸到 3D 壘包本體（含頂面菱形、側面厚度與球半徑）
       function isBallTouchingBaseBag(gx, gy, height) {
         if (height > 18) return false;
         const dx = Math.abs(gx - 480);
         const dyTop = Math.abs(gy - 384);
-        // 頂面菱形外擴球半徑 (28+7, 14+7)
         if (dx / 35 + dyTop / 21 <= 1) return true;
-        // 壘包正面厚度區 (y: 384 ~ 403)
         if (dx <= 33 && gy >= 376 && gy <= 406) return true;
         return false;
       }
 
       function getFairFoulBallState(play, t) {
+        if (play.isHomerunPlay) {
+          let bx, by, scale;
+          if (t <= play.impactTime) {
+            const p = clamp01((t - play.startTime) / (play.impactTime - play.startTime));
+            bx = quadBezier(play.startX, play.ctrlX, play.impactX, p);
+            by = quadBezier(play.startY, play.ctrlY, play.impactY, p);
+            scale = lerp(1.22, 0.72, p);
+          } else {
+            const p2 = clamp01((t - play.impactTime) / 0.85);
+            bx = lerp(play.impactX, play.endX, p2);
+            if (play.variant === 'hr_hit_pole') {
+              by = lerp(play.impactY, play.endY, p2) + p2 * p2 * 70;
+            } else {
+              by = lerp(play.impactY, play.endY, p2) + p2 * p2 * 45;
+            }
+            scale = lerp(0.72, 0.56, p2);
+          }
+          return { gx: bx, gy: by, height: 0, scale };
+        }
+
         const isBagHit = play.variant === 'hit_bag' || play.variant === 'grounder_hit_bag';
         let gx, gy, height, scale;
         if (t <= play.impactTime) {
@@ -2130,8 +2170,8 @@
         return { gx, gy, height, scale };
       }
 
-      // 全軌跡掃描：只要有任何一幀碰到壘包，一律強制判定為界內（FAIR）
       function verifyAndEnforceBaseTouchRule(play) {
+        if (play.isHomerunPlay) return play;
         let touchedBag = false;
         for (let st = play.startTime; st <= DURATION; st += 0.01) {
           const pos = getFairFoulBallState(play, st);
@@ -2181,7 +2221,114 @@
         const startTime = 0.08;
         const baseSideDir = base === 1 ? 1 : -1;
 
-        // 七種真實球路變化（含飛球打到壘包、滾地球碰到壘包後彈往線外）
+        // 35% 機率出現「全壘打標竿判斷」
+        if (Math.random() < 0.35) {
+          const poleX = getPoleX(base);
+          const impactTime = 1.05 + Math.random() * 0.2;
+          const impactY = 62 + Math.random() * 78; // 標竿中上段高度 (62 ~ 140)
+          const hrRoll = Math.random();
+
+          let variant, impactX, ctrlX, ctrlY, endX, endY;
+          let isHomerun, occludedByPole = false, hitPole = false;
+          let marginPx = 0, playTypeLabel = '', detailText = '';
+
+          if (hrRoll < 0.24) {
+            // 1. 小白球飛到標竿後面被標竿擋住 -> 全壘打
+            variant = 'hr_inside_behind';
+            isHomerun = true;
+            occludedByPole = true;
+            impactX = poleX;
+            marginPx = 3;
+            ctrlX = base === 1 ? 480 : 420;
+            ctrlY = 120 + Math.random() * 45;
+            endX = poleX + baseSideDir * 55;
+            endY = impactY + 18;
+            playTypeLabel = `${base === 1 ? '右外野' : '左外野'}全壘打標竿深遠飛球`;
+            detailText = '小白球從標竿後方通過（被標竿擋住，判定全壘打）';
+          } else if (hrRoll < 0.44) {
+            // 2. 直接打中全壘打標竿反彈 -> 全壘打
+            variant = 'hr_hit_pole';
+            isHomerun = true;
+            hitPole = true;
+            impactX = poleX;
+            marginPx = 1;
+            ctrlX = base === 1 ? 470 : 430;
+            ctrlY = 135 + Math.random() * 40;
+            endX = poleX - baseSideDir * (75 + Math.random() * 45);
+            endY = impactY + 45;
+            playTypeLabel = `${base === 1 ? '右外野' : '左外野'}全壘打標竿強襲飛球`;
+            detailText = '直接擊中全壘打標竿反彈（打到標竿判定全壘打）';
+          } else if (hrRoll < 0.62) {
+            // 3. 明顯在標竿內側飛出全壘打牆 -> 全壘打
+            variant = 'hr_inside_clear';
+            isHomerun = true;
+            const off = 18 + Math.random() * 28;
+            impactX = poleX - baseSideDir * off;
+            marginPx = off;
+            ctrlX = base === 1 ? 440 : 460;
+            ctrlY = 110 + Math.random() * 40;
+            endX = impactX - baseSideDir * 25;
+            endY = impactY + 22;
+            playTypeLabel = `${base === 1 ? '右外野' : '左外野'}標竿內側深遠飛球`;
+            detailText = '從全壘打標竿內側飛出牆外（判定全壘打）';
+          } else if (hrRoll < 0.84) {
+            // 4. 從全壘打標竿前飛過去，小白球擋住標竿 -> 界外
+            variant = 'hr_outside_front';
+            isHomerun = false;
+            occludedByPole = false;
+            impactX = poleX;
+            marginPx = -3;
+            ctrlX = base === 1 ? 520 : 380;
+            ctrlY = 130 + Math.random() * 40;
+            endX = poleX + baseSideDir * 72;
+            endY = impactY + 24;
+            playTypeLabel = `${base === 1 ? '右外野' : '左外野'}全壘打標竿外切飛球`;
+            detailText = '小白球從標竿前方飛過（擋住標竿，判定界外）';
+          } else {
+            // 5. 明顯在標竿外側飛過 -> 界外
+            variant = 'hr_outside_clear';
+            isHomerun = false;
+            const off = 18 + Math.random() * 28;
+            impactX = poleX + baseSideDir * off;
+            marginPx = -off;
+            ctrlX = base === 1 ? 540 : 360;
+            ctrlY = 120 + Math.random() * 45;
+            endX = impactX + baseSideDir * 45;
+            endY = impactY + 26;
+            playTypeLabel = `${base === 1 ? '右外野' : '左外野'}標竿外側深遠飛球`;
+            detailText = '從全壘打標竿外側飛出（判定界外）';
+          }
+
+          return {
+            mode: 'fair_foul',
+            isHomerunPlay: true,
+            variant,
+            isGrounder: false,
+            touchedBag: false,
+            hitPole,
+            occludedByPole,
+            base,
+            playTypeLabel,
+            detailText,
+            startTime,
+            impactTime,
+            startX,
+            startY,
+            ctrlX,
+            ctrlY,
+            impactX,
+            impactY,
+            endX,
+            endY,
+            arcHeight: 0,
+            isFair: isHomerun,
+            isOnChalk: hitPole,
+            marginPx,
+            truth: isHomerun ? 'HOMERUN' : 'FOUL'
+          };
+        }
+
+        // 一般線邊界內/界外球路（七種變化）
         const roll = Math.random();
         let variant;
         if (roll < 0.13) variant = 'hit_bag';
@@ -2200,7 +2347,6 @@
         let isGrounder = false;
 
         if (variant === 'hit_bag') {
-          // 1. 強襲球直接打到壘包 -> 界內
           isFair = true;
           isOnChalk = true;
           marginPx = 2;
@@ -2214,7 +2360,6 @@
           playTypeLabel = `${base === 1 ? '一壘' : '三壘'}線邊強襲球（打中壘包）`;
           detailText = '直接擊中壘包反彈（碰到壘包一律判定界內）';
         } else if (variant === 'grounder_hit_bag') {
-          // 2. 滾地球滾過去碰到壘包後彈往線外 -> 界內
           isFair = true;
           isGrounder = true;
           isOnChalk = true;
@@ -2229,7 +2374,6 @@
           playTypeLabel = `${base === 1 ? '一壘' : '三壘'}線邊滾地球（碰壘包彈出）`;
           detailText = '滾地球碰到壘包後彈往線外（碰到壘包一律判定界內）';
         } else if (variant === 'fly_in_land_out') {
-          // 3. 線內飛過壘包，結果在線外落地 -> 界外
           isFair = false;
           impactX = base === 1 ? (580 + Math.random() * 170) : (190 + Math.random() * 170);
           const lineY = getFoulLineY(base, impactX);
@@ -2244,39 +2388,36 @@
           playTypeLabel = `${base === 1 ? '一壘' : '三壘'}線內飛過壘包切出飛球`;
           detailText = '線內飛過壘包但最終落於界外（界外）';
         } else if (variant === 'grounder_in_to_out') {
-          // 4. 滾地球從線內在壘包前滾出線外並過壘包（完全不碰壘包）-> 界外
           isFair = false;
           isGrounder = true;
           impactX = 480;
-          const lineY = getFoulLineY(base, 480); // 396（壘包下緣）
+          const lineY = getFoulLineY(base, 480);
           const off = 8 + Math.random() * 14;
-          impactY = lineY + 12 + off; // >= 416，明確避開壘包本體與陰影
+          impactY = lineY + 12 + off;
           marginPx = -off;
           ctrlX = base === 1 ? 235 : 645;
-          ctrlY = getFoulLineY(base, ctrlX) - 20; // 壘包前在線內
+          ctrlY = getFoulLineY(base, ctrlX) - 20;
           arcHeight = 12;
           endX = 480 + baseSideDir * 220;
           endY = getFoulLineY(base, endX) + 46;
           playTypeLabel = `${base === 1 ? '一壘' : '三壘'}線邊滾地球（壘包前滾出）`;
           detailText = '壘包前由界內滾出界外且未碰壘包（界外）';
         } else if (variant === 'grounder_out_to_in') {
-          // 5. 滾地球在線外，但在過壘包前回到線內並過壘包 -> 界內
           isFair = true;
           isGrounder = true;
           impactX = 480;
           const lineY = getFoulLineY(base, 480);
           const off = 18 + Math.random() * 14;
-          impactY = lineY - off; // 364 ~ 378（壘包上方界內側）
+          impactY = lineY - off;
           marginPx = off;
           ctrlX = base === 1 ? 245 : 640;
-          ctrlY = getFoulLineY(base, ctrlX) + 42; // 壘包前在線外
+          ctrlY = getFoulLineY(base, ctrlX) + 42;
           arcHeight = 12;
           endX = 480 + baseSideDir * 220;
           endY = getFoulLineY(base, endX) - 34;
           playTypeLabel = `${base === 1 ? '一壘' : '三壘'}線邊旋球滾地（壘包前轉回）`;
           detailText = '過壘包前從界外轉回界內通過（界內）';
         } else if (variant === 'grounder_pass_in_then_out') {
-          // 6. 滾地球在線內通過壘包後才滾出界外 -> 界內
           isFair = true;
           isGrounder = true;
           impactX = 480;
@@ -2292,7 +2433,6 @@
           playTypeLabel = `${base === 1 ? '一壘' : '三壘'}線邊滾地球（過壘包後滾出）`;
           detailText = '線內通過壘包後才滾出界外（規則判定界內）';
         } else {
-          // 7. 外野邊線直接落點
           isFair = Math.random() < 0.5;
           impactX = base === 1 ? (555 + Math.random() * 200) : (180 + Math.random() * 200);
           const lineY = getFoulLineY(base, impactX);
@@ -2325,9 +2465,12 @@
 
         const play = {
           mode: 'fair_foul',
+          isHomerunPlay: false,
           variant,
           isGrounder,
           touchedBag: false,
+          hitPole: false,
+          occludedByPole: false,
           base,
           playTypeLabel,
           detailText,
@@ -2499,7 +2642,7 @@
 
         if (state.gameMode === 'fair_foul') {
           const absMargin = Math.abs(state.play.marginPx);
-          const challenger = initialCall === 'FAIR' ? 'home' : 'away';
+          const challenger = (initialCall === 'FAIR' || initialCall === 'HOMERUN') ? 'home' : 'away';
           let prob = 0;
           if (isInitialCorrect) {
             prob = absMargin <= 5.5 ? 0.40 : 0;
@@ -2533,6 +2676,7 @@
         if (call === 'OUT') return 'OUT 出局';
         if (call === 'FAIR') return '界內 FAIR';
         if (call === 'FOUL') return '界外 FOUL';
+        if (call === 'HOMERUN') return '全壘打 HOMERUN';
         return call;
       }
 
@@ -2540,7 +2684,8 @@
         if (call === 'SAFE') return 'OUT';
         if (call === 'OUT') return 'SAFE';
         if (call === 'FAIR') return 'FOUL';
-        return 'FAIR';
+        if (call === 'HOMERUN') return 'FOUL';
+        return (state.play && state.play.isHomerunPlay) ? 'HOMERUN' : 'FAIR';
       }
 
       function startNewPlay() {
@@ -2570,7 +2715,15 @@
         ui.btnOut.disabled = true;
 
         if (state.gameMode === 'fair_foul') {
-          ui.statusText.textContent = `【${state.play.playTypeLabel}】小白球飛過來了！盯緊邊線與壘包...`;
+          if (state.play.isHomerunPlay) {
+            ui.btnSafe.textContent = '全壘打 HOMERUN (A)';
+            ui.btnOut.textContent = '界外 FOUL (D)';
+            ui.statusText.textContent = `【${state.play.playTypeLabel}】深遠飛球飛向全壘打標竿！盯緊標竿前後關係...`;
+          } else {
+            ui.btnSafe.textContent = '界內 FAIR (A)';
+            ui.btnOut.textContent = '界外 FOUL (D)';
+            ui.statusText.textContent = `【${state.play.playTypeLabel}】小白球飛過來了！盯緊邊線與壘包...`;
+          }
         } else {
           ui.statusText.textContent = `【${state.play.playTypeLabel}】比賽進行中！緊盯壘包與接球聲...`;
           playTone(state.play.isPickoff ? 780 : 660, 0.08, 'sine', 0.14);
@@ -2594,7 +2747,9 @@
           if (state.setup.replayMode === 'auto') {
             ui.challengeDesc.textContent = `你剛才宣判「${formatCallLabel(call)}」。目前已啟動「自動電視輔助判決模式」，進入重播室觀看慢動作後，按下「看判決結果」將由裁判走出轉播室宣判！`;
           } else if (state.gameMode === 'fair_foul') {
-            ui.challengeDesc.textContent = `你剛才宣判「${formatCallLabel(call)}」。請進入重播室使用慢動作與放大特寫確認落點與路徑（本模式挑戰權無限次）。`;
+            ui.challengeDesc.textContent = state.play.isHomerunPlay
+              ? `你剛才宣判「${formatCallLabel(call)}」。請進入重播室使用慢動作與標竿特寫，決定維持原判或改判（全壘打 / 界外）。`
+              : `你剛才宣判「${formatCallLabel(call)}」。請進入重播室使用慢動作與放大特寫確認落點與路徑（本模式挑戰權無限次）。`;
           } else {
             ui.challengeDesc.textContent = `你剛才宣判「${formatCallLabel(call)}」。請進入重播室使用慢動作與逐格功能做出最終裁決（改判成功不扣挑戰權，維持原判扣 1 次）。`;
           }
@@ -2615,7 +2770,9 @@
         state.replayZoom = true;
         state.playbackRate = 0.25;
         setSpeedBtnActive(0.25);
-        ui.btnZoom.textContent = state.gameMode === 'fair_foul' ? '🔍 落點特寫：開' : '🔍 壘包特寫：開';
+        ui.btnZoom.textContent = state.gameMode === 'fair_foul'
+          ? (state.play.isHomerunPlay ? '🔍 標竿特寫：開' : '🔍 落點特寫：開')
+          : '🔍 壘包特寫：開';
 
         const keyMoment = state.gameMode === 'fair_foul'
           ? state.play.impactTime
@@ -2715,18 +2872,25 @@
         ui.resultHeadline.className = 'result-headline ' + (finalOk ? 'good' : 'bad');
         ui.resPlayType.textContent = state.play.playTypeLabel;
         ui.resTruth.textContent = formatCallLabel(truth);
-        ui.resTruth.style.color = (truth === 'SAFE' || truth === 'FAIR') ? '#46e095' : '#ff6b6b';
+        ui.resTruth.style.color = (truth === 'SAFE' || truth === 'FAIR' || truth === 'HOMERUN') ? '#46e095' : '#ff6b6b';
 
         if (state.gameMode === 'fair_foul') {
           ui.resLabel3.textContent = '關鍵判定時間';
           ui.resRunnerTime.textContent = `${state.play.impactTime.toFixed(3)} 秒`;
           ui.resLabel4.textContent = '判定依據';
           ui.resBallTime.textContent = state.play.detailText;
-          ui.resLabel5.textContent = '距離邊線';
-          const cm = Math.max(1, Math.round(Math.abs(state.play.marginPx) * 1.8));
-          ui.resDelta.textContent = state.play.touchedBag
-            ? '碰觸壘包（界內）'
-            : (state.play.isOnChalk ? '直接壓線' : `${state.play.isFair ? '界內' : '界外'}約 ${cm} 公分`);
+          ui.resLabel5.textContent = state.play.isHomerunPlay ? '標竿位置關係' : '距離邊線';
+          if (state.play.isHomerunPlay) {
+            if (state.play.hitPole) ui.resDelta.textContent = '直接擊中標竿（全壘打）';
+            else if (state.play.variant === 'hr_inside_behind') ui.resDelta.textContent = '標竿後方通過（被擋住）';
+            else if (state.play.variant === 'hr_outside_front') ui.resDelta.textContent = '標竿前方飛過（擋住標竿）';
+            else ui.resDelta.textContent = state.play.truth === 'HOMERUN' ? '標竿內側飛出' : '標竿外側飛出';
+          } else {
+            const cm = Math.max(1, Math.round(Math.abs(state.play.marginPx) * 1.8));
+            ui.resDelta.textContent = state.play.touchedBag
+              ? '碰觸壘包（界內）'
+              : (state.play.isOnChalk ? '直接壓線' : `${state.play.isFair ? '界內' : '界外'}約 ${cm} 公分`);
+          }
           ui.resLabel6.textContent = '目前進度';
           ui.resImpact.textContent = `已完成 ${state.stats.total} / ${FF_MAX_BALLS} 球`;
 
@@ -2760,7 +2924,9 @@
         state.replayZoom = true;
         state.playbackRate = 0.25;
         setSpeedBtnActive(0.25);
-        ui.btnZoom.textContent = state.gameMode === 'fair_foul' ? '🔍 落點特寫：開' : '🔍 壘包特寫：開';
+        ui.btnZoom.textContent = state.gameMode === 'fair_foul'
+          ? (state.play.isHomerunPlay ? '🔍 標竿特寫：開' : '🔍 落點特寫：開')
+          : '🔍 壘包特寫：開';
         ui.replayBadge.textContent = '● 賽後自由檢視模式';
         ui.replaySubInfo.textContent = `實際答案：${formatCallLabel(state.play.truth)}`;
         ui.replayDecisionRow.style.display = 'none';
@@ -2851,6 +3017,31 @@
         return { visible: true, x, y: y - arc, groundY: y + 18, scale: 0.72 + p * 0.35, caught: false };
       }
 
+      function drawFoulPole(baseNum) {
+        if (baseNum !== 1 && baseNum !== 3) return;
+        const poleX = getPoleX(baseNum);
+        const screenDir = baseNum === 1 ? -1 : 1; // 界內方向
+
+        ctx.save();
+        // 標竿側邊界內網架（半透明黃色）
+        ctx.fillStyle = 'rgba(250, 204, 21, 0.28)';
+        ctx.strokeStyle = 'rgba(250, 204, 21, 0.6)';
+        ctx.lineWidth = 1;
+        const meshX = screenDir < 0 ? poleX - 18 : poleX + 6;
+        ctx.fillRect(meshX, 34, 12, 136);
+        ctx.strokeRect(meshX, 34, 12, 136);
+
+        // 黃色全壘打標竿本體（寬 10px，確保能清楚遮擋後方小白球）
+        ctx.fillStyle = '#facc15';
+        ctx.fillRect(poleX - 5, 28, 10, 168);
+        ctx.fillStyle = '#fef08a';
+        ctx.fillRect(poleX - 2, 28, 3, 168);
+        ctx.strokeStyle = '#ca8a04';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(poleX - 5, 28, 10, 168);
+        ctx.restore();
+      }
+
       function drawFairFoulBall(play, t) {
         if (t < play.startTime) return;
 
@@ -2859,24 +3050,36 @@
         if (t >= play.impactTime) {
           const age = t - play.impactTime;
           ctx.save();
-          if (!play.isGrounder) {
-            ctx.fillStyle = play.isOnChalk ? 'rgba(255,255,255,0.65)' : 'rgba(65, 40, 20, 0.55)';
-            ctx.beginPath();
-            ctx.ellipse(play.impactX, play.impactY, 5.5, 3, 0, 0, Math.PI * 2);
-            ctx.fill();
-          }
-
-          if (age <= 0.32) {
-            const p = age / 0.32;
-            ctx.fillStyle = isBagHit
-              ? `rgba(255, 224, 102, ${(1 - p) * 0.9})`
-              : (play.isOnChalk ? `rgba(255, 255, 255, ${(1 - p) * 0.85})` : `rgba(235, 205, 160, ${(1 - p) * 0.7})`);
-            for (let i = 0; i < 6; i++) {
-              const ang = Math.PI + (i / 5) * Math.PI;
-              const rad = 5 + p * 22;
+          if (play.isHomerunPlay && play.hitPole) {
+            // 擊中標竿火花光圈
+            if (age <= 0.34) {
+              const p = age / 0.34;
+              ctx.strokeStyle = `rgba(255, 240, 120, ${1 - p})`;
+              ctx.lineWidth = 4 * (1 - p) + 1;
               ctx.beginPath();
-              ctx.arc(play.impactX + Math.cos(ang) * rad, play.impactY + Math.sin(ang) * rad * 0.45, 4.5 * (1 - p) + 1.5, 0, Math.PI * 2);
+              ctx.arc(play.impactX, play.impactY, 8 + p * 26, 0, Math.PI * 2);
+              ctx.stroke();
+            }
+          } else if (!play.isHomerunPlay) {
+            if (!play.isGrounder) {
+              ctx.fillStyle = play.isOnChalk ? 'rgba(255,255,255,0.65)' : 'rgba(65, 40, 20, 0.55)';
+              ctx.beginPath();
+              ctx.ellipse(play.impactX, play.impactY, 5.5, 3, 0, 0, Math.PI * 2);
               ctx.fill();
+            }
+
+            if (age <= 0.32) {
+              const p = age / 0.32;
+              ctx.fillStyle = isBagHit
+                ? `rgba(255, 224, 102, ${(1 - p) * 0.9})`
+                : (play.isOnChalk ? `rgba(255, 255, 255, ${(1 - p) * 0.85})` : `rgba(235, 205, 160, ${(1 - p) * 0.7})`);
+              for (let i = 0; i < 6; i++) {
+                const ang = Math.PI + (i / 5) * Math.PI;
+                const rad = 5 + p * 22;
+                ctx.beginPath();
+                ctx.arc(play.impactX + Math.cos(ang) * rad, play.impactY + Math.sin(ang) * rad * 0.45, 4.5 * (1 - p) + 1.5, 0, Math.PI * 2);
+                ctx.fill();
+              }
             }
           }
           ctx.restore();
@@ -2885,10 +3088,12 @@
         const { gx, gy, height, scale } = getFairFoulBallState(play, t);
 
         ctx.save();
-        ctx.fillStyle = 'rgba(0,0,0,0.32)';
-        ctx.beginPath();
-        ctx.ellipse(gx, gy, 6.5 * scale, 3 * scale, 0, 0, Math.PI * 2);
-        ctx.fill();
+        if (!play.isHomerunPlay) {
+          ctx.fillStyle = 'rgba(0,0,0,0.32)';
+          ctx.beginPath();
+          ctx.ellipse(gx, gy, 6.5 * scale, 3 * scale, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
 
         const r = 6.2 * scale;
         ctx.fillStyle = '#ffffff';
@@ -2903,7 +3108,7 @@
         ctx.restore();
       }
 
-      // 繪製「裁判走出轉播室並比出 SAFE / OUT / FAIR / FOUL 手勢」動畫
+      // 繪製「裁判走出轉播室並比出 SAFE / OUT / FAIR / FOUL / HOMERUN 手勢」動畫
       function drawAutoReplayAnnouncement() {
         const w = canvas.width;
         const h = canvas.height;
@@ -2990,6 +3195,37 @@
           const elbowY = lerp(shY + 34, shY - 12, gestureP);
           drawLimb(ux - 24, shY + 12, ux - 48, elbowY, ux - 46, handY, '#1e293b', '#f1c29b', 11);
           drawLimb(ux + 24, shY + 12, ux + 48, elbowY, ux + 46, handY, '#1e293b', '#f1c29b', 11);
+        } else if (truth === 'HOMERUN') {
+          // HOMERUN：右手90度舉高，伸出食指在天空中畫圈
+          drawLimb(ux - 24, shY + 12, ux - 34, shY + 38, ux - 30, shY + 64, '#1e293b', '#f1c29b', 11);
+          const circleAngle = (t - 1.0) * 14;
+          const cx = Math.cos(circleAngle) * 13 * gestureP;
+          const cy = Math.sin(circleAngle) * 7 * gestureP;
+          const elbowX = ux + 54;
+          const elbowY = lerp(shY + 36, shY + 10, gestureP);
+          const handX = elbowX + cx;
+          const handY = lerp(shY + 46, shY - 44, gestureP) + cy;
+          drawLimb(ux + 24, shY + 12, elbowX, elbowY, handX, handY, '#1e293b', '#f1c29b', 11);
+
+          // 伸出食指指天
+          ctx.strokeStyle = '#f1c29b';
+          ctx.lineWidth = 4.5;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(handX, handY);
+          ctx.lineTo(handX, handY - 18 * gestureP);
+          ctx.stroke();
+
+          // 天空畫圈動態軌跡提示
+          if (gestureP > 0.5) {
+            ctx.strokeStyle = 'rgba(245, 185, 66, 0.78)';
+            ctx.lineWidth = 2.5;
+            ctx.setLineDash([6, 4]);
+            ctx.beginPath();
+            ctx.ellipse(elbowX, shY - 62, 16, 8, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+          }
         } else {
           const pointDir = state.play.base === 1 ? -1 : 1;
           const reach = lerp(16, 94, gestureP);
@@ -3019,10 +3255,10 @@
 
         if (gestureP > 0.2) {
           ctx.globalAlpha = Math.min(1, gestureP);
-          const isPositive = truth === 'SAFE' || truth === 'FAIR';
+          const isPositive = truth === 'SAFE' || truth === 'FAIR' || truth === 'HOMERUN';
           ctx.fillStyle = isPositive ? 'rgba(24, 184, 107, 0.95)' : 'rgba(230, 69, 69, 0.95)';
           ctx.beginPath();
-          ctx.roundRect(w / 2 - 170, 56, 340, 74, 16);
+          ctx.roundRect(w / 2 - 185, 56, 370, 74, 16);
           ctx.fill();
           ctx.fillStyle = '#ffffff';
           ctx.font = '900 34px sans-serif';
@@ -3031,7 +3267,8 @@
             SAFE: 'SAFE！安全上壘',
             OUT: 'OUT！出局',
             FAIR: 'FAIR！界內球',
-            FOUL: 'FOUL！界外球'
+            FOUL: 'FOUL！界外球',
+            HOMERUN: 'HOME RUN！全壘打'
           };
           ctx.fillText(bannerMap[truth] || truth, w / 2, 105);
         }
@@ -3050,7 +3287,7 @@
         ctx.fillStyle = skyGrad;
         ctx.fillRect(0, 0, w, horizon);
 
-        const lights = baseNum === 1 ? [190, 740] : baseNum === 2 ? [150, 480, 810] : [220, 770];
+        const lights = baseNum === 1 ? [190, 700] : baseNum === 2 ? [150, 480, 810] : [260, 770];
         lights.forEach(lx => {
           ctx.fillStyle = '#334155';
           ctx.fillRect(lx - 4, 28, 8, 90);
@@ -3076,7 +3313,6 @@
           ctx.fillRect(0, 174, w, 24);
           ctx.fillStyle = '#facc15';
           ctx.fillRect(0, 172, w, 3);
-          ctx.fillRect(942, 45, 6, 150);
         } else if (baseNum === 2) {
           ctx.fillStyle = '#1a2738';
           ctx.fillRect(0, 115, w, 80);
@@ -3110,7 +3346,6 @@
           ctx.fillStyle = '#14532d';
           ctx.fillRect(0, 168, w, 30);
           ctx.fillStyle = '#facc15';
-          ctx.fillRect(37, 45, 6, 152);
           ctx.fillRect(0, 166, w, 3);
         }
 
@@ -3147,7 +3382,6 @@
           ctx.ellipse(480, 388, 175, 58, -0.22, 0, Math.PI * 2);
           ctx.fill();
 
-          // 一壘白線：緊貼一壘壘包外緣 (480, 396)
           ctx.strokeStyle = 'rgba(255,255,255,0.92)';
           ctx.lineWidth = 6.5;
           ctx.beginPath();
@@ -3191,7 +3425,6 @@
           ctx.ellipse(480, 386, 175, 55, 0.25, 0, Math.PI * 2);
           ctx.fill();
 
-          // 三壘白線：緊貼三壘壘包外緣 (480, 396)
           ctx.strokeStyle = 'rgba(255,255,255,0.92)';
           ctx.lineWidth = 6.5;
           ctx.beginPath();
@@ -3207,6 +3440,7 @@
           }
         }
 
+        drawFoulPole(baseNum);
         draw3DBaseBag(480, 382);
       }
 
@@ -3485,6 +3719,14 @@
           ctx.fillText('⚡ 投手牽制球！', 24, 73);
         }
 
+        if (state.play && state.play.isHomerunPlay) {
+          ctx.fillStyle = 'rgba(245, 185, 66, 0.92)';
+          ctx.fillRect(14, 54, 162, 28);
+          ctx.fillStyle = '#111827';
+          ctx.font = 'bold 13px sans-serif';
+          ctx.fillText('🏟️ 全壘打標竿判斷！', 24, 73);
+        }
+
         if (isReplay) {
           ctx.strokeStyle = 'rgba(230, 69, 69, 0.9)';
           ctx.lineWidth = 6;
@@ -3501,7 +3743,10 @@
             ctx.fillRect(w - 156, h - 44, 142, 28);
             ctx.fillStyle = '#f5b942';
             ctx.font = 'bold 13px sans-serif';
-            ctx.fillText(state.gameMode === 'fair_foul' ? '🔍 2.4x 落點特寫' : '🔍 2.1x 壘包特寫', w - 144, h - 25);
+            const zoomLabel = state.gameMode === 'fair_foul'
+              ? (state.play && state.play.isHomerunPlay ? '🔍 2.4x 標竿特寫' : '🔍 2.4x 落點特寫')
+              : '🔍 2.1x 壘包特寫';
+            ctx.fillText(zoomLabel, w - 144, h - 25);
           }
         }
         ctx.restore();
@@ -3538,6 +3783,10 @@
         if (state.play) {
           if (state.play.mode === 'fair_foul') {
             drawFairFoulBall(state.play, state.t);
+            // 若小白球從全壘打標竿後方通過，將標竿重繪於球體上方以呈現真實遮擋
+            if (state.play.isHomerunPlay && state.play.occludedByPole) {
+              drawFoulPole(activeBase);
+            }
           } else {
             drawFielderFigurine(state.play, state.t);
             drawRunnerFigurine(state.play, state.t);
@@ -3560,7 +3809,7 @@
             state.announceVoicePlayed = true;
             playCallVoice(state.play.truth);
           }
-          if (state.announceT >= 2.2) {
+          if (state.announceT >= 2.35) {
             finishAutoReplayAnnouncement();
           }
         }
@@ -3577,12 +3826,18 @@
             }
             if (!state.triggeredTouchSound && prevT < state.play.impactTime && state.t >= state.play.impactTime) {
               state.triggeredTouchSound = true;
-              playBaseTouch(isSlow);
+              if (state.play.isHomerunPlay) {
+                if (state.play.hitPole) playPoleClang(isSlow);
+              } else {
+                playBaseTouch(isSlow);
+              }
             }
             if (state.phase === 'LIVE' && state.t >= state.play.impactTime + 0.06 && ui.btnSafe.disabled) {
               ui.btnSafe.disabled = false;
               ui.btnOut.disabled = false;
-              ui.statusText.textContent = '關鍵點已出現！請立刻宣判「界內」或「界外」！';
+              ui.statusText.textContent = state.play.isHomerunPlay
+                ? '球已通過標竿！請立刻宣判「全壘打」或「界外」！'
+                : '關鍵點已出現！請立刻宣判「界內」或「界外」！';
             }
           } else {
             if (
@@ -3623,7 +3878,7 @@
               ui.btnSafe.disabled = false;
               ui.btnOut.disabled = false;
               ui.statusText.textContent = state.gameMode === 'fair_foul'
-                ? '請做出判決：界內 FAIR 或 界外 FOUL？'
+                ? (state.play.isHomerunPlay ? '請做出判決：全壘打 HOMERUN 或 界外 FOUL？' : '請做出判決：界內 FAIR 或 界外 FOUL？')
                 : '請做出你的壘審判決：SAFE 或 OUT？';
             } else if (state.phase === 'REPLAY_REVIEW' || state.freeInspectMode) {
               ui.btnReplayPlay.textContent = '▶ 重播';
@@ -3691,7 +3946,13 @@
 
       ui.btnStart.addEventListener('click', startNewPlay);
       ui.btnNextPlay.addEventListener('click', startNewPlay);
-      ui.btnSafe.addEventListener('click', () => handleInitialCall(state.gameMode === 'fair_foul' ? 'FAIR' : 'SAFE'));
+      ui.btnSafe.addEventListener('click', () => {
+        if (state.gameMode === 'fair_foul') {
+          handleInitialCall(state.play && state.play.isHomerunPlay ? 'HOMERUN' : 'FAIR');
+        } else {
+          handleInitialCall('SAFE');
+        }
+      });
       ui.btnOut.addEventListener('click', () => handleInitialCall(state.gameMode === 'fair_foul' ? 'FOUL' : 'OUT'));
       ui.btnEnterReplay.addEventListener('click', enterReplayReview);
       ui.btnCallStands.addEventListener('click', () => handleReplayDecision(false));
@@ -3733,7 +3994,9 @@
 
       ui.btnZoom.addEventListener('click', () => {
         state.replayZoom = !state.replayZoom;
-        const prefix = state.gameMode === 'fair_foul' ? '🔍 落點特寫：' : '🔍 壘包特寫：';
+        const prefix = state.gameMode === 'fair_foul'
+          ? (state.play && state.play.isHomerunPlay ? '🔍 標竿特寫：' : '🔍 落點特寫：')
+          : '🔍 壘包特寫：';
         ui.btnZoom.textContent = prefix + (state.replayZoom ? '開' : '關');
       });
 
@@ -3763,7 +4026,11 @@
           else if (state.phase === 'CHALLENGE_BANNER') enterReplayReview();
           else if (state.phase === 'REPLAY_REVIEW' || state.freeInspectMode) ui.btnReplayPlay.click();
         } else if (key === 'a' && !ui.btnSafe.disabled && (state.phase === 'LIVE' || state.phase === 'AWAIT_JUDGE')) {
-          handleInitialCall(state.gameMode === 'fair_foul' ? 'FAIR' : 'SAFE');
+          if (state.gameMode === 'fair_foul') {
+            handleInitialCall(state.play && state.play.isHomerunPlay ? 'HOMERUN' : 'FAIR');
+          } else {
+            handleInitialCall('SAFE');
+          }
         } else if (key === 'd' && !ui.btnOut.disabled && (state.phase === 'LIVE' || state.phase === 'AWAIT_JUDGE')) {
           handleInitialCall(state.gameMode === 'fair_foul' ? 'FOUL' : 'OUT');
         } else if (e.key === 'ArrowLeft' && (state.phase === 'REPLAY_REVIEW' || state.freeInspectMode)) {
