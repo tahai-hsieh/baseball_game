@@ -2099,75 +2099,205 @@
         ui.startScreen.classList.remove('hidden');
       }
 
-      // ================= 邊線幾何、標竿位置與碰觸壘包強制檢查 =================
+      // ================= 球場幾何（白線直達標竿底端、壘包貼齊白線） =================
+      // 一壘白線：(186, 540) -> (480, 386) -> (845, 195)（標竿底部正好在 845, 195）
+      // 三壘白線：(774, 540) -> (480, 386) -> (115, 195)（標竿底部正好在 115, 195）
       function getPoleX(base) {
-        return base === 1 ? 860 : 100;
+        return base === 1 ? 845 : 115;
       }
 
       function getFoulLineY(base, x) {
         if (base === 1) {
-          return 528 + (260 - 528) * ((x - 15) / (960 - 15));
+          return 540 + (195 - 540) * ((x - 186) / (845 - 186));
         } else {
-          return 540 + (196 - 540) * ((x - 797) / (40 - 797));
+          return 540 + (195 - 540) * ((x - 774) / (115 - 774));
         }
       }
 
-      function isBallTouchingBaseBag(gx, gy, height) {
+      // 取得一、二、三壘壘包頂面四個頂點（一三壘一側完美貼齊白線內側；二壘下角指本壘）
+      function getBaseBagPolygon(baseNum) {
+        if (baseNum === 1) {
+          // 沿一壘白線單位向量 u = (0.886, -0.464)，往界內（二壘方向）向量 v = (-0.78, -0.40)
+          const cx = 480, cy = 382.5; // 貼齊白線內緣
+          const ux = 0.886, uy = -0.464;
+          const vx = -0.78, vy = -0.40;
+          const halfU = 22, lenV = 34;
+          return [
+            { x: cx - ux * halfU,             y: cy - uy * halfU },             // 貼線近本壘
+            { x: cx + ux * halfU,             y: cy + uy * halfU },             // 貼線近外野
+            { x: cx + ux * halfU + vx * lenV, y: cy + uy * halfU + vy * lenV }, // 界內近外野
+            { x: cx - ux * halfU + vx * lenV, y: cy - uy * halfU + vy * lenV }  // 界內近本壘
+          ];
+        } else if (baseNum === 3) {
+          // 與一壘完全左右對稱：沿三壘白線 u = (-0.886, -0.464)，往界內 v = (0.78, -0.40)
+          const cx = 480, cy = 382.5;
+          const ux = -0.886, uy = -0.464;
+          const vx = 0.78, vy = -0.40;
+          const halfU = 22, lenV = 34;
+          return [
+            { x: cx - ux * halfU,             y: cy - uy * halfU },
+            { x: cx + ux * halfU,             y: cy + uy * halfU },
+            { x: cx + ux * halfU + vx * lenV, y: cy + uy * halfU + vy * lenV },
+            { x: cx - ux * halfU + vx * lenV, y: cy - uy * halfU + vy * lenV }
+          ];
+        } else {
+          // 二壘：正菱形，下頂角正指本壘方向
+          const cx = 480, cy = 382;
+          return [
+            { x: cx,      y: cy - 12 }, // 上角（中外野）
+            { x: cx + 28, y: cy + 2 },  // 右角（一壘）
+            { x: cx,      y: cy + 16 }, // 下角（指向本壘）
+            { x: cx - 28, y: cy + 2 }   // 左角（三壘）
+          ];
+        }
+      }
+
+      function getBaseBagCenter(baseNum) {
+        const pts = getBaseBagPolygon(baseNum);
+        return {
+          x: (pts[0].x + pts[1].x + pts[2].x + pts[3].x) / 4,
+          y: (pts[0].y + pts[1].y + pts[2].y + pts[3].y) / 4
+        };
+      }
+
+      function distToSegment(px, py, x1, y1, x2, y2) {
+        const dx = x2 - x1, dy = y2 - y1;
+        const lenSq = dx * dx + dy * dy;
+        let t = lenSq ? ((px - x1) * dx + (py - y1) * dy) / lenSq : 0;
+        t = Math.max(0, Math.min(1, t));
+        return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+      }
+
+      function isPointInPoly(px, py, pts) {
+        let inside = false;
+        for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+          const xi = pts[i].x, yi = pts[i].y;
+          const xj = pts[j].x, yj = pts[j].y;
+          const intersect = ((yi > py) !== (yj > py)) && (px < (xj - xi) * (py - yi) / (yj - yi) + xi);
+          if (intersect) inside = !inside;
+        }
+        return inside;
+      }
+
+      function isBallTouchingBaseBag(gx, gy, height, baseNum) {
         if (height > 18) return false;
-        const dx = Math.abs(gx - 480);
-        const dyTop = Math.abs(gy - 384);
-        if (dx / 35 + dyTop / 21 <= 1) return true;
-        if (dx <= 33 && gy >= 376 && gy <= 406) return true;
+        const pts = getBaseBagPolygon(baseNum);
+        if (isPointInPoly(gx, gy, pts)) return true;
+        // 檢查與壘包四邊的距離（含球半徑 6.5px）
+        for (let i = 0; i < pts.length; i++) {
+          const a = pts[i], b = pts[(i + 1) % pts.length];
+          if (distToSegment(gx, gy, a.x, a.y, b.x, b.y) <= 6.5) return true;
+        }
         return false;
       }
 
+      // ================= 弧長參數化勻速軌跡引擎（確保球路全程完全勻速） =================
+      function buildUniformArcLUT(pointsFn, samples = 220) {
+        const pts = [];
+        const cumLen = [0];
+        let total = 0;
+        let prev = pointsFn(0);
+        pts.push(prev);
+        for (let i = 1; i <= samples; i++) {
+          const u = i / samples;
+          const curr = pointsFn(u);
+          total += Math.hypot(curr.x - prev.x, curr.y - prev.y);
+          pts.push(curr);
+          cumLen.push(total);
+          prev = curr;
+        }
+        return { pts, cumLen, total };
+      }
+
+      function sampleLUTByDist(lut, dist) {
+        if (dist <= 0) return { x: lut.pts[0].x, y: lut.pts[0].y, u: 0 };
+        if (dist >= lut.total) {
+          const last = lut.pts[lut.pts.length - 1];
+          return { x: last.x, y: last.y, u: 1 };
+        }
+        let lo = 0, hi = lut.cumLen.length - 1;
+        while (lo + 1 < hi) {
+          const mid = (lo + hi) >> 1;
+          if (lut.cumLen[mid] <= dist) lo = mid;
+          else hi = mid;
+        }
+        const segLen = lut.cumLen[hi] - lut.cumLen[lo] || 1;
+        const frac = (dist - lut.cumLen[lo]) / segLen;
+        const p0 = lut.pts[lo], p1 = lut.pts[hi];
+        return {
+          x: lerp(p0.x, p1.x, frac),
+          y: lerp(p0.y, p1.y, frac),
+          u: (lo + frac) / (lut.pts.length - 1)
+        };
+      }
+
       function getFairFoulBallState(play, t) {
-        if (play.isHomerunPlay) {
-          let bx, by, scale;
-          if (t <= play.impactTime) {
-            const p = clamp01((t - play.startTime) / (play.impactTime - play.startTime));
-            bx = quadBezier(play.startX, play.ctrlX, play.impactX, p);
-            by = quadBezier(play.startY, play.ctrlY, play.impactY, p);
-            scale = lerp(1.22, 0.72, p);
-          } else {
-            const p2 = clamp01((t - play.impactTime) / 0.85);
-            bx = lerp(play.impactX, play.endX, p2);
-            if (play.variant === 'hr_hit_pole') {
-              by = lerp(play.impactY, play.endY, p2) + p2 * p2 * 70;
-            } else {
-              by = lerp(play.impactY, play.endY, p2) + p2 * p2 * 45;
-            }
-            scale = lerp(0.72, 0.56, p2);
-          }
-          return { gx: bx, gy: by, height: 0, scale };
+        if (t < play.startTime) {
+          return { gx: play.startX, gy: play.startY, height: 0, scale: 1.15, alpha: 0 };
         }
 
-        const isBagHit = play.variant === 'hit_bag' || play.variant === 'grounder_hit_bag';
-        let gx, gy, height, scale;
-        if (t <= play.impactTime) {
-          const p = clamp01((t - play.startTime) / (play.impactTime - play.startTime));
-          gx = quadBezier(play.startX, play.ctrlX, play.impactX, p);
-          gy = quadBezier(play.startY, play.ctrlY, play.impactY, p);
-          if (play.isGrounder) {
-            height = Math.abs(Math.sin(p * Math.PI * 3.5)) * play.arcHeight * (1 - p * 0.4);
+        // 全壘打標竿球路：完全勻速飛行，過標竿後消失在看台區（僅擊中標竿時反彈）
+        if (play.isHomerunPlay) {
+          if (play.hitPole) {
+            if (t <= play.impactTime) {
+              const frac = clamp01((t - play.startTime) / (play.impactTime - play.startTime));
+              const pos = sampleLUTByDist(play.preLUT, frac * play.preLUT.total);
+              return { gx: pos.x, gy: pos.y, height: 0, scale: lerp(1.08, 0.72, frac), alpha: 1 };
+            } else {
+              const dtAfter = t - play.impactTime;
+              const p2 = clamp01(dtAfter / 0.85);
+              const bx = lerp(play.impactX, play.endX, p2);
+              const by = lerp(play.impactY, play.endY, p2) + p2 * p2 * 65;
+              const alpha = p2 > 0.75 ? clamp01(1 - (p2 - 0.75) / 0.25) : 1;
+              return { gx: bx, gy: by, height: 0, scale: lerp(0.72, 0.56, p2), alpha };
+            }
           } else {
-            height = Math.sin(p * Math.PI) * play.arcHeight;
+            // 全程單一 LUT 恆定速度飛過標竿 -> 進入看台區淡出消失
+            const elapsed = Math.max(0, t - play.startTime);
+            const dist = elapsed * play.constSpeed;
+            if (dist >= play.fullLUT.total) {
+              const last = play.fullLUT.pts[play.fullLUT.pts.length - 1];
+              return { gx: last.x, gy: last.y, height: 0, scale: 0.55, alpha: 0 };
+            }
+            const pos = sampleLUTByDist(play.fullLUT, dist);
+            const scale = lerp(1.08, 0.56, dist / play.fullLUT.total);
+            // 過標竿（dist > play.impactDist）後進入看台區逐漸消失
+            let alpha = 1;
+            if (dist > play.impactDist) {
+              const afterFrac = (dist - play.impactDist) / Math.max(1, play.fullLUT.total - play.impactDist);
+              alpha = afterFrac > 0.35 ? clamp01(1 - (afterFrac - 0.35) / 0.65) : 1;
+            }
+            return { gx: pos.x, gy: pos.y, height: 0, scale, alpha };
           }
-          scale = lerp(1.15, 0.86, p);
-        } else {
-          const p2 = clamp01((t - play.impactTime) / 0.85);
-          gx = lerp(play.impactX, play.endX, p2);
-          gy = lerp(play.impactY, play.endY, p2);
-          if (isBagHit) {
-            height = Math.sin(p2 * Math.PI) * 38 * (1 - p2 * 0.4);
-          } else if (play.isGrounder) {
-            height = Math.abs(Math.sin(p2 * Math.PI * 2.5)) * 6 * (1 - p2 * 0.7);
-          } else {
-            height = Math.abs(Math.sin(p2 * Math.PI * 1.5)) * (play.arcHeight * 0.34) * (1 - p2 * 0.65);
-          }
-          scale = lerp(0.86, 0.62, p2);
         }
-        return { gx, gy, height, scale };
+
+        // 一般線邊球路（滾地球與飛球）：撞擊前與撞擊後皆以弧長均速運算
+        const isBagHit = play.variant === 'hit_bag' || play.variant === 'grounder_hit_bag';
+        if (t <= play.impactTime) {
+          const frac = clamp01((t - play.startTime) / (play.impactTime - play.startTime));
+          const pos = sampleLUTByDist(play.preLUT, frac * play.preLUT.total);
+          let height;
+          if (play.isGrounder) {
+            height = Math.abs(Math.sin(frac * Math.PI * 3.5)) * play.arcHeight * (1 - frac * 0.4);
+          } else {
+            height = Math.sin(frac * Math.PI) * play.arcHeight;
+          }
+          return { gx: pos.x, gy: pos.y, height, scale: lerp(1.15, 0.86, frac), alpha: 1 };
+        } else {
+          const dtAfter = t - play.impactTime;
+          const distAfter = dtAfter * play.postSpeed;
+          const frac2 = clamp01(distAfter / Math.max(1, play.postLUT.total));
+          const pos = sampleLUTByDist(play.postLUT, distAfter);
+          let height;
+          if (isBagHit) {
+            height = Math.sin(frac2 * Math.PI) * 38 * (1 - frac2 * 0.4);
+          } else if (play.isGrounder) {
+            height = Math.abs(Math.sin(frac2 * Math.PI * 2.5)) * 6 * (1 - frac2 * 0.7);
+          } else {
+            height = Math.abs(Math.sin(frac2 * Math.PI * 1.5)) * (play.arcHeight * 0.34) * (1 - frac2 * 0.65);
+          }
+          return { gx: pos.x, gy: pos.y, height, scale: lerp(0.86, 0.62, frac2), alpha: 1 };
+        }
       }
 
       function verifyAndEnforceBaseTouchRule(play) {
@@ -2175,7 +2305,7 @@
         let touchedBag = false;
         for (let st = play.startTime; st <= DURATION; st += 0.01) {
           const pos = getFairFoulBallState(play, st);
-          if (isBallTouchingBaseBag(pos.gx, pos.gy, pos.height)) {
+          if (isBallTouchingBaseBag(pos.gx, pos.gy, pos.height, play.base)) {
             touchedBag = true;
             break;
           }
@@ -2216,17 +2346,22 @@
         const base = pickActiveBase();
         state.previewBase = base;
 
-        const startX = base === 1 ? 15 : 797;
-        const startY = base === 1 ? 528 : 540;
+        const baseCenter = getBaseBagCenter(base);
+        const startX = base === 1 ? 186 : 774;
+        const startY = 540;
         const startTime = 0.08;
         const baseSideDir = base === 1 ? 1 : -1;
 
-        // 35% 機率出現「全壘打標竿判斷」
-        if (Math.random() < 0.35) {
+        // 38% 機率出現「全壘打標竿判斷」
+        if (Math.random() < 0.38) {
           const poleX = getPoleX(base);
           const impactTime = 1.05 + Math.random() * 0.2;
-          const impactY = 62 + Math.random() * 78; // 標竿中上段高度 (62 ~ 140)
+          const impactY = 66 + Math.random() * 72; // 標竿中上段高度
           const hrRoll = Math.random();
+
+          // 全壘打起點從畫面下方飛入放大後的標竿鏡頭區域
+          const hrStartX = base === 1 ? 495 : 465;
+          const hrStartY = 268;
 
           let variant, impactX, ctrlX, ctrlY, endX, endY;
           let isHomerun, occludedByPole = false, hitPole = false;
@@ -2239,10 +2374,10 @@
             occludedByPole = true;
             impactX = poleX;
             marginPx = 3;
-            ctrlX = base === 1 ? 480 : 420;
-            ctrlY = 120 + Math.random() * 45;
-            endX = poleX + baseSideDir * 55;
-            endY = impactY + 18;
+            ctrlX = base === 1 ? 680 : 280;
+            ctrlY = impactY - 26;
+            endX = poleX + baseSideDir * 68;
+            endY = impactY - 12; // 往看台區高處飛入並消失
             playTypeLabel = `${base === 1 ? '右外野' : '左外野'}全壘打標竿深遠飛球`;
             detailText = '小白球從標竿後方通過（被標竿擋住，判定全壘打）';
           } else if (hrRoll < 0.44) {
@@ -2252,8 +2387,8 @@
             hitPole = true;
             impactX = poleX;
             marginPx = 1;
-            ctrlX = base === 1 ? 470 : 430;
-            ctrlY = 135 + Math.random() * 40;
+            ctrlX = base === 1 ? 680 : 280;
+            ctrlY = impactY - 20;
             endX = poleX - baseSideDir * (75 + Math.random() * 45);
             endY = impactY + 45;
             playTypeLabel = `${base === 1 ? '右外野' : '左外野'}全壘打標竿強襲飛球`;
@@ -2265,10 +2400,10 @@
             const off = 18 + Math.random() * 28;
             impactX = poleX - baseSideDir * off;
             marginPx = off;
-            ctrlX = base === 1 ? 440 : 460;
-            ctrlY = 110 + Math.random() * 40;
-            endX = impactX - baseSideDir * 25;
-            endY = impactY + 22;
+            ctrlX = base === 1 ? 660 : 300;
+            ctrlY = impactY - 24;
+            endX = impactX + baseSideDir * 32;
+            endY = impactY - 28; // 飛入看台區消失
             playTypeLabel = `${base === 1 ? '右外野' : '左外野'}標竿內側深遠飛球`;
             detailText = '從全壘打標竿內側飛出牆外（判定全壘打）';
           } else if (hrRoll < 0.84) {
@@ -2278,10 +2413,10 @@
             occludedByPole = false;
             impactX = poleX;
             marginPx = -3;
-            ctrlX = base === 1 ? 520 : 380;
-            ctrlY = 130 + Math.random() * 40;
-            endX = poleX + baseSideDir * 72;
-            endY = impactY + 24;
+            ctrlX = base === 1 ? 690 : 270;
+            ctrlY = impactY - 22;
+            endX = poleX + baseSideDir * 82;
+            endY = impactY - 8; // 飛進界外看台區消失
             playTypeLabel = `${base === 1 ? '右外野' : '左外野'}全壘打標竿外切飛球`;
             detailText = '小白球從標竿前方飛過（擋住標竿，判定界外）';
           } else {
@@ -2291,12 +2426,50 @@
             const off = 18 + Math.random() * 28;
             impactX = poleX + baseSideDir * off;
             marginPx = -off;
-            ctrlX = base === 1 ? 540 : 360;
-            ctrlY = 120 + Math.random() * 45;
-            endX = impactX + baseSideDir * 45;
-            endY = impactY + 26;
+            ctrlX = base === 1 ? 710 : 250;
+            ctrlY = impactY - 24;
+            endX = impactX + baseSideDir * 64;
+            endY = impactY - 12; // 飛進界外看台區消失
             playTypeLabel = `${base === 1 ? '右外野' : '左外野'}標竿外側深遠飛球`;
             detailText = '從全壘打標竿外側飛出（判定界外）';
+          }
+
+          // 建立完全勻速的弧長 LUT
+          const preLUT = buildUniformArcLUT((u) => ({
+            x: quadBezier(hrStartX, ctrlX, impactX, u),
+            y: quadBezier(hrStartY, ctrlY, impactY, u)
+          }), 140);
+
+          let fullLUT = null;
+          let impactDist = preLUT.total;
+          let constSpeed = preLUT.total / (impactTime - startTime);
+
+          if (!hitPole) {
+            // 計算到達標竿時的切線方向，讓過標竿後的軌跡平滑延續進入看台區，絕無急轉或速度突變
+            const tanX = impactX - ctrlX;
+            const tanY = impactY - ctrlY;
+            const tanLen = Math.hypot(tanX, tanY) || 1;
+            const postDist = 115;
+            const smoothEndX = impactX + (tanX / tanLen) * postDist;
+            const smoothEndY = Math.min(162, impactY + (tanY / tanLen) * postDist); // 保持在看台區內不落回場內
+
+            const postLUT = buildUniformArcLUT((u) => ({
+              x: lerp(impactX, smoothEndX, u),
+              y: lerp(impactY, smoothEndY, u)
+            }), 60);
+
+            // 合併 preLUT 與 postLUT 為單一連續弧長 LUT
+            const mergedPts = preLUT.pts.slice();
+            const mergedCum = preLUT.cumLen.slice();
+            for (let i = 1; i < postLUT.pts.length; i++) {
+              mergedPts.push(postLUT.pts[i]);
+              mergedCum.push(preLUT.total + postLUT.cumLen[i]);
+            }
+            fullLUT = {
+              pts: mergedPts,
+              cumLen: mergedCum,
+              total: preLUT.total + postLUT.total
+            };
           }
 
           return {
@@ -2312,14 +2485,18 @@
             detailText,
             startTime,
             impactTime,
-            startX,
-            startY,
+            startX: hrStartX,
+            startY: hrStartY,
             ctrlX,
             ctrlY,
             impactX,
             impactY,
             endX,
             endY,
+            preLUT,
+            fullLUT,
+            impactDist,
+            constSpeed,
             arcHeight: 0,
             isFair: isHomerun,
             isOnChalk: hitPole,
@@ -2328,7 +2505,7 @@
           };
         }
 
-        // 一般線邊界內/界外球路（七種變化）
+        // 一般線邊界內/界外球路（七種變化，皆使用弧長均速）
         const roll = Math.random();
         let variant;
         if (roll < 0.13) variant = 'hit_bag';
@@ -2350,13 +2527,13 @@
           isFair = true;
           isOnChalk = true;
           marginPx = 2;
-          impactX = 480;
-          impactY = 382;
+          impactX = baseCenter.x;
+          impactY = baseCenter.y;
           ctrlX = (startX + impactX) / 2;
-          ctrlY = getFoulLineY(base, ctrlX) - 10;
+          ctrlY = getFoulLineY(base, ctrlX) - 12;
           arcHeight = 20 + Math.random() * 22;
-          endX = 480 + baseSideDir * (140 + Math.random() * 80);
-          endY = 382 + (Math.random() < 0.7 ? 62 : -45);
+          endX = impactX + baseSideDir * (140 + Math.random() * 80);
+          endY = impactY + (Math.random() < 0.7 ? 62 : -45);
           playTypeLabel = `${base === 1 ? '一壘' : '三壘'}線邊強襲球（打中壘包）`;
           detailText = '直接擊中壘包反彈（碰到壘包一律判定界內）';
         } else if (variant === 'grounder_hit_bag') {
@@ -2364,26 +2541,26 @@
           isGrounder = true;
           isOnChalk = true;
           marginPx = 2;
-          impactX = 480;
-          impactY = 382;
-          ctrlX = base === 1 ? 250 : 640;
-          ctrlY = getFoulLineY(base, ctrlX) - 12;
+          impactX = baseCenter.x;
+          impactY = baseCenter.y;
+          ctrlX = base === 1 ? 320 : 640;
+          ctrlY = getFoulLineY(base, ctrlX) - 14;
           arcHeight = 12;
-          endX = 480 + baseSideDir * (185 + Math.random() * 65);
+          endX = impactX + baseSideDir * (185 + Math.random() * 65);
           endY = getFoulLineY(base, endX) + 65;
           playTypeLabel = `${base === 1 ? '一壘' : '三壘'}線邊滾地球（碰壘包彈出）`;
           detailText = '滾地球碰到壘包後彈往線外（碰到壘包一律判定界內）';
         } else if (variant === 'fly_in_land_out') {
           isFair = false;
-          impactX = base === 1 ? (580 + Math.random() * 170) : (190 + Math.random() * 170);
+          impactX = base === 1 ? (575 + Math.random() * 155) : (230 + Math.random() * 155);
           const lineY = getFoulLineY(base, impactX);
           const off = 5 + Math.random() * 14;
           impactY = lineY + 7 + off;
           marginPx = -off;
           ctrlX = 480;
-          ctrlY = getFoulLineY(base, 480) - 42;
+          ctrlY = getFoulLineY(base, 480) - 46;
           arcHeight = 125 + Math.random() * 40;
-          endX = impactX + baseSideDir * 140;
+          endX = impactX + baseSideDir * 130;
           endY = impactY + 25;
           playTypeLabel = `${base === 1 ? '一壘' : '三壘'}線內飛過壘包切出飛球`;
           detailText = '線內飛過壘包但最終落於界外（界外）';
@@ -2391,14 +2568,14 @@
           isFair = false;
           isGrounder = true;
           impactX = 480;
-          const lineY = getFoulLineY(base, 480);
+          const lineY = getFoulLineY(base, 480); // 386
           const off = 8 + Math.random() * 14;
-          impactY = lineY + 12 + off;
+          impactY = lineY + 12 + off; // 完全位於白線外側，不碰壘包
           marginPx = -off;
-          ctrlX = base === 1 ? 235 : 645;
-          ctrlY = getFoulLineY(base, ctrlX) - 20;
+          ctrlX = base === 1 ? 320 : 640;
+          ctrlY = getFoulLineY(base, ctrlX) - 22;
           arcHeight = 12;
-          endX = 480 + baseSideDir * 220;
+          endX = 480 + baseSideDir * 210;
           endY = getFoulLineY(base, endX) + 46;
           playTypeLabel = `${base === 1 ? '一壘' : '三壘'}線邊滾地球（壘包前滾出）`;
           detailText = '壘包前由界內滾出界外且未碰壘包（界外）';
@@ -2407,13 +2584,13 @@
           isGrounder = true;
           impactX = 480;
           const lineY = getFoulLineY(base, 480);
-          const off = 18 + Math.random() * 14;
+          const off = 20 + Math.random() * 16;
           impactY = lineY - off;
           marginPx = off;
-          ctrlX = base === 1 ? 245 : 640;
-          ctrlY = getFoulLineY(base, ctrlX) + 42;
+          ctrlX = base === 1 ? 320 : 640;
+          ctrlY = getFoulLineY(base, ctrlX) + 40;
           arcHeight = 12;
-          endX = 480 + baseSideDir * 220;
+          endX = 480 + baseSideDir * 210;
           endY = getFoulLineY(base, endX) - 34;
           playTypeLabel = `${base === 1 ? '一壘' : '三壘'}線邊旋球滾地（壘包前轉回）`;
           detailText = '過壘包前從界外轉回界內通過（界內）';
@@ -2422,25 +2599,25 @@
           isGrounder = true;
           impactX = 480;
           const lineY = getFoulLineY(base, 480);
-          const off = 16 + Math.random() * 14;
+          const off = 18 + Math.random() * 14;
           impactY = lineY - off;
           marginPx = off;
-          ctrlX = base === 1 ? 245 : 640;
-          ctrlY = getFoulLineY(base, ctrlX) - 24;
+          ctrlX = base === 1 ? 320 : 640;
+          ctrlY = getFoulLineY(base, ctrlX) - 26;
           arcHeight = 12;
-          endX = 480 + baseSideDir * 220;
+          endX = 480 + baseSideDir * 210;
           endY = getFoulLineY(base, endX) + 44;
           playTypeLabel = `${base === 1 ? '一壘' : '三壘'}線邊滾地球（過壘包後滾出）`;
           detailText = '線內通過壘包後才滾出界外（規則判定界內）';
         } else {
           isFair = Math.random() < 0.5;
-          impactX = base === 1 ? (555 + Math.random() * 200) : (180 + Math.random() * 200);
+          impactX = base === 1 ? (555 + Math.random() * 185) : (220 + Math.random() * 185);
           const lineY = getFoulLineY(base, impactX);
           const r = Math.random();
           if (isFair) {
             if (r < 0.45) {
               const off = Math.random() * 4.5;
-              impactY = lineY + 2.4 - off;
+              impactY = lineY + 2.2 - off;
               marginPx = off + 1;
               isOnChalk = impactY >= lineY - 3.5;
             } else {
@@ -2457,11 +2634,24 @@
           ctrlY = (startY + impactY) / 2;
           const isHighFly = Math.random() < 0.5;
           arcHeight = isHighFly ? (115 + Math.random() * 45) : (32 + Math.random() * 25);
-          endX = impactX + (impactX - startX) * 0.36;
-          endY = impactY + (impactY - startY) * 0.36;
+          endX = impactX + (impactX - startX) * 0.34;
+          endY = impactY + (impactY - startY) * 0.34;
           playTypeLabel = `${base === 1 ? '一壘' : '三壘'}線邊${isHighFly ? '高飛球' : '平飛強襲球'}`;
           detailText = isOnChalk ? '壓在白線上（界內）' : (isFair ? '白線內側落點（界內）' : '白線外側落點（界外）');
         }
+
+        const preLUT = buildUniformArcLUT((u) => ({
+          x: quadBezier(startX, ctrlX, impactX, u),
+          y: quadBezier(startY, ctrlY, impactY, u)
+        }), 120);
+
+        const postLUT = buildUniformArcLUT((u) => ({
+          x: lerp(impactX, endX, u),
+          y: lerp(impactY, endY, u)
+        }), 60);
+
+        const preSpeed = preLUT.total / (impactTime - startTime);
+        const postSpeed = isGrounder ? preSpeed * 0.85 : preSpeed * 0.72;
 
         const play = {
           mode: 'fair_foul',
@@ -2484,6 +2674,9 @@
           impactY,
           endX,
           endY,
+          preLUT,
+          postLUT,
+          postSpeed,
           arcHeight,
           isFair,
           isOnChalk,
@@ -2521,7 +2714,7 @@
         const runnerTeam = g.isTop ? g.awayTeam : g.homeTeam;
         const fielderTeam = g.isTop ? g.homeTeam : g.awayTeam;
 
-        const basePos = { x: 480, y: 382 };
+        const basePos = getBaseBagCenter(base);
         let cfg;
 
         if (base === 1) {
@@ -2531,12 +2724,12 @@
               isPickoff: true,
               playTypeLabel: '一壘牽制（Pickoff）',
               runnerAction: 'dive_back',
-              runnerStart: { x: 640, y: 330 },
-              runnerContact: { x: 504, y: 374 },
-              runnerEnd: { x: 492, y: 378 },
-              throwStart: { x: 260, y: 270 },
-              glovePos: { x: 486, y: 368 },
-              fielderAnchor: { x: 468, y: 374 },
+              runnerStart: { x: 615, y: 315 },
+              runnerContact: { x: 486, y: 368 },
+              runnerEnd: { x: 472, y: 374 },
+              throwStart: { x: 250, y: 265 },
+              glovePos: { x: 474, y: 364 },
+              fielderAnchor: { x: 454, y: 370 },
               fielderFacing: 1,
               throwDuration: 0.48
             };
@@ -2546,12 +2739,12 @@
               isPickoff: false,
               playTypeLabel: '一壘封殺（衝刺）',
               runnerAction: 'sprint',
-              runnerStart: { x: 85, y: 505 },
-              runnerContact: { x: 454, y: 388 },
-              runnerEnd: { x: 760, y: 292 },
-              throwStart: { x: 310, y: 235 },
-              glovePos: { x: 446, y: 326 },
-              fielderAnchor: { x: 484, y: 376 },
+              runnerStart: { x: 186, y: 540 },
+              runnerContact: { x: 460, y: 386 },
+              runnerEnd: { x: 740, y: 245 },
+              throwStart: { x: 300, y: 235 },
+              glovePos: { x: 432, y: 320 },
+              fielderAnchor: { x: 464, y: 368 },
               fielderFacing: -1,
               throwDuration: 0.72
             };
@@ -2595,12 +2788,12 @@
               isPickoff: true,
               playTypeLabel: '三壘牽制（Pickoff）',
               runnerAction: 'dive_back',
-              runnerStart: { x: 640, y: 432 },
-              runnerContact: { x: 504, y: 390 },
-              runnerEnd: { x: 492, y: 384 },
-              throwStart: { x: 700, y: 270 },
-              glovePos: { x: 482, y: 368 },
-              fielderAnchor: { x: 466, y: 374 },
+              runnerStart: { x: 650, y: 460 },
+              runnerContact: { x: 508, y: 382 },
+              runnerEnd: { x: 496, y: 376 },
+              throwStart: { x: 700, y: 265 },
+              glovePos: { x: 490, y: 364 },
+              fielderAnchor: { x: 476, y: 372 },
               fielderFacing: 1,
               throwDuration: 0.48
             };
@@ -2610,12 +2803,12 @@
               isPickoff: false,
               playTypeLabel: '三壘滑壘攻防',
               runnerAction: 'slide',
-              runnerStart: { x: 830, y: 285 },
-              runnerContact: { x: 502, y: 374 },
-              runnerEnd: { x: 492, y: 378 },
+              runnerStart: { x: 830, y: 280 },
+              runnerContact: { x: 510, y: 368 },
+              runnerEnd: { x: 498, y: 374 },
               throwStart: { x: 850, y: 235 },
-              glovePos: { x: 476, y: 358 },
-              fielderAnchor: { x: 454, y: 376 },
+              glovePos: { x: 486, y: 356 },
+              fielderAnchor: { x: 468, y: 372 },
               fielderFacing: 1,
               throwDuration: 0.74
             };
@@ -2718,7 +2911,7 @@
           if (state.play.isHomerunPlay) {
             ui.btnSafe.textContent = '全壘打 HOMERUN (A)';
             ui.btnOut.textContent = '界外 FOUL (D)';
-            ui.statusText.textContent = `【${state.play.playTypeLabel}】深遠飛球飛向全壘打標竿！盯緊標竿前後關係...`;
+            ui.statusText.textContent = `【${state.play.playTypeLabel}】鏡頭已自動拉近全壘打標竿！盯緊標竿前後關係...`;
           } else {
             ui.btnSafe.textContent = '界內 FAIR (A)';
             ui.btnOut.textContent = '界外 FOUL (D)';
@@ -3028,17 +3221,17 @@
         ctx.strokeStyle = 'rgba(250, 204, 21, 0.6)';
         ctx.lineWidth = 1;
         const meshX = screenDir < 0 ? poleX - 18 : poleX + 6;
-        ctx.fillRect(meshX, 34, 12, 136);
-        ctx.strokeRect(meshX, 34, 12, 136);
+        ctx.fillRect(meshX, 32, 12, 138);
+        ctx.strokeRect(meshX, 32, 12, 138);
 
-        // 黃色全壘打標竿本體（寬 10px，確保能清楚遮擋後方小白球）
+        // 黃色全壘打標竿本體：底部正好矗立於白線最底端 (poleX, 195)
         ctx.fillStyle = '#facc15';
-        ctx.fillRect(poleX - 5, 28, 10, 168);
+        ctx.fillRect(poleX - 5, 26, 10, 170);
         ctx.fillStyle = '#fef08a';
-        ctx.fillRect(poleX - 2, 28, 3, 168);
+        ctx.fillRect(poleX - 2, 26, 3, 170);
         ctx.strokeStyle = '#ca8a04';
         ctx.lineWidth = 1;
-        ctx.strokeRect(poleX - 5, 28, 10, 168);
+        ctx.strokeRect(poleX - 5, 26, 10, 170);
         ctx.restore();
       }
 
@@ -3051,7 +3244,6 @@
           const age = t - play.impactTime;
           ctx.save();
           if (play.isHomerunPlay && play.hitPole) {
-            // 擊中標竿火花光圈
             if (age <= 0.34) {
               const p = age / 0.34;
               ctx.strokeStyle = `rgba(255, 240, 120, ${1 - p})`;
@@ -3085,9 +3277,11 @@
           ctx.restore();
         }
 
-        const { gx, gy, height, scale } = getFairFoulBallState(play, t);
+        const { gx, gy, height, scale, alpha } = getFairFoulBallState(play, t);
+        if (alpha <= 0.01) return;
 
         ctx.save();
+        ctx.globalAlpha = alpha;
         if (!play.isHomerunPlay) {
           ctx.fillStyle = 'rgba(0,0,0,0.32)';
           ctx.beginPath();
@@ -3196,7 +3390,6 @@
           drawLimb(ux - 24, shY + 12, ux - 48, elbowY, ux - 46, handY, '#1e293b', '#f1c29b', 11);
           drawLimb(ux + 24, shY + 12, ux + 48, elbowY, ux + 46, handY, '#1e293b', '#f1c29b', 11);
         } else if (truth === 'HOMERUN') {
-          // HOMERUN：右手90度舉高，伸出食指在天空中畫圈
           drawLimb(ux - 24, shY + 12, ux - 34, shY + 38, ux - 30, shY + 64, '#1e293b', '#f1c29b', 11);
           const circleAngle = (t - 1.0) * 14;
           const cx = Math.cos(circleAngle) * 13 * gestureP;
@@ -3207,7 +3400,6 @@
           const handY = lerp(shY + 46, shY - 44, gestureP) + cy;
           drawLimb(ux + 24, shY + 12, elbowX, elbowY, handX, handY, '#1e293b', '#f1c29b', 11);
 
-          // 伸出食指指天
           ctx.strokeStyle = '#f1c29b';
           ctx.lineWidth = 4.5;
           ctx.lineCap = 'round';
@@ -3216,7 +3408,6 @@
           ctx.lineTo(handX, handY - 18 * gestureP);
           ctx.stroke();
 
-          // 天空畫圈動態軌跡提示
           if (gestureP > 0.5) {
             ctx.strokeStyle = 'rgba(245, 185, 66, 0.78)';
             ctx.lineWidth = 2.5;
@@ -3287,7 +3478,7 @@
         ctx.fillStyle = skyGrad;
         ctx.fillRect(0, 0, w, horizon);
 
-        const lights = baseNum === 1 ? [190, 700] : baseNum === 2 ? [150, 480, 810] : [260, 770];
+        const lights = baseNum === 1 ? [190, 680] : baseNum === 2 ? [150, 480, 810] : [280, 770];
         lights.forEach(lx => {
           ctx.fillStyle = '#334155';
           ctx.fillRect(lx - 4, 28, 8, 90);
@@ -3341,7 +3532,7 @@
           ctx.fillRect(0, 110, w, 85);
           for (let row = 0; row < 4; row++) {
             ctx.fillStyle = row % 2 === 0 ? '#2b3a4f' : '#374863';
-            ctx.fillRect(260, 118 + row * 16, 700, 14);
+            ctx.fillRect(0, 118 + row * 16, w, 14);
           }
           ctx.fillStyle = '#14532d';
           ctx.fillRect(0, 168, w, 30);
@@ -3368,39 +3559,42 @@
 
         ctx.fillStyle = '#b47445';
         if (baseNum === 1) {
+          // 內野紅土區（不延伸到全壘打牆底端，外野為草皮，如真實球場）
           ctx.beginPath();
-          ctx.moveTo(0, 460);
-          ctx.lineTo(960, 225);
-          ctx.lineTo(960, 345);
-          ctx.lineTo(310, 540);
+          ctx.moveTo(0, 470);
+          ctx.lineTo(660, 290);
+          ctx.lineTo(705, 355);
+          ctx.lineTo(360, 540);
           ctx.lineTo(0, 540);
           ctx.closePath();
           ctx.fill();
 
           ctx.fillStyle = '#a36438';
           ctx.beginPath();
-          ctx.ellipse(480, 388, 175, 58, -0.22, 0, Math.PI * 2);
+          ctx.ellipse(475, 378, 165, 56, -0.35, 0, Math.PI * 2);
           ctx.fill();
 
+          // 一壘白線：筆直延伸至外野全壘打牆底端 (845, 195) 正接標竿
           ctx.strokeStyle = 'rgba(255,255,255,0.92)';
-          ctx.lineWidth = 6.5;
+          ctx.lineWidth = 6;
           ctx.beginPath();
-          ctx.moveTo(15, 528);
-          ctx.lineTo(960, 260);
+          ctx.moveTo(186, 540);
+          ctx.lineTo(845, 195);
           ctx.stroke();
 
+          // 三呎跑壘指導線（界外平行線）
           ctx.strokeStyle = 'rgba(255,255,255,0.75)';
-          ctx.lineWidth = 3.5;
+          ctx.lineWidth = 3.2;
           ctx.beginPath();
-          ctx.moveTo(155, 540);
-          ctx.lineTo(488, 444);
+          ctx.moveTo(270, 540);
+          ctx.lineTo(506, 416);
           ctx.stroke();
 
-          if (state.gameMode === 'fair_foul') {
+          if (state.gameMode === 'fair_foul' && !(state.play && state.play.isHomerunPlay)) {
             ctx.fillStyle = 'rgba(255,255,255,0.55)';
             ctx.font = 'bold 15px sans-serif';
-            ctx.fillText('▲ 界內 FAIR', 610, 282);
-            ctx.fillText('▼ 界外 FOUL', 660, 405);
+            ctx.fillText('▲ 界內 FAIR', 565, 275);
+            ctx.fillText('▼ 界外 FOUL', 665, 395);
           }
         } else if (baseNum === 2) {
           ctx.beginPath();
@@ -3412,63 +3606,71 @@
           ctx.fill();
         } else {
           ctx.beginPath();
-          ctx.moveTo(0, 210);
-          ctx.lineTo(960, 260);
+          ctx.moveTo(960, 470);
+          ctx.lineTo(300, 290);
+          ctx.lineTo(255, 355);
+          ctx.lineTo(600, 540);
           ctx.lineTo(960, 540);
-          ctx.lineTo(540, 540);
-          ctx.lineTo(0, 320);
           ctx.closePath();
           ctx.fill();
 
           ctx.fillStyle = '#a36438';
           ctx.beginPath();
-          ctx.ellipse(480, 386, 175, 55, 0.25, 0, Math.PI * 2);
+          ctx.ellipse(485, 378, 165, 56, 0.35, 0, Math.PI * 2);
           ctx.fill();
 
+          // 三壘白線：筆直延伸至外野全壘打牆底端 (115, 195) 正接標竿
           ctx.strokeStyle = 'rgba(255,255,255,0.92)';
-          ctx.lineWidth = 6.5;
+          ctx.lineWidth = 6;
           ctx.beginPath();
-          ctx.moveTo(797, 540);
-          ctx.lineTo(40, 196);
+          ctx.moveTo(774, 540);
+          ctx.lineTo(115, 195);
           ctx.stroke();
 
-          if (state.gameMode === 'fair_foul') {
+          if (state.gameMode === 'fair_foul' && !(state.play && state.play.isHomerunPlay)) {
             ctx.fillStyle = 'rgba(255,255,255,0.55)';
             ctx.font = 'bold 15px sans-serif';
-            ctx.fillText('▲ 界內 FAIR', 270, 250);
-            ctx.fillText('▼ 界外 FOUL', 180, 375);
+            ctx.fillText('▲ 界內 FAIR', 295, 275);
+            ctx.fillText('▼ 界外 FOUL', 180, 395);
           }
         }
 
         drawFoulPole(baseNum);
-        draw3DBaseBag(480, 382);
+        draw3DBaseBag(baseNum);
       }
 
-      function draw3DBaseBag(x, y) {
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.fillStyle = 'rgba(0,0,0,0.32)';
-        ctx.beginPath();
-        ctx.ellipse(2, 10, 34, 13, 0, 0, Math.PI * 2);
-        ctx.fill();
+      // 繪製符合真實球場規範的一、二、三壘立體壘包
+      function draw3DBaseBag(baseNum) {
+        const pts = getBaseBagPolygon(baseNum);
+        const thick = 6;
 
-        ctx.fillStyle = '#cbd5e1';
+        ctx.save();
+        // 陰影
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
         ctx.beginPath();
-        ctx.moveTo(-28, 2);
-        ctx.lineTo(0, 14);
-        ctx.lineTo(28, 2);
-        ctx.lineTo(28, 9);
-        ctx.lineTo(0, 21);
-        ctx.lineTo(-28, 9);
+        ctx.moveTo(pts[0].x + 2, pts[0].y + thick + 2);
+        for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x + 2, pts[i].y + thick + 2);
         ctx.closePath();
         ctx.fill();
 
+        // 壘包側面厚度
+        ctx.fillStyle = '#cbd5e1';
+        for (let i = 0; i < pts.length; i++) {
+          const a = pts[i], b = pts[(i + 1) % pts.length];
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.lineTo(b.x, b.y + thick);
+          ctx.lineTo(a.x, a.y + thick);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        // 壘包頂面
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
-        ctx.moveTo(0, -10);
-        ctx.lineTo(28, 2);
-        ctx.lineTo(0, 14);
-        ctx.lineTo(-28, 2);
+        ctx.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
         ctx.closePath();
         ctx.fill();
         ctx.strokeStyle = '#94a3b8';
@@ -3721,10 +3923,10 @@
 
         if (state.play && state.play.isHomerunPlay) {
           ctx.fillStyle = 'rgba(245, 185, 66, 0.92)';
-          ctx.fillRect(14, 54, 162, 28);
+          ctx.fillRect(14, 54, 190, 28);
           ctx.fillStyle = '#111827';
           ctx.font = 'bold 13px sans-serif';
-          ctx.fillText('🏟️ 全壘打標竿判斷！', 24, 73);
+          ctx.fillText('🏟️ 全壘打標竿（特寫鏡頭）', 24, 73);
         }
 
         if (isReplay) {
@@ -3744,7 +3946,7 @@
             ctx.fillStyle = '#f5b942';
             ctx.font = 'bold 13px sans-serif';
             const zoomLabel = state.gameMode === 'fair_foul'
-              ? (state.play && state.play.isHomerunPlay ? '🔍 2.4x 標竿特寫' : '🔍 2.4x 落點特寫')
+              ? (state.play && state.play.isHomerunPlay ? '🔍 2.7x 標竿特寫' : '🔍 2.4x 落點特寫')
               : '🔍 2.1x 壘包特寫';
             ctx.fillText(zoomLabel, w - 144, h - 25);
           }
@@ -3763,27 +3965,48 @@
 
         const activeBase = state.play ? state.play.base : state.previewBase;
         const isReplayZoom = (state.phase === 'REPLAY_REVIEW' || state.freeInspectMode) && state.replayZoom && state.play;
+        const isLiveHrZoom = state.play && state.play.isHomerunPlay;
 
         ctx.save();
         if (isReplayZoom) {
           if (state.gameMode === 'fair_foul') {
-            const zoom = 2.4;
-            ctx.translate(canvas.width / 2, canvas.height / 2);
-            ctx.scale(zoom, zoom);
-            ctx.translate(-state.play.impactX, -state.play.impactY);
+            if (state.play.isHomerunPlay) {
+              const zoom = 2.7;
+              const halfW = (canvas.width / 2) / zoom;
+              const halfH = (canvas.height / 2) / zoom;
+              const cx = Math.max(halfW, Math.min(canvas.width - halfW, getPoleX(activeBase)));
+              const cy = Math.max(halfH, Math.min(canvas.height - halfH, state.play.impactY));
+              ctx.translate(canvas.width / 2, canvas.height / 2);
+              ctx.scale(zoom, zoom);
+              ctx.translate(-cx, -cy);
+            } else {
+              const zoom = 2.4;
+              ctx.translate(canvas.width / 2, canvas.height / 2);
+              ctx.scale(zoom, zoom);
+              ctx.translate(-state.play.impactX, -state.play.impactY);
+            }
           } else {
             const zoom = 2.1;
             ctx.translate(canvas.width / 2, canvas.height / 2);
             ctx.scale(zoom, zoom);
             ctx.translate(-480, -362);
           }
+        } else if (isLiveHrZoom) {
+          // 全壘打標竿判斷：即時畫面自動放大 2.05x 聚焦於標竿區域，無黑邊
+          const zoom = 2.05;
+          const halfW = (canvas.width / 2) / zoom;
+          const halfH = (canvas.height / 2) / zoom;
+          const camX = activeBase === 1 ? (canvas.width - halfW) : halfW;
+          const camY = halfH;
+          ctx.translate(canvas.width / 2, canvas.height / 2);
+          ctx.scale(zoom, zoom);
+          ctx.translate(-camX, -camY);
         }
 
         drawStadiumPerspective(activeBase);
         if (state.play) {
           if (state.play.mode === 'fair_foul') {
             drawFairFoulBall(state.play, state.t);
-            // 若小白球從全壘打標竿後方通過，將標竿重繪於球體上方以呈現真實遮擋
             if (state.play.isHomerunPlay && state.play.occludedByPole) {
               drawFoulPole(activeBase);
             }
