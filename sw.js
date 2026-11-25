@@ -1,4 +1,4 @@
-const CACHE_NAME = 'baseball-umpire-v4';
+const CACHE_NAME = 'baseball-umpire-v5';
 const ASSETS = [
   './',
   './index.html',
@@ -7,7 +7,8 @@ const ASSETS = [
   './out.mp3',
   './safe.mp3',
   './foul.mp3',
-  './fair.mp3'
+  './fair.mp3',
+  './homerun.mp3'
 ];
 
 self.addEventListener('install', (event) => {
