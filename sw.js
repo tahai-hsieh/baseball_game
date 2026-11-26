@@ -1,4 +1,4 @@
-const CACHE_NAME = 'baseball-umpire-v11';
+const CACHE_NAME = 'baseball-umpire-v12';
 const ASSETS = [
   './',
   './index.html',
