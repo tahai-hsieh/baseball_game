@@ -184,7 +184,7 @@
       gap: 10px;
     }
 
-    .mode-btn, .replay-mode-btn {
+    .mode-btn, .ff-mode-btn, .replay-mode-btn {
       background: var(--panel);
       color: var(--text);
       border: 2px solid var(--border);
@@ -195,18 +195,18 @@
       gap: 4px;
     }
 
-    .mode-btn.active, .replay-mode-btn.active {
+    .mode-btn.active, .ff-mode-btn.active, .replay-mode-btn.active {
       border-color: var(--accent);
       background: #1d3048;
       box-shadow: 0 0 0 1px rgba(245, 185, 66, 0.35);
     }
 
-    .mode-btn .m-title, .replay-mode-btn .m-title {
+    .mode-btn .m-title, .ff-mode-btn .m-title, .replay-mode-btn .m-title {
       font-size: clamp(0.95rem, 1.9vw, 1.05rem);
       font-weight: 800;
     }
 
-    .mode-btn .m-desc, .replay-mode-btn .m-desc {
+    .mode-btn .m-desc, .ff-mode-btn .m-desc, .replay-mode-btn .m-desc {
       font-size: clamp(0.76rem, 1.5vw, 0.82rem);
       color: var(--muted);
       font-weight: 500;
@@ -897,7 +897,7 @@
           <div class="home-mode-icon">⚾</div>
           <div class="home-mode-title">界內 / 界外 判決</div>
           <div class="home-mode-desc">
-            自由切換一壘審與三壘審視角，緊盯飛向邊線與全壘打標竿的小白球判定界內、界外或全壘打。每輪 50 球、總教練無限次挑戰。
+            自由切換一壘審與三壘審視角，緊盯飛向邊線與全壘打標竿的小白球判定界內、界外或全壘打。提供 50 球測驗與無限制練習模式。
           </div>
         </button>
       </div>
@@ -912,7 +912,8 @@
         <p id="startModeSubtitle">站上實際壘審位置執法，體驗實戰視角與電視輔助判決系統</p>
       </div>
 
-      <div class="setup-section">
+      <!-- Safe / Out 賽制選擇 -->
+      <div class="setup-section" id="safeOutInningSection">
         <div class="setup-title">
           <span>1. 選擇賽制（平手自動延長一局）</span>
         </div>
@@ -924,6 +925,23 @@
           <button class="mode-btn" data-innings="4">
             <span class="m-title">四局精華賽</span>
             <span class="m-desc">從 6 局上開始直接進入後半段激戰，平手延長至 10 局</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 界內 / 界外 賽制選擇 -->
+      <div class="setup-section hidden" id="fairFoulModeSection">
+        <div class="setup-title">
+          <span>1. 選擇賽制</span>
+        </div>
+        <div class="mode-grid">
+          <button class="ff-mode-btn active" data-ff-mode="50">
+            <span class="m-title">50球測驗模式</span>
+            <span class="m-desc">每輪執法 50 球後自動結算成績，亦可隨時提早結束</span>
+          </button>
+          <button class="ff-mode-btn" data-ff-mode="unlimited">
+            <span class="m-title">無限制練習模式</span>
+            <span class="m-desc">不限球數自由練習判決，可隨時重置數據或提早結束</span>
           </button>
         </div>
       </div>
@@ -1279,7 +1297,10 @@
         startModeSubtitle: document.getElementById('startModeSubtitle'),
         btnBackToHomeFromStart: document.getElementById('btnBackToHomeFromStart'),
 
+        safeOutInningSection: document.getElementById('safeOutInningSection'),
+        fairFoulModeSection: document.getElementById('fairFoulModeSection'),
         modeBtns: document.querySelectorAll('.mode-btn'),
+        ffModeBtns: document.querySelectorAll('.ff-mode-btn'),
         replayModeBtns: document.querySelectorAll('.replay-mode-btn'),
         awayTeamGrid: document.getElementById('awayTeamGrid'),
         homeTeamGrid: document.getElementById('homeTeamGrid'),
@@ -1398,6 +1419,7 @@
         gameMode: 'safe_out',
         setup: {
           modeInnings: 9,
+          ffMode: '50', // '50' | 'unlimited'
           replayMode: 'manual',
           awayTeamId: 'brothers',
           homeTeamId: 'dragons'
@@ -1466,9 +1488,15 @@
       function selectModeAndGoStart(mode) {
         state.gameMode = mode;
         state.phase = 'START';
-        ui.startModeSubtitle.textContent = mode === 'safe_out'
-          ? '目前模式：Safe / Out 判決（含牽制、堆壘包、九局/四局賽制）'
-          : '目前模式：界內 / 界外 / 全壘打標竿 判決（每輪 50 球、無限挑戰）';
+        if (mode === 'fair_foul') {
+          ui.safeOutInningSection.classList.add('hidden');
+          ui.fairFoulModeSection.classList.remove('hidden');
+          ui.startModeSubtitle.textContent = '目前模式：界內 / 界外 / 全壘打標竿 判決（可選 50 球測驗或無限制練習）';
+        } else {
+          ui.safeOutInningSection.classList.remove('hidden');
+          ui.fairFoulModeSection.classList.add('hidden');
+          ui.startModeSubtitle.textContent = '目前模式：Safe / Out 判決（含牽制、堆壘包、九局/四局賽制）';
+        }
         ui.homeScreen.classList.add('hidden');
         ui.endScreen.classList.add('hidden');
         ui.gameScreen.classList.add('hidden');
@@ -1741,7 +1769,9 @@
         const finalPct = s.total ? Math.round((s.finalCorrect / s.total) * 100) + '%' : '--%';
 
         if (state.gameMode === 'fair_foul') {
-          ui.ffStatProgress.textContent = `${s.total} / ${FF_MAX_BALLS}`;
+          ui.ffStatProgress.textContent = state.setup.ffMode === 'unlimited'
+            ? `${s.total} 球`
+            : `${s.total} / ${FF_MAX_BALLS}`;
           ui.ffStatInitial.textContent = initPct;
           ui.ffStatFinal.textContent = finalPct;
         } else {
@@ -1989,11 +2019,12 @@
           ui.fairFoulHeaderBar.classList.remove('hidden');
           ui.btnFFReset.classList.remove('hidden');
           ui.btnFFEndEarly.classList.remove('hidden');
-          ui.ffMatchupLabel.textContent = `${awayTeam.name} vs ${homeTeam.name}｜${replayModeText}｜每滿 50 球結束`;
+          const ffModeText = state.setup.ffMode === 'unlimited' ? '無限制練習模式' : '50球測驗模式';
+          ui.ffMatchupLabel.textContent = `${awayTeam.name} vs ${homeTeam.name}｜${ffModeText}｜${replayModeText}`;
           ui.btnSafe.textContent = '界內 FAIR (A)';
           ui.btnOut.textContent = '界外 FOUL (D)';
           ui.hintText.textContent = '快捷鍵：空白鍵開始/播放、A 判界內/全壘打、D 判界外、左右鍵微調影格';
-          ui.statusText.textContent = `界內/界外/全壘打標竿模式就緒（${replayModeText}）！可自由切換一壘審或三壘審，按下「開始這一球」開始執法。`;
+          ui.statusText.textContent = `界內/界外/全壘打標竿模式就緒（${ffModeText}｜${replayModeText}）！按下「開始這一球」開始執法。`;
         } else {
           ui.safeOutScoreboard.classList.remove('hidden');
           ui.fairFoulHeaderBar.classList.add('hidden');
@@ -2020,7 +2051,9 @@
         ui.judgeRow.style.display = 'none';
         ui.startRow.style.display = 'grid';
         updateScoreboardUI();
-        ui.statusText.textContent = '已重置界內/界外判決數據（0 / 50 球）。';
+        ui.statusText.textContent = state.setup.ffMode === 'unlimited'
+          ? '已重置無限制練習模式數據（0 球）。'
+          : '已重置 50 球測驗模式數據（0 / 50 球）。';
       }
 
       function showEndScreen() {
@@ -2043,9 +2076,15 @@
         if (state.gameMode === 'fair_foul') {
           ui.linescoreWrap.classList.add('hidden');
           ui.endBlownRunsCard.classList.add('hidden');
-          ui.endWinnerTitle.textContent = '界內 / 界外 / 全壘打標竿 測驗結束';
-          ui.endScoreBig.textContent = `已完成 ${s.total} / ${FF_MAX_BALLS} 球`;
-          ui.endSubtitle.textContent = s.total >= FF_MAX_BALLS ? '已完成全部 50 球執法考核' : '玩家提早結束本輪測驗';
+          if (state.setup.ffMode === 'unlimited') {
+            ui.endWinnerTitle.textContent = '界內 / 界外 / 全壘打標竿 無限制練習結束';
+            ui.endScoreBig.textContent = `共完成 ${s.total} 球`;
+            ui.endSubtitle.textContent = '無限制練習模式結算';
+          } else {
+            ui.endWinnerTitle.textContent = '界內 / 界外 / 全壘打標竿 50 球測驗結束';
+            ui.endScoreBig.textContent = `已完成 ${s.total} / ${FF_MAX_BALLS} 球`;
+            ui.endSubtitle.textContent = s.total >= FF_MAX_BALLS ? '已完成全部 50 球執法考核' : '玩家提早結束本輪測驗';
+          }
         } else {
           ui.linescoreWrap.classList.remove('hidden');
           ui.endBlownRunsCard.classList.remove('hidden');
@@ -2345,7 +2384,7 @@
         if (Math.random() < 0.42) {
           const poleX = getPoleX(base);
           const impactTime = 1.05 + Math.random() * 0.2;
-          const impactY = 66 + Math.random() * 72;
+          const impactY = 66 + Math.random() * 64;
           const hrRoll = Math.random();
 
           const hrStartX = base === 1 ? 495 : 465;
@@ -2354,21 +2393,21 @@
           let variant, impactX, ctrlX, ctrlY, endX, endY;
           let isHomerun, occludedByPole = false, hitPole = false;
           let marginPx = 0, playTypeLabel = '', detailText = '';
-          let useCustomPostTarget = false;
+          let postDist = 105;
 
           if (hrRoll < 0.18) {
+            // 1. 標竿後方通過（被標竿擋住）-> 全壘打
             variant = 'hr_inside_behind';
             isHomerun = true;
             occludedByPole = true;
             impactX = poleX;
             marginPx = 3;
             ctrlX = base === 1 ? 680 : 280;
-            ctrlY = impactY - 26;
-            endX = poleX + baseSideDir * 68;
-            endY = impactY - 12;
+            ctrlY = impactY + 24; // 切線微向上，順向飛入看台不急轉
             playTypeLabel = `${base === 1 ? '右外野' : '左外野'}全壘打標竿深遠飛球`;
             detailText = '小白球從標竿後方通過（被標竿擋住，判定全壘打）';
           } else if (hrRoll < 0.34) {
+            // 2. 直接打中標竿反彈 -> 全壘打
             variant = 'hr_hit_pole';
             isHomerun = true;
             hitPole = true;
@@ -2376,63 +2415,59 @@
             impactX = poleX;
             marginPx = 1;
             ctrlX = base === 1 ? 680 : 280;
-            ctrlY = impactY - 20;
+            ctrlY = impactY + 18;
             endX = poleX - baseSideDir * (75 + Math.random() * 45);
             endY = impactY + 45;
             playTypeLabel = `${base === 1 ? '右外野' : '左外野'}全壘打標竿強襲飛球`;
             detailText = '直接擊中全壘打標竿反彈（打到標竿判定全壘打）';
           } else if (hrRoll < 0.48) {
+            // 3. 標竿內側飛上看台（順向切線直飛看台，不越過標竿）-> 全壘打
             variant = 'hr_inside_clear';
             isHomerun = true;
             occludedByPole = true;
-            useCustomPostTarget = true;
-            const off = 22 + Math.random() * 30;
+            const off = 40 + Math.random() * 28;
             impactX = poleX - baseSideDir * off;
             marginPx = off;
-            ctrlX = (hrStartX + impactX) / 2;
-            ctrlY = impactY - 22;
-            endX = impactX - baseSideDir * 10;
-            endY = Math.max(42, impactY - 28);
+            ctrlX = impactX - baseSideDir * 34;
+            ctrlY = impactY + 95;
+            postDist = 92;
             playTypeLabel = `${base === 1 ? '右外野' : '左外野'}標竿內側深遠飛球`;
             detailText = '從全壘打標竿內側飛上看台（判定全壘打）';
           } else if (hrRoll < 0.64) {
+            // 4. 直接飛上外野看台（順向切線直飛，完全無轉折）-> 全壘打
             variant = 'hr_stands_fair';
             isHomerun = true;
             occludedByPole = true;
-            useCustomPostTarget = true;
-            const off = 85 + Math.random() * 95;
+            const off = 95 + Math.random() * 90;
             impactX = poleX - baseSideDir * off;
             marginPx = off;
-            ctrlX = (hrStartX + impactX) / 2;
-            ctrlY = impactY - 26;
-            endX = impactX - baseSideDir * 12;
-            endY = Math.max(42, impactY - 26);
+            ctrlX = impactX - baseSideDir * 52;
+            ctrlY = impactY + 85;
+            postDist = 98;
             playTypeLabel = `${base === 1 ? '右外野' : '左外野'}看台深遠飛球`;
             detailText = '直接飛上外野看台區（判定全壘打）';
           } else if (hrRoll < 0.82) {
+            // 5. 從標竿前方飛過（擋住標竿）-> 界外
             variant = 'hr_outside_front';
             isHomerun = false;
             occludedByPole = false;
             impactX = poleX;
             marginPx = -3;
             ctrlX = base === 1 ? 690 : 270;
-            ctrlY = impactY - 22;
-            endX = poleX + baseSideDir * 82;
-            endY = impactY - 8;
+            ctrlY = impactY + 22;
             playTypeLabel = `${base === 1 ? '右外野' : '左外野'}全壘打標竿外切飛球`;
             detailText = '小白球從標竿前方飛過（擋住標竿，判定界外）';
           } else {
+            // 6. 直接飛上標竿外側看台（順向切線直飛）-> 界外
             variant = 'hr_stands_foul';
             isHomerun = false;
             occludedByPole = false;
-            useCustomPostTarget = true;
-            const off = 32 + Math.random() * 44;
+            const off = 34 + Math.random() * 42;
             impactX = poleX + baseSideDir * off;
             marginPx = -off;
-            ctrlX = (hrStartX + impactX) / 2 + baseSideDir * 24;
-            ctrlY = impactY - 22;
-            endX = impactX + baseSideDir * 34;
-            endY = Math.max(42, impactY - 16);
+            ctrlX = impactX - baseSideDir * 110;
+            ctrlY = impactY + 45;
+            postDist = 95;
             playTypeLabel = `${base === 1 ? '右外野' : '左外野'}標竿外側看台飛球`;
             detailText = '直接飛上標竿外側看台（判定界外）';
           }
@@ -2451,18 +2486,14 @@
           let constSpeed = preLUT.total / (impactTime - startTime);
 
           if (!hitPole) {
-            let smoothEndX, smoothEndY;
-            if (useCustomPostTarget) {
-              smoothEndX = endX;
-              smoothEndY = Math.min(160, endY);
-            } else {
-              const tanX = impactX - ctrlX;
-              const tanY = impactY - ctrlY;
-              const tanLen = Math.hypot(tanX, tanY) || 1;
-              const postDist = 115;
-              smoothEndX = impactX + (tanX / tanLen) * postDist;
-              smoothEndY = Math.min(160, impactY + (tanY / tanLen) * postDist);
-            }
+            // 一律沿著到達點的精確切線方向順向飛入看台，絕不突然轉向
+            const tanX = impactX - ctrlX;
+            const tanY = impactY - ctrlY;
+            const tanLen = Math.hypot(tanX, tanY) || 1;
+            const smoothEndX = impactX + (tanX / tanLen) * postDist;
+            const smoothEndY = impactY + (tanY / tanLen) * postDist;
+            endX = smoothEndX;
+            endY = smoothEndY;
 
             const postLUT = buildUniformArcLUT((u) => ({
               x: lerp(impactX, smoothEndX, u),
@@ -2570,8 +2601,6 @@
           ctrlX = 480;
           ctrlY = getFoulLineY(base, 480) - 46;
           arcHeight = 125 + Math.random() * 40;
-          endX = impactX + baseSideDir * 130;
-          endY = impactY + 25;
           playTypeLabel = `${base === 1 ? '一壘' : '三壘'}線內飛過壘包切出飛球`;
           detailText = '線內飛過壘包但最終落於界外（界外）';
         } else if (variant === 'grounder_in_to_out') {
@@ -2585,8 +2614,6 @@
           ctrlX = base === 1 ? 320 : 640;
           ctrlY = getFoulLineY(base, ctrlX) - 22;
           arcHeight = 12;
-          endX = 480 + baseSideDir * 210;
-          endY = getFoulLineY(base, endX) + 46;
           playTypeLabel = `${base === 1 ? '一壘' : '三壘'}線邊滾地球（壘包前滾出）`;
           detailText = '壘包前由界內滾出界外且未碰壘包（界外）';
         } else if (variant === 'grounder_out_to_in') {
@@ -2600,8 +2627,6 @@
           ctrlX = base === 1 ? 320 : 640;
           ctrlY = getFoulLineY(base, ctrlX) + 40;
           arcHeight = 12;
-          endX = 480 + baseSideDir * 210;
-          endY = getFoulLineY(base, endX) - 34;
           playTypeLabel = `${base === 1 ? '一壘' : '三壘'}線邊旋球滾地（壘包前轉回）`;
           detailText = '過壘包前從界外轉回界內通過（界內）';
         } else if (variant === 'grounder_pass_in_then_out') {
@@ -2644,8 +2669,6 @@
           ctrlY = (startY + impactY) / 2;
           const isHighFly = Math.random() < 0.5;
           arcHeight = isHighFly ? (115 + Math.random() * 45) : (32 + Math.random() * 25);
-          endX = impactX + (impactX - startX) * 0.34;
-          endY = impactY + (impactY - startY) * 0.34;
           playTypeLabel = `${base === 1 ? '一壘' : '三壘'}線邊${isHighFly ? '高飛球' : '平飛強襲球'}`;
           detailText = isOnChalk ? '壓在白線上（界內）' : (isFair ? '白線內側落點（界內）' : '白線外側落點（界外）');
         }
@@ -2655,10 +2678,36 @@
           y: quadBezier(startY, ctrlY, impactY, u)
         }), 120);
 
-        const postLUT = buildUniformArcLUT((u) => ({
-          x: lerp(impactX, endX, u),
-          y: lerp(impactY, endY, u)
-        }), 60);
+        // 落地／過壘包後的路徑：未擊中壘包時一律沿著進場切線方向順向延伸，避免突然轉向
+        const tanX = impactX - ctrlX;
+        const tanY = impactY - ctrlY;
+        const tanLen = Math.hypot(tanX, tanY) || 1;
+        const ux = tanX / tanLen;
+        const uy = tanY / tanLen;
+
+        let postLUT;
+        if (variant === 'hit_bag' || variant === 'grounder_hit_bag') {
+          postLUT = buildUniformArcLUT((u) => ({
+            x: lerp(impactX, endX, u),
+            y: lerp(impactY, endY, u)
+          }), 60);
+        } else if (variant === 'grounder_pass_in_then_out') {
+          // 過壘包後平緩彎出界外（切線連續，無生硬折角）
+          const postCtrlX = impactX + ux * 85;
+          const postCtrlY = impactY + uy * 85;
+          postLUT = buildUniformArcLUT((u) => ({
+            x: quadBezier(impactX, postCtrlX, endX, u),
+            y: quadBezier(impactY, postCtrlY, endY, u)
+          }), 60);
+        } else {
+          const rollDist = isGrounder ? 220 : 155;
+          endX = impactX + ux * rollDist;
+          endY = impactY + uy * rollDist;
+          postLUT = buildUniformArcLUT((u) => ({
+            x: lerp(impactX, endX, u),
+            y: lerp(impactY, endY, u)
+          }), 60);
+        }
 
         const preSpeed = preLUT.total / (impactTime - startTime);
         const postSpeed = isGrounder ? preSpeed * 0.85 : preSpeed * 0.72;
@@ -2848,22 +2897,16 @@
           const absMargin = Math.abs(play.marginPx);
           const challenger = (initialCall === 'FAIR' || initialCall === 'HOMERUN') ? 'home' : 'away';
 
-          // 初判錯誤時，教練高機率提出挑戰以修正誤判
           if (!isInitialCorrect) {
             return { challenged: Math.random() < 0.90, challenger };
           }
 
-          // 初判正確時：打到壘包、打到標竿、或明顯飛上看台的球絕不亂挑戰
           const isBagHit = play.touchedBag || play.variant === 'hit_bag' || play.variant === 'grounder_hit_bag';
           const isClearHomerunOrFoul = play.hitPole || play.variant === 'hr_stands_fair' || play.variant === 'hr_stands_foul' || play.variant === 'hr_inside_clear';
           if (isBagHit || isClearHomerunOrFoul) {
             return { challenged: false, challenger: null };
           }
 
-          // 僅在以下爭議球路才有機會挑戰：
-          // 1. 轉彎滾出或轉回邊線的滾地球
-          // 2. 標竿前後極接近遮擋球
-          // 3. 落點非常接近白線的飛球
           let prob = 0;
           if (play.variant === 'grounder_in_to_out' || play.variant === 'grounder_out_to_in' || play.variant === 'grounder_pass_in_then_out') {
             prob = 0.40;
@@ -3117,10 +3160,12 @@
               : (state.play.isOnChalk ? '直接壓線' : `${state.play.isFair ? '界內' : '界外'}約 ${cm} 公分`);
           }
           ui.resLabel6.textContent = '目前進度';
-          ui.resImpact.textContent = `已完成 ${state.stats.total} / ${FF_MAX_BALLS} 球`;
+          ui.resImpact.textContent = state.setup.ffMode === 'unlimited'
+            ? `已練習 ${state.stats.total} 球`
+            : `已完成 ${state.stats.total} / ${FF_MAX_BALLS} 球`;
 
           updateScoreboardUI();
-          if (state.stats.total >= FF_MAX_BALLS) {
+          if (state.setup.ffMode === '50' && state.stats.total >= FF_MAX_BALLS) {
             ui.statusText.textContent = '已完成 50 球執法！即將進入結算頁面...';
             setTimeout(showEndScreen, 1100);
           } else {
@@ -3270,7 +3315,6 @@
 
         const isBagHit = play.touchedBag || play.variant === 'hit_bag' || play.variant === 'grounder_hit_bag';
 
-        // 僅在確實擊中標竿或擊中壘包時才顯示碰撞特效；不留下任何地面球印
         if (t >= play.impactTime) {
           const age = t - play.impactTime;
           ctx.save();
@@ -3304,7 +3348,6 @@
 
         ctx.save();
         ctx.globalAlpha = alpha;
-        // 保留移動中的球影
         if (!play.isHomerunPlay) {
           ctx.fillStyle = 'rgba(0,0,0,0.32)';
           ctx.beginPath();
@@ -3413,6 +3456,7 @@
           drawLimb(ux - 24, shY + 12, ux - 48, elbowY, ux - 46, handY, '#1e293b', '#f1c29b', 11);
           drawLimb(ux + 24, shY + 12, ux + 48, elbowY, ux + 46, handY, '#1e293b', '#f1c29b', 11);
         } else if (truth === 'HOMERUN') {
+          // 右手 90 度舉高並伸出食指在空中畫圈（不繪製虛線圓圈）
           drawLimb(ux - 24, shY + 12, ux - 34, shY + 38, ux - 30, shY + 64, '#1e293b', '#f1c29b', 11);
           const circleAngle = (t - 1.0) * 14;
           const cx = Math.cos(circleAngle) * 13 * gestureP;
@@ -3430,16 +3474,6 @@
           ctx.moveTo(handX, handY);
           ctx.lineTo(handX, handY - 18 * gestureP);
           ctx.stroke();
-
-          if (gestureP > 0.5) {
-            ctx.strokeStyle = 'rgba(245, 185, 66, 0.78)';
-            ctx.lineWidth = 2.5;
-            ctx.setLineDash([6, 4]);
-            ctx.beginPath();
-            ctx.ellipse(elbowX, shY - 62, 16, 8, 0, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.setLineDash([]);
-          }
         } else {
           const pointDir = state.play.base === 1 ? -1 : 1;
           const reach = lerp(16, 94, gestureP);
@@ -4146,6 +4180,14 @@
           ui.modeBtns.forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
           state.setup.modeInnings = parseInt(btn.dataset.innings, 10);
+        });
+      });
+
+      ui.ffModeBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          ui.ffModeBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          state.setup.ffMode = btn.dataset.ffMode;
         });
       });
 
