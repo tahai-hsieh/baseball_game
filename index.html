@@ -159,6 +159,153 @@
       font-weight: 500;
     }
 
+    /* 首頁文字連結與說明彈窗 */
+    .home-links {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 18px;
+      padding-top: 4px;
+      font-size: 0.9rem;
+    }
+
+    .home-link-sep {
+      color: var(--border);
+    }
+
+    .home-text-link {
+      background: transparent;
+      color: #7cc4ff;
+      padding: 4px 6px;
+      border-radius: 6px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    .home-text-link:hover {
+      color: var(--accent);
+    }
+
+    .info-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 11, 18, 0.82);
+      backdrop-filter: blur(4px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: calc(16px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));
+      z-index: 100;
+    }
+
+    .info-modal-card {
+      width: 100%;
+      max-width: 720px;
+      max-height: 84dvh;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .info-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      background: #101b29;
+      border-bottom: 1px solid var(--border);
+      gap: 10px;
+    }
+
+    .info-modal-header h2 {
+      margin: 0;
+      font-size: 1.15rem;
+      color: #fff;
+    }
+
+    .btn-close-modal {
+      background: var(--panel-light);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      font-size: 0.88rem;
+      border-radius: 8px;
+    }
+
+    .info-modal-body {
+      padding: 16px 18px 20px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      line-height: 1.65;
+      font-size: 0.9rem;
+      color: #dbe7f5;
+    }
+
+    .info-section {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 13px 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .info-section h3 {
+      margin: 0;
+      font-size: 1rem;
+      color: var(--accent);
+    }
+
+    .info-section ul {
+      margin: 4px 0 0;
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .info-section p {
+      margin: 0;
+    }
+
+    .version-badge-now {
+      display: inline-block;
+      background: var(--blue);
+      color: #fff;
+      font-size: 0.78rem;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 999px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    .version-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .version-tag {
+      font-size: 0.75rem;
+      color: var(--muted);
+      background: var(--panel-light);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
     .setup-section {
       background: var(--bg);
       border: 1px solid var(--border);
@@ -901,6 +1048,12 @@
           </div>
         </button>
       </div>
+
+      <div class="home-links">
+        <button type="button" class="home-text-link" id="btnOpenManual">遊戲手冊</button>
+        <span class="home-link-sep">|</span>
+        <button type="button" class="home-text-link" id="btnOpenChangelog">版本說明</button>
+      </div>
     </div>
   </div>
 
@@ -1231,6 +1384,194 @@
     </div>
   </div>
 
+  <!-- ================= 4. 遊戲手冊彈窗 ================= -->
+  <div class="info-modal hidden" id="manualModal" role="dialog" aria-modal="true" aria-labelledby="manualModalTitle">
+    <div class="info-modal-card">
+      <div class="info-modal-header">
+        <h2 id="manualModalTitle">📖 遊戲手冊</h2>
+        <button type="button" class="btn-close-modal" id="btnCloseManual">✕ 關閉</button>
+      </div>
+      <div class="info-modal-body">
+        <div class="info-section">
+          <h3>遊戲簡介</h3>
+          <p>「棒球壘審模擬器」讓你站上實際棒球場的壘審視角進行實戰執法，透過視覺與接球音效做出即時宣判，並體驗電視輔助判決重播系統。本網站支援離線遊玩，也可加入手機主畫面當作應用程式使用。</p>
+        </div>
+
+        <div class="info-section">
+          <h3>模式一：Safe / Out 判決</h3>
+          <ul>
+            <li><strong>核心玩法：</strong>緊盯跑者碰觸壘包與守備員手套接球的瞬間（搭配接球聲與踩壘聲），迅速宣判安全上壘（SAFE）或出局（OUT）。球先進入手套為 OUT，跑者先觸壘為 SAFE。</li>
+            <li><strong>壘審視角切換：</strong>一壘審為預設視角；當一壘有跑者時會解鎖「二壘審」視角，二壘有跑者時會解鎖「三壘審」視角，也可選擇「隨機切換」依壘上狀況自動出題。</li>
+            <li><strong>投手牽制球（Pickoff）：</strong>當執法壘包上已有跑者時，有機率觸發投手突然牽制，跑者會撲回壘包，需瞬間判斷安全回壘或牽制出局。</li>
+            <li><strong>賽制與得分：</strong>可在起始頁選擇「九局完整賽（1局上起）」或「四局精華賽（6局上起）」，三出局換邊，Safe 會依序堆疊壘包，滿壘情況下 Safe 會推進得 1 分；正規局數平手將自動延長 1 局（第 10 局）。</li>
+            <li><strong>球隊與挑戰權：</strong>提供六支球隊任選主客隊。雙方各擁有 2 次電視輔助判決挑戰權，挑戰成功不扣次數、挑戰失敗（維持原判）扣除 1 次。</li>
+            <li><strong>賽後結算：</strong>比賽結束後顯示各局記分板、初判準確率、最終正確率、改判次數、兩隊因誤判導致得分與壘審綜合評價。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <h3>模式二：界內 / 界外 / 全壘打標竿 判決</h3>
+          <ul>
+            <li><strong>核心玩法：</strong>自由切換一壘審或三壘審視角，判斷飛向邊線與全壘打標竿的小白球為界內（FAIR）、界外（FOUL）或全壘打（HOMERUN）。本模式無得分與壘包推進，總教練挑戰權無限次。</li>
+            <li><strong>邊線與壘包判定規則：</strong>
+              球壓在白線上或落於白線內側為界內，白線外側為界外。
+              不論飛球或滾地球，只要球碰觸到一、三壘壘包（包含滾過去碰到壘包後彈往界外），一律判定界內。
+              滾地球以通過一、三壘壘包時的位置為準：壘包前滾出線外為界外、壘包前從線外轉回線內為界內、在線內通過壘包後才滾出線外為界內。
+            </li>
+            <li><strong>全壘打標竿與看台規則：</strong>
+              出現深遠飛球時鏡頭會自動拉近標竿區域。球從標竿後方通過（被標竿擋住）、直接擊中標竿反彈、或直接飛上外野看台皆為全壘打（HOMERUN）；球從標竿前方飛過（擋住標竿）或飛上標竿外側看台為界外（FOUL）。
+            </li>
+            <li><strong>賽制選擇：</strong>起始頁可選擇「50球測驗模式（滿 50 球自動結算）」或「無限制練習模式」，兩種模式皆可隨時在工具列點選「重置數據」或「提早結束」。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <h3>電視輔助判決模式（兩大遊戲皆適用）</h3>
+          <ul>
+            <li><strong>手動電視輔助判決模式：</strong>當總教練提出挑戰時，玩家進入重播室親自操作 0.1x～1.0x 慢動作、時間軸拉桿、單影格前後微調與特寫鏡頭，自行決定「維持原判」或「改判」。</li>
+            <li><strong>自動電視輔助判決模式：</strong>進入重播室觀看慢動作確認後，點選「看判決結果」，畫面上會有裁判從轉播室走出來比出最終判決手勢（SAFE 雙手平舉張開、OUT 右手拉弓、FAIR 單手食指指向場內、FOUL 雙手高舉、HOMERUN 右手舉高食指空中畫圈）並播放對應語音。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <h3>鍵盤快捷鍵與操作提示</h3>
+          <ul>
+            <li><strong>空白鍵：</strong>開始下一球／進入重播室／重播播放與暫停。</li>
+            <li><strong>A 鍵：</strong>宣判 SAFE／界內 FAIR／全壘打 HOMERUN。</li>
+            <li><strong>D 鍵：</strong>宣判 OUT／界外 FOUL。</li>
+            <li><strong>左／右方向鍵：</strong>在重播室內逐格（±0.01 秒）微調畫面。</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 5. 版本說明彈窗 ================= -->
+  <div class="info-modal hidden" id="changelogModal" role="dialog" aria-modal="true" aria-labelledby="changelogModalTitle">
+    <div class="info-modal-card">
+      <div class="info-modal-header">
+        <h2 id="changelogModalTitle">📋 版本說明 <span class="version-badge-now">目前版本 v1.9</span></h2>
+        <button type="button" class="btn-close-modal" id="btnCloseChangelog">✕ 關閉</button>
+      </div>
+      <div class="info-modal-body">
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v1.9（最新正式版）</h3>
+            <span class="version-tag">目前版本</span>
+          </div>
+          <ul>
+            <li>首頁新增「遊戲手冊」與「版本說明」文字連結與詳盡說明視窗。</li>
+            <li>界內／界外模式起始頁賽制更新為「50球測驗模式」與「無限制練習模式」，皆支援提早結束與重置數據。</li>
+            <li>移除裁判宣判全壘打時頭頂的虛線圓圈，保留手部空中畫圈動作。</li>
+            <li>全面修正全壘打飛上看台與線邊球落地後的軌跡切線銜接，球飛上看台與落地滾動順暢不再突然轉向。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v1.8</h3>
+            <span class="version-tag">細節與挑戰優化</span>
+          </div>
+          <ul>
+            <li>收緊界內／界外模式總教練挑戰時機：打中壘包、打中標竿或明顯看台球不再誤觸挑戰，僅針對壓線近距離或轉彎滾地球提出挑戰。</li>
+            <li>移除界內／界外模式留在地面的黑色與白色落點球印，保留移動球影以提升判決真實度。</li>
+            <li>修正滾地球未碰觸壘包時不再顯示壘包旁碰撞特效與音效。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v1.7</h3>
+            <span class="version-tag">鏡頭、物理與球場幾何</span>
+          </div>
+          <ul>
+            <li>全壘打標竿判斷新增即時畫面自動放大特寫鏡頭，並加入直接飛上外野看台與標竿外側看台的新球路。</li>
+            <li>導入弧長參數化勻速引擎，確保所有球路全程恆定速度，不再出現標竿前加速或減速。</li>
+            <li>修正過標竿後的球路直接淡出消失於看台區，並鎖定標竿前後遮擋與重播畫面完全一致。</li>
+            <li>全模式統一修正球場幾何：全壘打標竿移至一三壘邊線最底端、一三壘壘包一側貼齊白線內緣、二壘壘包下角指向本壘。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v1.6</h3>
+            <span class="version-tag">全壘打標竿系統</span>
+          </div>
+          <ul>
+            <li>界內／界外模式新增「全壘打標竿判斷」，包含標竿後方被擋住（全壘打）、直接擊中標竿（全壘打）與標竿前方飛過（界外）。</li>
+            <li>加入 homerun.mp3 語音音效，以及裁判右手舉高伸出食指空中畫圈的全壘打宣判手勢。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v1.5</h3>
+            <span class="version-tag">壘包碰觸與自動重播擴充</span>
+          </div>
+          <ul>
+            <li>界內／界外模式同步導入自動電視輔助判決，裁判走出轉播室比出 FAIR（食指指向場內）與 FOUL（雙手高舉）手勢。</li>
+            <li>新增全軌跡掃描強制規則：不論飛球或滾地球，凡碰觸壘包本體一律判定為界內。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v1.4</h3>
+            <span class="version-tag">雙重播模式與多變球路</span>
+          </div>
+          <ul>
+            <li>起始頁面新增「手動電視輔助判決模式」與「自動電視輔助判決模式」，自動模式可觀看裁判走出轉播室比出 SAFE／OUT 手勢。</li>
+            <li>界內／界外模式大幅增加球路變化（擊中壘包、線內飛過線外落地、壘包前滾出與轉回界內等），並加入 fair.mp3 音效。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v1.3</h3>
+            <span class="version-tag">自適應版面與語音音效</span>
+          </div>
+          <ul>
+            <li>加入 iOS／平板安全區域邊距（safe-area-inset）與橫豎屏自動縮放置中，解決狀態列遮擋問題。</li>
+            <li>加入 out.mp3、safe.mp3、foul.mp3 判決語音音效並納入離線快取。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v1.2</h3>
+            <span class="version-tag">雙遊戲模式與 PWA 離線支援</span>
+          </div>
+          <ul>
+            <li>新增首頁模式選擇，正式推出「界內 / 界外 判決」模式。</li>
+            <li>加入 icon_baseball.png 主畫面原圖與圓形網頁圖標、Service Worker 離線使用與鎖定雙擊放大。</li>
+            <li>結束頁面新增「兩隊因誤判導致得分」統計數據。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v1.1</h3>
+            <span class="version-tag">實戰視角與完整賽制</span>
+          </div>
+          <ul>
+            <li>全面升級為 2.5D 壘審低角度實戰視角與擬真公仔球員，新增六隊對戰選擇、起始頁面與結束記分板。</li>
+            <li>實作九局／四局賽制（平手延長一局）、滿壘推進得分、投手牽制球與二三壘審依跑者解鎖，挑戰權調整為每隊 2 次。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v1.0</h3>
+            <span class="version-tag">初版上線</span>
+          </div>
+          <ul>
+            <li>建立棒球壘審 Safe / Out 基礎玩法，包含一二三壘切換、隨機時間差、Web Audio 合成音效與慢動作重播驗證功能。</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     (() => {
       // ================= 1. 圓形網頁圖標 + 離線 Service Worker + 防雙擊放大 =================
@@ -1294,6 +1635,12 @@
 
         btnSelectSafeOut: document.getElementById('btnSelectSafeOut'),
         btnSelectFairFoul: document.getElementById('btnSelectFairFoul'),
+        btnOpenManual: document.getElementById('btnOpenManual'),
+        btnOpenChangelog: document.getElementById('btnOpenChangelog'),
+        manualModal: document.getElementById('manualModal'),
+        changelogModal: document.getElementById('changelogModal'),
+        btnCloseManual: document.getElementById('btnCloseManual'),
+        btnCloseChangelog: document.getElementById('btnCloseChangelog'),
         startModeSubtitle: document.getElementById('startModeSubtitle'),
         btnBackToHomeFromStart: document.getElementById('btnBackToHomeFromStart'),
 
@@ -1419,7 +1766,7 @@
         gameMode: 'safe_out',
         setup: {
           modeInnings: 9,
-          ffMode: '50', // '50' | 'unlimited'
+          ffMode: '50',
           replayMode: 'manual',
           awayTeamId: 'brothers',
           homeTeamId: 'dragons'
@@ -2396,18 +2743,16 @@
           let postDist = 105;
 
           if (hrRoll < 0.18) {
-            // 1. 標竿後方通過（被標竿擋住）-> 全壘打
             variant = 'hr_inside_behind';
             isHomerun = true;
             occludedByPole = true;
             impactX = poleX;
             marginPx = 3;
             ctrlX = base === 1 ? 680 : 280;
-            ctrlY = impactY + 24; // 切線微向上，順向飛入看台不急轉
+            ctrlY = impactY + 24;
             playTypeLabel = `${base === 1 ? '右外野' : '左外野'}全壘打標竿深遠飛球`;
             detailText = '小白球從標竿後方通過（被標竿擋住，判定全壘打）';
           } else if (hrRoll < 0.34) {
-            // 2. 直接打中標竿反彈 -> 全壘打
             variant = 'hr_hit_pole';
             isHomerun = true;
             hitPole = true;
@@ -2421,7 +2766,6 @@
             playTypeLabel = `${base === 1 ? '右外野' : '左外野'}全壘打標竿強襲飛球`;
             detailText = '直接擊中全壘打標竿反彈（打到標竿判定全壘打）';
           } else if (hrRoll < 0.48) {
-            // 3. 標竿內側飛上看台（順向切線直飛看台，不越過標竿）-> 全壘打
             variant = 'hr_inside_clear';
             isHomerun = true;
             occludedByPole = true;
@@ -2434,7 +2778,6 @@
             playTypeLabel = `${base === 1 ? '右外野' : '左外野'}標竿內側深遠飛球`;
             detailText = '從全壘打標竿內側飛上看台（判定全壘打）';
           } else if (hrRoll < 0.64) {
-            // 4. 直接飛上外野看台（順向切線直飛，完全無轉折）-> 全壘打
             variant = 'hr_stands_fair';
             isHomerun = true;
             occludedByPole = true;
@@ -2447,7 +2790,6 @@
             playTypeLabel = `${base === 1 ? '右外野' : '左外野'}看台深遠飛球`;
             detailText = '直接飛上外野看台區（判定全壘打）';
           } else if (hrRoll < 0.82) {
-            // 5. 從標竿前方飛過（擋住標竿）-> 界外
             variant = 'hr_outside_front';
             isHomerun = false;
             occludedByPole = false;
@@ -2458,7 +2800,6 @@
             playTypeLabel = `${base === 1 ? '右外野' : '左外野'}全壘打標竿外切飛球`;
             detailText = '小白球從標竿前方飛過（擋住標竿，判定界外）';
           } else {
-            // 6. 直接飛上標竿外側看台（順向切線直飛）-> 界外
             variant = 'hr_stands_foul';
             isHomerun = false;
             occludedByPole = false;
@@ -2486,7 +2827,6 @@
           let constSpeed = preLUT.total / (impactTime - startTime);
 
           if (!hitPole) {
-            // 一律沿著到達點的精確切線方向順向飛入看台，絕不突然轉向
             const tanX = impactX - ctrlX;
             const tanY = impactY - ctrlY;
             const tanLen = Math.hypot(tanX, tanY) || 1;
@@ -2678,7 +3018,6 @@
           y: quadBezier(startY, ctrlY, impactY, u)
         }), 120);
 
-        // 落地／過壘包後的路徑：未擊中壘包時一律沿著進場切線方向順向延伸，避免突然轉向
         const tanX = impactX - ctrlX;
         const tanY = impactY - ctrlY;
         const tanLen = Math.hypot(tanX, tanY) || 1;
@@ -2692,7 +3031,6 @@
             y: lerp(impactY, endY, u)
           }), 60);
         } else if (variant === 'grounder_pass_in_then_out') {
-          // 過壘包後平緩彎出界外（切線連續，無生硬折角）
           const postCtrlX = impactX + ux * 85;
           const postCtrlY = impactY + uy * 85;
           postLUT = buildUniformArcLUT((u) => ({
@@ -3456,7 +3794,6 @@
           drawLimb(ux - 24, shY + 12, ux - 48, elbowY, ux - 46, handY, '#1e293b', '#f1c29b', 11);
           drawLimb(ux + 24, shY + 12, ux + 48, elbowY, ux + 46, handY, '#1e293b', '#f1c29b', 11);
         } else if (truth === 'HOMERUN') {
-          // 右手 90 度舉高並伸出食指在空中畫圈（不繪製虛線圓圈）
           drawLimb(ux - 24, shY + 12, ux - 34, shY + 38, ux - 30, shY + 64, '#1e293b', '#f1c29b', 11);
           const circleAngle = (t - 1.0) * 14;
           const cx = Math.cos(circleAngle) * 13 * gestureP;
@@ -4175,6 +4512,18 @@
       ui.btnBackToHomeFromStart.addEventListener('click', goToHome);
       ui.btnEndToHome.addEventListener('click', goToHome);
 
+      // 遊戲手冊與版本說明彈窗控制
+      ui.btnOpenManual.addEventListener('click', () => ui.manualModal.classList.remove('hidden'));
+      ui.btnOpenChangelog.addEventListener('click', () => ui.changelogModal.classList.remove('hidden'));
+      ui.btnCloseManual.addEventListener('click', () => ui.manualModal.classList.add('hidden'));
+      ui.btnCloseChangelog.addEventListener('click', () => ui.changelogModal.classList.add('hidden'));
+      ui.manualModal.addEventListener('click', (e) => {
+        if (e.target === ui.manualModal) ui.manualModal.classList.add('hidden');
+      });
+      ui.changelogModal.addEventListener('click', (e) => {
+        if (e.target === ui.changelogModal) ui.changelogModal.classList.add('hidden');
+      });
+
       ui.modeBtns.forEach(btn => {
         btn.addEventListener('click', () => {
           ui.modeBtns.forEach(b => b.classList.remove('active'));
@@ -4299,6 +4648,11 @@
       });
 
       window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          ui.manualModal.classList.add('hidden');
+          ui.changelogModal.classList.add('hidden');
+          return;
+        }
         if (state.phase === 'HOME' || state.phase === 'START' || state.phase === 'GAME_OVER' || state.phase === 'AUTO_REPLAY_ANNOUNCE') return;
         if (e.repeat && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
         const key = e.key.toLowerCase();
