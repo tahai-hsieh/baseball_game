@@ -130,12 +130,33 @@
       border-bottom: 1px solid rgba(43, 68, 98, 0.55);
     }
 
+    .player-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
     .player-badge-text {
       font-size: 0.88rem;
       color: var(--muted);
     }
 
     .player-badge-text strong {
+      color: var(--accent);
+    }
+
+    .btn-logout-inline {
+      background: var(--panel-light);
+      color: #dbeafe;
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      border-radius: 7px;
+    }
+
+    .btn-logout-inline:hover {
+      border-color: var(--accent);
       color: var(--accent);
     }
 
@@ -247,7 +268,7 @@
       box-shadow: 0 22px 55px rgba(0, 0, 0, 0.65);
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
     }
 
     .login-modal-card h2 {
@@ -1217,14 +1238,15 @@
 </head>
 <body>
 
-  <!-- ================= 名字登入彈窗（僅限新打開頁面時顯示） ================= -->
+  <!-- ================= 名字登入彈窗（僅限新打開頁面或登出時顯示） ================= -->
   <div class="info-modal" id="nameLoginModal" role="dialog" aria-modal="true" aria-labelledby="nameLoginTitle">
     <div class="login-modal-card">
       <h2 id="nameLoginTitle">⚾ 歡迎來到棒球壘審模擬器</h2>
-      <p>請輸入您的玩家名稱開始（日後輸入相同名稱即自動登入，所有排行榜與個人遊玩紀錄將同步至雲端）。</p>
+      <p>請輸入您的玩家名稱開始（日後輸入相同名稱即自動登入，排行榜與個人遊玩紀錄將同步至雲端；亦可選擇不登入直接遊玩）。</p>
       <input type="text" id="playerNameInput" class="login-input" maxlength="20" placeholder="請輸入您的名字（例如：阿傑）" autocomplete="off" />
       <div class="login-error" id="loginErrorText"></div>
       <button type="button" class="btn-launch" id="btnConfirmPlayerName">確認並進入首頁</button>
+      <button type="button" class="btn-ghost" id="btnPlayWithoutLogin" style="padding: 11px; font-size: 0.95rem;">不登入遊玩</button>
     </div>
   </div>
 
@@ -1232,7 +1254,10 @@
   <div class="screen" id="homeScreen">
     <div class="start-card">
       <div class="mode-top-bar">
-        <div class="player-badge-text">目前登入：<strong id="homePlayerName">--</strong></div>
+        <div class="player-bar-left">
+          <div class="player-badge-text">目前狀態：<strong id="homePlayerName">--</strong></div>
+          <button type="button" class="btn-logout-inline hidden" id="btnLogoutHome">登出</button>
+        </div>
         <button type="button" class="leaderboard-text-link" id="btnOpenHistory">紀錄</button>
       </div>
 
@@ -1246,7 +1271,7 @@
           <div class="home-mode-icon">🏃‍♂️</div>
           <div class="home-mode-title">Safe / Out 判決</div>
           <div class="home-mode-desc">
-            完整局數實戰執法，包含一二三壘審視角切換、投手牽制、滿壘得分與總教練電視輔助判決挑戰。
+            完整局數實戰執法，包含一二三壘審視角切換、盜壘與投手牽制、強迫進壘封殺與滑壘觸殺、滿壘得分與總教練電視輔助判決挑戰。
           </div>
         </button>
 
@@ -1271,7 +1296,10 @@
   <div class="screen hidden" id="startScreen">
     <div class="start-card">
       <div class="mode-top-bar">
-        <div class="player-badge-text">目前登入：<strong id="startPlayerName">--</strong></div>
+        <div class="player-bar-left">
+          <div class="player-badge-text">目前狀態：<strong id="startPlayerName">--</strong></div>
+          <button type="button" class="btn-logout-inline hidden" id="btnLogoutStart">登出</button>
+        </div>
         <button type="button" class="leaderboard-text-link" id="btnOpenStartLeaderboard">排行榜</button>
       </div>
 
@@ -1660,16 +1688,23 @@
       </div>
       <div class="info-modal-body">
         <div class="info-section">
-          <h3>遊戲簡介</h3>
+          <h3>遊戲簡介與帳號登入／排行榜</h3>
           <p>「棒球壘審模擬器」讓你站上實際棒球場的壘審視角進行實戰執法，透過視覺與接球音效做出即時宣判，並體驗電視輔助判決重播系統。本網站支援離線遊玩，也可加入手機主畫面當作應用程式使用。</p>
+          <ul>
+            <li><strong>登入與登出：</strong>首次開啟頁面會詢問玩家名字，日後輸入相同名字即自動登入並累積個人紀錄與排行；隨時可點選「登出」回到詢問名字的頁面，或選擇「不登入遊玩」直接體驗（不登入遊玩不會錄入具名帳號之歷史紀錄與排行榜）。</li>
+            <li><strong>排行榜與紀錄：</strong>Safe/Out 起始頁右上角提供「排行榜」（分「九局制排行」與「四局制排行」，內含「初判準確率排行」、「最終準確率排行」與「綜合評價排行（S金眼裁判次數同名加總）」）；界內／界外起始頁右上角提供「排行榜」（僅 50 球測驗模式錄入，直接進入三個排行選項）；首頁右上角「紀錄」可查看登入玩家的歷史遊玩紀錄。</li>
+          </ul>
         </div>
 
         <div class="info-section">
           <h3>模式一：Safe / Out 判決</h3>
           <ul>
-            <li><strong>核心玩法：</strong>緊盯跑者碰觸壘包與守備員手套接球的瞬間（搭配接球聲與踩壘聲），迅速宣判安全上壘（SAFE）或出局（OUT）。球先進入手套為 OUT，跑者先觸壘為 SAFE。</li>
+            <li><strong>核心玩法：</strong>緊盯跑者碰觸壘包與守備員手套接球的瞬間（搭配接球聲與踩壘聲），迅速宣判安全上壘（SAFE）或出局（OUT）。球先進入手套／完成觸殺或封殺為 OUT，跑者先觸壘為 SAFE。</li>
+            <li><strong>滑壘邊緣觸壘規則：</strong>滑壘或撲壘時，只要跑者碰觸到壘包邊緣即算觸壘（SAFE），無需滑到壘包正中央。</li>
+            <li><strong>強迫進壘封殺與滑壘：</strong>當處於強迫進壘狀態（例如一壘有人時的二壘、一二壘有人時的二三壘、滿壘時的二三壘與本壘）且跑者未滑壘時，守備員可直接封殺（站著接球即可，不需 tag 跑者）；若是牽制、盜壘或滑壘，守備員則需要 tag 跑者。此外，即使是強迫進壘，跑者也會隨機決定要不要滑壘。</li>
+            <li><strong>盜壘機制與視角自動切換：</strong>一壘有人時，跑者有機率往二壘盜壘（盜壘機率低於一般狀況）；一旦發生盜壘，不論原本選擇哪個壘審視角或原本在哪一壘，畫面都會自動轉移至「二壘審視角」進行判決。</li>
             <li><strong>壘審視角切換：</strong>一壘審為預設視角；當一壘有跑者時會解鎖「二壘審」視角，二壘有跑者時會解鎖「三壘審」視角，也可選擇「隨機切換」依壘上狀況自動出題。</li>
-            <li><strong>投手牽制球（Pickoff）：</strong>當執法壘包上已有跑者時，有機率觸發投手突然牽制，跑者會撲回壘包，需瞬間判斷安全回壘或牽制出局。</li>
+            <li><strong>投手牽制球（Pickoff）：</strong>當執法壘包上已有跑者時，有機率觸發投手突然牽制，跑者會撲回壘包，需觸殺判斷安全回壘或牽制出局。</li>
             <li><strong>賽制與得分：</strong>可在起始頁選擇「九局完整賽（1局上起）」或「四局精華賽（6局上起）」，三出局換邊，Safe 會依序堆疊壘包，滿壘情況下 Safe 會推進得 1 分；正規局數平手將自動延長 1 局（第 10 局）。</li>
             <li><strong>球隊與挑戰權：</strong>提供六支球隊任選主客隊。雙方各擁有 2 次電視輔助判決挑戰權，挑戰成功不扣次數、挑戰失敗（維持原判）扣除 1 次。</li>
             <li><strong>賽後結算：</strong>比賽結束後顯示各局記分板、初判準確率、最終正確率、改判次數、兩隊因誤判導致得分與壘審綜合評價。</li>
@@ -1717,14 +1752,28 @@
   <div class="info-modal hidden" id="changelogModal" role="dialog" aria-modal="true" aria-labelledby="changelogModalTitle">
     <div class="info-modal-card">
       <div class="info-modal-header">
-        <h2 id="changelogModalTitle">📋 版本說明 <span class="version-badge-now">目前版本 v2.0</span></h2>
+        <h2 id="changelogModalTitle">📋 版本說明 <span class="version-badge-now">目前版本 v2.1</span></h2>
         <button type="button" class="btn-close-modal" id="btnCloseChangelog">✕ 關閉</button>
       </div>
       <div class="info-modal-body">
         <div class="info-section">
           <div class="version-title-row">
-            <h3>v2.0（最新正式版）</h3>
+            <h3>v2.1（最新正式版）</h3>
             <span class="version-tag">目前版本</span>
+          </div>
+          <ul>
+            <li>新增「登出」功能，登出後回到詢問名字的頁面；登入視窗新增「不登入遊玩」選項。</li>
+            <li>修正滑壘觸壘判定：跑者只要碰觸到壘包邊緣即算觸壘，不再要求滑到壘包正中央。</li>
+            <li>新增強迫進壘封殺與滑壘規則：強迫進壘未滑壘時守備員可直接封殺接球（無需 tag），牽制、盜壘或滑壘需 tag 跑者，且強迫進壘跑者也會隨機決定是否滑壘。</li>
+            <li>新增盜壘機制：一壘有人時有機率往二壘盜壘（機率低於一般狀況），發生盜壘時不論原本在哪一壘或視角皆自動轉移至二壘審視角判決。</li>
+            <li>同步更新「遊戲手冊」與「版本說明」。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v2.0</h3>
+            <span class="version-tag">帳號登入、排行榜與遊玩紀錄</span>
           </div>
           <ul>
             <li>新增玩家名字登入機制（僅限新打開頁面時詢問，玩完返回首頁不重複詢問；輸入相同名字即自動登入）。</li>
@@ -1754,19 +1803,6 @@
             <li>收緊界內／界外模式總教練挑戰時機：打中壘包、打中標竿或明顯看台球不再誤觸挑戰，僅針對壓線近距離或轉彎滾地球提出挑戰。</li>
             <li>移除界內／界外模式留在地面的黑色與白色落點球印，保留移動球影以提升判決真實度。</li>
             <li>修正滾地球未碰觸壘包時不再顯示壘包旁碰撞特效與音效。</li>
-          </ul>
-        </div>
-
-        <div class="info-section">
-          <div class="version-title-row">
-            <h3>v1.7</h3>
-            <span class="version-tag">鏡頭、物理與球場幾何</span>
-          </div>
-          <ul>
-            <li>全壘打標竿判斷新增即時畫面自動放大特寫鏡頭，並加入直接飛上外野看台與標竿外側看台的新球路。</li>
-            <li>導入弧長參數化勻速引擎，確保所有球路全程恆定速度，不再出現標竿前加速或減速。</li>
-            <li>修正過標竿後的球路直接淡出消失於看台區，並鎖定標竿前後遮擋與重播畫面完全一致。</li>
-            <li>全模式統一修正球場幾何：全壘打標竿移至一三壘邊線最底端、一三壘壘包一側貼齊白線內緣、二壘壘包下角指向本壘。</li>
           </ul>
         </div>
       </div>
@@ -1910,9 +1946,12 @@
         playerNameInput: document.getElementById('playerNameInput'),
         loginErrorText: document.getElementById('loginErrorText'),
         btnConfirmPlayerName: document.getElementById('btnConfirmPlayerName'),
+        btnPlayWithoutLogin: document.getElementById('btnPlayWithoutLogin'),
 
         homePlayerName: document.getElementById('homePlayerName'),
         startPlayerName: document.getElementById('startPlayerName'),
+        btnLogoutHome: document.getElementById('btnLogoutHome'),
+        btnLogoutStart: document.getElementById('btnLogoutStart'),
         btnOpenHistory: document.getElementById('btnOpenHistory'),
         btnOpenStartLeaderboard: document.getElementById('btnOpenStartLeaderboard'),
 
@@ -2073,6 +2112,7 @@
 
       const state = {
         playerName: '',
+        isLoggedIn: false,
         gameMode: 'safe_out',
         setup: {
           modeInnings: 9,
@@ -2089,8 +2129,8 @@
 
         lbState: {
           mode: 'safe_out',
-          stage: '9', // '9' | '4' | '50'
-          metric: 'initial' // 'initial' | 'final' | 'overall'
+          stage: '9',
+          metric: 'initial'
         },
 
         game: {
@@ -2148,31 +2188,76 @@
         announceVoicePlayed: false
       };
 
-      // ================= 名字登入機制（僅限新打開頁面時詢問） =================
+      // ================= 登入 / 登出 / 不登入遊玩 =================
+      function updateAccountHeaderUI() {
+        if (state.isLoggedIn && state.playerName) {
+          ui.homePlayerName.textContent = state.playerName;
+          ui.startPlayerName.textContent = state.playerName;
+          ui.btnLogoutHome.classList.remove('hidden');
+          ui.btnLogoutStart.classList.remove('hidden');
+        } else {
+          ui.homePlayerName.textContent = '未登入（訪客遊玩）';
+          ui.startPlayerName.textContent = '未登入（訪客遊玩）';
+          ui.btnLogoutHome.classList.add('hidden');
+          ui.btnLogoutStart.classList.add('hidden');
+        }
+      }
+
       function applyPlayerName(name) {
         const clean = name.trim();
         state.playerName = clean;
+        state.isLoggedIn = true;
         try {
-          sessionStorage.setItem(SESSION_LOGGED_IN_KEY, '1');
+          sessionStorage.setItem(SESSION_LOGGED_IN_KEY, 'logged_in');
           localStorage.setItem(LAST_PLAYER_NAME_KEY, clean);
         } catch (_) {}
-        ui.homePlayerName.textContent = clean;
-        ui.startPlayerName.textContent = clean;
+        updateAccountHeaderUI();
+      }
+
+      function applyGuestMode() {
+        state.playerName = '';
+        state.isLoggedIn = false;
+        try {
+          sessionStorage.setItem(SESSION_LOGGED_IN_KEY, 'guest');
+        } catch (_) {}
+        updateAccountHeaderUI();
+        ui.nameLoginModal.classList.add('hidden');
+      }
+
+      function logoutToLoginModal() {
+        state.playing = false;
+        state.isLoggedIn = false;
+        state.playerName = '';
+        try {
+          sessionStorage.removeItem(SESSION_LOGGED_IN_KEY);
+        } catch (_) {}
+        updateAccountHeaderUI();
+        let savedName = '';
+        try {
+          savedName = localStorage.getItem(LAST_PLAYER_NAME_KEY) || '';
+        } catch (_) {}
+        ui.playerNameInput.value = savedName;
+        ui.loginErrorText.textContent = '';
+        ui.nameLoginModal.classList.remove('hidden');
+        setTimeout(() => ui.playerNameInput.focus(), 60);
       }
 
       function initNameGateOnFirstLoad() {
-        let alreadyLoggedInInSession = false;
+        let sessionFlag = '';
         let savedName = '';
         try {
-          alreadyLoggedInInSession = sessionStorage.getItem(SESSION_LOGGED_IN_KEY) === '1';
+          sessionFlag = sessionStorage.getItem(SESSION_LOGGED_IN_KEY) || '';
           savedName = localStorage.getItem(LAST_PLAYER_NAME_KEY) || '';
         } catch (_) {}
 
-        if (alreadyLoggedInInSession && savedName) {
+        if (sessionFlag === 'logged_in' && savedName) {
           applyPlayerName(savedName);
           ui.nameLoginModal.classList.add('hidden');
+        } else if (sessionFlag === 'guest') {
+          applyGuestMode();
         } else {
           if (savedName) ui.playerNameInput.value = savedName;
+          updateAccountHeaderUI();
           ui.nameLoginModal.classList.remove('hidden');
           setTimeout(() => ui.playerNameInput.focus(), 60);
         }
@@ -2181,7 +2266,7 @@
       function handleConfirmPlayerName() {
         const val = (ui.playerNameInput.value || '').trim();
         if (!val) {
-          ui.loginErrorText.textContent = '請輸入您的名字才能開始遊玩。';
+          ui.loginErrorText.textContent = '請輸入您的名字，或點選「不登入遊玩」。';
           ui.playerNameInput.focus();
           return;
         }
@@ -2192,7 +2277,7 @@
 
       // ================= 排行榜與歷史紀錄儲存、計算與渲染 =================
       async function recordCompletedGame(summaryPayload) {
-        if (!state.playerName || state.currentGameRecorded) return;
+        if (!state.isLoggedIn || !state.playerName || state.currentGameRecorded) return;
         state.currentGameRecorded = true;
 
         const nowStr = formatDateTimeNow();
@@ -2215,8 +2300,6 @@
 
         await fbPushEntry('history', historyEntry);
 
-        // (1) safe/out：九局制或四局制錄入排行榜
-        // (2) fair/foul：僅限 50 球測驗模式（且至少完成 1 球或滿 50 球測驗）錄入排行榜
         const qualifiesLeaderboard =
           (summaryPayload.gameMode === 'safe_out' && (summaryPayload.stage === '9' || summaryPayload.stage === '4') && summaryPayload.totalBalls > 0) ||
           (summaryPayload.gameMode === 'fair_foul' && summaryPayload.stage === '50' && summaryPayload.totalBalls > 0);
@@ -2227,7 +2310,7 @@
             playerName: state.playerName,
             timestamp: nowStr,
             gameMode: summaryPayload.gameMode,
-            stage: summaryPayload.stage, // '9' | '4' | '50'
+            stage: summaryPayload.stage,
             initialAccuracy: summaryPayload.initialAccuracy,
             finalAccuracy: summaryPayload.finalAccuracy,
             isGoldEye: summaryPayload.grade === 'S 金眼裁判'
@@ -2363,7 +2446,7 @@
         }
 
         ui.lbTableBody.innerHTML = rows.map(r => {
-          const isMe = r.playerName === state.playerName;
+          const isMe = state.isLoggedIn && r.playerName === state.playerName;
           const timeTd = metric === 'overall' ? '' : `<td>${r.timestamp}</td>`;
           return `
             <tr class="${isMe ? 'is-current-player' : ''}">
@@ -2377,7 +2460,19 @@
       }
 
       async function openHistoryModal() {
-        ui.historyModalTitle.textContent = `📜 ${state.playerName || '玩家'} 的所有遊玩紀錄`;
+        if (!state.isLoggedIn || !state.playerName) {
+          ui.historyModalTitle.textContent = '📜 玩家遊玩紀錄';
+          ui.historyModalBody.innerHTML = `
+            <div class="info-section">
+              <p>您目前為<strong>「不登入遊玩」</strong>狀態，因此不會累積具名帳號的歷史遊玩紀錄。</p>
+              <p>若要保存並查詢個人遊玩紀錄，請先點選「登出」並輸入您的玩家名字登入。</p>
+            </div>
+          `;
+          ui.historyModal.classList.remove('hidden');
+          return;
+        }
+
+        ui.historyModalTitle.textContent = `📜 ${state.playerName} 的所有遊玩紀錄`;
         ui.historyModalBody.innerHTML = `<div class="info-section"><p>正在讀取 ${state.playerName} 的歷史遊玩紀錄...</p></div>`;
         ui.historyModal.classList.remove('hidden');
 
@@ -2425,7 +2520,7 @@
         } else {
           ui.safeOutInningSection.classList.remove('hidden');
           ui.fairFoulModeSection.classList.add('hidden');
-          ui.startModeSubtitle.textContent = '目前模式：Safe / Out 判決（含牽制、堆壘包、九局/四局賽制）';
+          ui.startModeSubtitle.textContent = '目前模式：Safe / Out 判決（含盜壘、牽制、強迫進壘封殺與滑壘、九局/四局賽制）';
         }
         ui.homeScreen.classList.add('hidden');
         ui.endScreen.classList.add('hidden');
@@ -2774,7 +2869,17 @@
       function applyTruePlayToSim(play) {
         const sim = state.game.halfSim;
         if (sim.trueOuts >= 3) return;
-        if (play.isPickoff) {
+        if (play.isSteal) {
+          if (play.truth === 'OUT') {
+            if (sim.trueBases[0]) sim.trueBases[0] = false;
+            sim.trueOuts += 1;
+          } else {
+            if (sim.trueBases[0]) {
+              sim.trueBases[0] = false;
+              sim.trueBases[1] = true;
+            }
+          }
+        } else if (play.isPickoff) {
           if (play.truth === 'OUT') {
             if (sim.trueBases[play.base - 1]) sim.trueBases[play.base - 1] = false;
             sim.trueOuts += 1;
@@ -2804,7 +2909,17 @@
 
         let impactText = '';
 
-        if (play.isPickoff) {
+        if (play.isSteal) {
+          if (finalCall === 'SAFE') {
+            g.bases[0] = false;
+            g.bases[1] = true;
+            impactText = '盜壘 SAFE！一壘跑者成功盜上二壘！';
+          } else {
+            g.bases[0] = false;
+            g.outs += 1;
+            impactText = `盜壘 OUT！一壘跑者盜二壘遭到觸殺出局！`;
+          }
+        } else if (play.isPickoff) {
           if (finalCall === 'SAFE') {
             impactText = `牽制 SAFE！跑者驚險撲回${play.base}壘包。`;
           } else {
@@ -2829,7 +2944,9 @@
             }
           } else {
             g.outs += 1;
-            impactText = `出局！目前 ${g.outs} 出局。`;
+            impactText = play.isForcePlay && !play.runnerSlides
+              ? `強迫進壘封殺 OUT！目前 ${g.outs} 出局。`
+              : `出局！目前 ${g.outs} 出局。`;
           }
         }
 
@@ -3697,18 +3814,72 @@
         return verifyAndEnforceBaseTouchRule(play);
       }
 
-      function generatePlay() {
-        if (state.gameMode === 'fair_foul') {
-          return generateFairFoulPlay();
+      // 取得壘包靠近跑者方向的「邊緣觸壘點」（只要碰到邊緣即算觸壘）
+      function getBaseEdgeContactPoint(base, action) {
+        const pts = getBaseBagPolygon(base);
+        if (base === 1) {
+          // 跑者從左下往右上跑，先碰到的邊緣在左下側
+          const edgePt = pts[0];
+          return {
+            x: edgePt.x - (action === 'slide' ? 2 : 8),
+            y: edgePt.y + (action === 'slide' ? 2 : 6)
+          };
+        } else if (base === 2) {
+          if (action === 'slide') {
+            // 跑者從右側滑向二壘，先碰到右邊緣（pts[1]）
+            return { x: pts[1].x + 2, y: pts[1].y };
+          }
+          // 牽制跑者從左側撲回二壘，先碰到左邊緣（pts[3]）
+          return { x: pts[3].x - 2, y: pts[3].y };
+        } else {
+          // base === 3
+          if (action === 'slide') {
+            // 跑者從右上往左下滑向三壘，先碰到右上/右邊緣
+            return { x: pts[0].x + 2, y: pts[0].y + 2 };
+          }
+          // 牽制跑者從左側撲回三壘
+          return { x: pts[2].x - 2, y: pts[2].y };
         }
+      }
 
-        const base = pickActiveBase();
+      function generatePlay() {
+        const g = state.game;
+        const has1B = g.bases[0];
+        const has2B = g.bases[1];
+        const has3B = g.bases[2];
+
+        const canPickoff = has1B || has2B || has3B;
+        const canSteal2B = has1B;
+
+        // 盜壘機率比其他狀況低（一壘有人時約 15% 發生盜二壘）
+        const isSteal = canSteal2B && Math.random() < 0.15;
+
+        let base = pickActiveBase();
+        if (isSteal) {
+          // 發生盜壘時，不論原本在哪一壘或視角，自動轉移至二壘審視角判決
+          base = 2;
+        }
         state.previewBase = base;
 
-        const canPickoff = state.game.bases[base - 1];
-        const isPickoff = canPickoff && Math.random() < 0.35;
+        const canPickoffAtBase = !isSteal && g.bases[base - 1];
+        const isPickoff = canPickoffAtBase && Math.random() < 0.30;
 
-        const baseTouchTime = isPickoff ? (0.95 + Math.random() * 0.2) : (1.15 + Math.random() * 0.25);
+        // 判斷是否為強迫進壘（例如一壘有人->二壘、一二壘有人->三壘、滿壘->三壘/本壘）
+        let isForcePlay = false;
+        if (!isSteal && !isPickoff) {
+          if (base === 1) isForcePlay = true;
+          else if (base === 2) isForcePlay = has1B;
+          else if (base === 3) isForcePlay = has1B && has2B;
+        }
+
+        // 跑者隨機決定要不要滑壘（即使是強迫進壘也會隨機滑壘；盜壘則常滑壘或衝刺）
+        const runnerSlides = !isPickoff && (isSteal ? (Math.random() < 0.65) : (Math.random() < 0.48));
+        const runnerAction = isPickoff ? 'dive_back' : (runnerSlides ? 'slide' : 'sprint');
+
+        // 只有牽制、盜壘或滑壘需要 tag 跑者；強迫進壘且未滑壘時，直接封殺站著接球即可
+        const needsTag = isPickoff || isSteal || runnerSlides || !isForcePlay;
+
+        const baseTouchTime = (isPickoff || isSteal) ? (0.95 + Math.random() * 0.2) : (1.15 + Math.random() * 0.25);
 
         const r = Math.random();
         let absDelta;
@@ -3720,26 +3891,27 @@
         const delta = isSafe ? absDelta : -absDelta;
         const ballCatchTime = baseTouchTime + delta;
 
-        const g = state.game;
         const runnerTeam = g.isTop ? g.awayTeam : g.homeTeam;
         const fielderTeam = g.isTop ? g.homeTeam : g.awayTeam;
 
         const basePos = getBaseBagCenter(base);
-        let cfg;
+        const edgeContact = getBaseEdgeContactPoint(base, runnerAction);
 
+        let cfg;
         if (base === 1) {
           if (isPickoff) {
             cfg = {
               base: 1,
               isPickoff: true,
-              playTypeLabel: '一壘牽制（Pickoff）',
+              isSteal: false,
+              playTypeLabel: '一壘牽制（Pickoff・需 Tag）',
               runnerAction: 'dive_back',
               runnerStart: { x: 615, y: 315 },
-              runnerContact: { x: 486, y: 368 },
-              runnerEnd: { x: 472, y: 374 },
+              runnerContact: edgeContact,
+              runnerEnd: { x: edgeContact.x - 10, y: edgeContact.y + 4 },
               throwStart: { x: 250, y: 265 },
-              glovePos: { x: 474, y: 364 },
-              fielderAnchor: { x: 454, y: 370 },
+              glovePos: { x: edgeContact.x + 4, y: edgeContact.y - 12 },
+              fielderAnchor: { x: 446, y: 372 },
               fielderFacing: 1,
               throwDuration: 0.48
             };
@@ -3747,30 +3919,58 @@
             cfg = {
               base: 1,
               isPickoff: false,
-              playTypeLabel: '一壘封殺（衝刺）',
-              runnerAction: 'sprint',
+              isSteal: false,
+              playTypeLabel: runnerSlides
+                ? '一壘強迫進壘（滑壘觸殺・需 Tag）'
+                : '一壘強迫進壘（直接封殺・站著接球）',
+              runnerAction,
               runnerStart: { x: 186, y: 540 },
-              runnerContact: { x: 460, y: 386 },
-              runnerEnd: { x: 740, y: 245 },
+              runnerContact: edgeContact,
+              runnerEnd: runnerSlides
+                ? { x: edgeContact.x + 14, y: edgeContact.y - 8 }
+                : { x: 740, y: 245 },
               throwStart: { x: 300, y: 235 },
-              glovePos: { x: 432, y: 320 },
-              fielderAnchor: { x: 464, y: 368 },
+              glovePos: runnerSlides
+                ? { x: edgeContact.x + 2, y: edgeContact.y - 8 }
+                : { x: 454, y: 332 },
+              fielderAnchor: { x: 466, y: 374 },
               fielderFacing: -1,
               throwDuration: 0.72
             };
           }
         } else if (base === 2) {
-          if (isPickoff) {
+          if (isSteal) {
+            cfg = {
+              base: 2,
+              isPickoff: false,
+              isSteal: true,
+              playTypeLabel: runnerSlides
+                ? '盜二壘攻防（滑壘觸殺・需 Tag）'
+                : '盜二壘攻防（衝刺觸殺・需 Tag）',
+              runnerAction,
+              runnerStart: { x: 880, y: 405 },
+              runnerContact: edgeContact,
+              runnerEnd: runnerSlides
+                ? { x: edgeContact.x - 14, y: edgeContact.y }
+                : { x: 445, y: 382 },
+              throwStart: { x: 480, y: 525 },
+              glovePos: { x: edgeContact.x - 4, y: edgeContact.y - 10 },
+              fielderAnchor: { x: 460, y: 376 },
+              fielderFacing: 1,
+              throwDuration: 0.70
+            };
+          } else if (isPickoff) {
             cfg = {
               base: 2,
               isPickoff: true,
-              playTypeLabel: '二壘牽制（Pickoff）',
+              isSteal: false,
+              playTypeLabel: '二壘牽制（Pickoff・需 Tag）',
               runnerAction: 'dive_back',
               runnerStart: { x: 310, y: 382 },
-              runnerContact: { x: 454, y: 382 },
-              runnerEnd: { x: 468, y: 382 },
+              runnerContact: edgeContact,
+              runnerEnd: { x: edgeContact.x + 12, y: edgeContact.y },
               throwStart: { x: 480, y: 515 },
-              glovePos: { x: 472, y: 366 },
+              glovePos: { x: edgeContact.x + 4, y: edgeContact.y - 12 },
               fielderAnchor: { x: 492, y: 374 },
               fielderFacing: -1,
               throwDuration: 0.48
@@ -3779,14 +3979,21 @@
             cfg = {
               base: 2,
               isPickoff: false,
-              playTypeLabel: '二壘滑壘攻防',
-              runnerAction: 'slide',
+              isSteal: false,
+              playTypeLabel: isForcePlay
+                ? (runnerSlides ? '二壘強迫進壘（滑壘觸殺・需 Tag）' : '二壘強迫進壘（直接封殺・站著接球）')
+                : (runnerSlides ? '二壘非強迫進壘（滑壘觸殺・需 Tag）' : '二壘非強迫進壘（觸殺・需 Tag）'),
+              runnerAction,
               runnerStart: { x: 880, y: 405 },
-              runnerContact: { x: 506, y: 382 },
-              runnerEnd: { x: 492, y: 382 },
+              runnerContact: edgeContact,
+              runnerEnd: runnerSlides
+                ? { x: edgeContact.x - 14, y: edgeContact.y }
+                : { x: 445, y: 382 },
               throwStart: { x: 480, y: 525 },
-              glovePos: { x: 484, y: 362 },
-              fielderAnchor: { x: 462, y: 374 },
+              glovePos: (!needsTag)
+                ? { x: 480, y: 344 }
+                : { x: edgeContact.x - 4, y: edgeContact.y - 10 },
+              fielderAnchor: { x: 462, y: 376 },
               fielderFacing: 1,
               throwDuration: 0.72
             };
@@ -3796,13 +4003,14 @@
             cfg = {
               base: 3,
               isPickoff: true,
-              playTypeLabel: '三壘牽制（Pickoff）',
+              isSteal: false,
+              playTypeLabel: '三壘牽制（Pickoff・需 Tag）',
               runnerAction: 'dive_back',
               runnerStart: { x: 650, y: 460 },
-              runnerContact: { x: 508, y: 382 },
-              runnerEnd: { x: 496, y: 376 },
+              runnerContact: edgeContact,
+              runnerEnd: { x: edgeContact.x - 10, y: edgeContact.y - 4 },
               throwStart: { x: 700, y: 265 },
-              glovePos: { x: 490, y: 364 },
+              glovePos: { x: edgeContact.x - 4, y: edgeContact.y - 12 },
               fielderAnchor: { x: 476, y: 372 },
               fielderFacing: 1,
               throwDuration: 0.48
@@ -3811,14 +4019,21 @@
             cfg = {
               base: 3,
               isPickoff: false,
-              playTypeLabel: '三壘滑壘攻防',
-              runnerAction: 'slide',
+              isSteal: false,
+              playTypeLabel: isForcePlay
+                ? (runnerSlides ? '三壘強迫進壘（滑壘觸殺・需 Tag）' : '三壘強迫進壘（直接封殺・站著接球）')
+                : (runnerSlides ? '三壘非強迫進壘（滑壘觸殺・需 Tag）' : '三壘非強迫進壘（觸殺・需 Tag）'),
+              runnerAction,
               runnerStart: { x: 830, y: 280 },
-              runnerContact: { x: 510, y: 368 },
-              runnerEnd: { x: 498, y: 374 },
+              runnerContact: edgeContact,
+              runnerEnd: runnerSlides
+                ? { x: edgeContact.x - 14, y: edgeContact.y + 8 }
+                : { x: 440, y: 415 },
               throwStart: { x: 850, y: 235 },
-              glovePos: { x: 486, y: 356 },
-              fielderAnchor: { x: 468, y: 372 },
+              glovePos: (!needsTag)
+                ? { x: 462, y: 344 }
+                : { x: edgeContact.x - 4, y: edgeContact.y - 10 },
+              fielderAnchor: { x: 468, y: 374 },
               fielderFacing: 1,
               throwDuration: 0.74
             };
@@ -3828,6 +4043,9 @@
         return {
           mode: 'safe_out',
           ...cfg,
+          isForcePlay,
+          runnerSlides,
+          needsTag,
           basePos,
           runnerTeam,
           fielderTeam,
@@ -3942,8 +4160,12 @@
             ui.statusText.textContent = `【${state.play.playTypeLabel}】小白球飛過來了！盯緊邊線與壘包...`;
           }
         } else {
-          ui.statusText.textContent = `【${state.play.playTypeLabel}】比賽進行中！緊盯壘包與接球聲...`;
-          playTone(state.play.isPickoff ? 780 : 660, 0.08, 'sine', 0.14);
+          if (state.play.isSteal) {
+            ui.statusText.textContent = `⚡ 盜壘發生！自動轉移至二壘審視角【${state.play.playTypeLabel}】！`;
+          } else {
+            ui.statusText.textContent = `【${state.play.playTypeLabel}】比賽進行中！緊盯壘包與接球聲...`;
+          }
+          playTone(state.play.isPickoff || state.play.isSteal ? 780 : 660, 0.08, 'sine', 0.14);
         }
       }
 
@@ -4194,7 +4416,7 @@
       }
 
       function getRunnerPos(play, t) {
-        const approachDur = play.isPickoff ? 0.55 : 0.95;
+        const approachDur = (play.isPickoff || play.isSteal) ? 0.58 : 0.95;
         const approachStart = play.baseTouchTime - approachDur;
         if (t <= play.baseTouchTime) {
           const p = clamp01((t - approachStart) / approachDur);
@@ -4693,13 +4915,14 @@
         ctx.fill();
 
         const dir = play.fielderFacing;
-        const hipX = ax + (play.base === 1 && !play.isPickoff ? -18 : -4 * dir);
-        const hipY = ay - 36;
-        const shoulderX = hipX + (dir * 10);
-        const shoulderY = hipY - 34;
+        const standingForce = !play.needsTag;
+        const hipX = ax + (standingForce ? 0 : (play.base === 1 && !play.isPickoff ? -16 : -4 * dir));
+        const hipY = ay - (standingForce ? 40 : 34);
+        const shoulderX = hipX + (standingForce ? 0 : dir * 10);
+        const shoulderY = hipY - (standingForce ? 36 : 30);
 
-        drawLimb(hipX, hipY, ax - 4 * dir, ay - 14, ax, ay, '#f1f5f9', '#1e293b', 10);
-        drawLimb(hipX, hipY, hipX + dir * 22, ay - 16, hipX + dir * 28, ay + 5, '#f1f5f9', '#1e293b', 10);
+        drawLimb(hipX, hipY, ax - 3 * dir, ay - 16, ax, ay, '#f1f5f9', '#1e293b', 10);
+        drawLimb(hipX, hipY, hipX + dir * (standingForce ? 12 : 22), ay - 16, hipX + dir * (standingForce ? 14 : 28), ay + 5, '#f1f5f9', '#1e293b', 10);
 
         drawTorso(hipX, hipY, shoulderX, shoulderY, team.color, team.textDark ? '#111827' : '#ffffff', play.base === 1 ? '23' : (play.base === 2 ? '6' : '5'));
         drawLimb(shoulderX - 4 * dir, shoulderY + 4, shoulderX - 20 * dir, shoulderY + 12, shoulderX - 30 * dir, shoulderY + 4, team.color, '#f1c29b', 7);
@@ -4911,7 +5134,13 @@
         ctx.font = 'bold 14px sans-serif';
         ctx.fillText(`🎥 ${BASE_LABELS[activeBase]}`, 24, 36);
 
-        if (state.play && state.play.isPickoff) {
+        if (state.play && state.play.isSteal) {
+          ctx.fillStyle = 'rgba(59, 156, 255, 0.94)';
+          ctx.fillRect(14, 54, 155, 28);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 13px sans-serif';
+          ctx.fillText('🏃 盜二壘（轉二壘審）', 24, 73);
+        } else if (state.play && state.play.isPickoff) {
           ctx.fillStyle = 'rgba(245, 185, 66, 0.92)';
           ctx.fillRect(14, 54, 130, 28);
           ctx.fillStyle = '#111827';
@@ -5120,6 +5349,9 @@
 
       // ================= 事件綁定 =================
       ui.btnConfirmPlayerName.addEventListener('click', handleConfirmPlayerName);
+      ui.btnPlayWithoutLogin.addEventListener('click', applyGuestMode);
+      ui.btnLogoutHome.addEventListener('click', logoutToLoginModal);
+      ui.btnLogoutStart.addEventListener('click', logoutToLoginModal);
       ui.playerNameInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
