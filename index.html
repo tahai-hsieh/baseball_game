@@ -105,6 +105,7 @@
 
     .start-header {
       text-align: center;
+      position: relative;
     }
 
     .start-header h1 {
@@ -117,6 +118,40 @@
       margin: 6px 0 0;
       color: var(--muted);
       font-size: clamp(0.82rem, 1.8vw, 0.94rem);
+    }
+
+    .mode-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding-bottom: 4px;
+      border-bottom: 1px solid rgba(43, 68, 98, 0.55);
+    }
+
+    .player-badge-text {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .player-badge-text strong {
+      color: var(--accent);
+    }
+
+    .leaderboard-text-link {
+      background: transparent;
+      color: #7cc4ff;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    .leaderboard-text-link:hover {
+      color: var(--accent);
     }
 
     .home-mode-grid {
@@ -164,9 +199,10 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 18px;
+      gap: 14px;
       padding-top: 4px;
       font-size: 0.9rem;
+      flex-wrap: wrap;
     }
 
     .home-link-sep {
@@ -188,10 +224,11 @@
       color: var(--accent);
     }
 
+    /* 名字登入彈窗與一般彈窗 */
     .info-modal {
       position: fixed;
       inset: 0;
-      background: rgba(6, 11, 18, 0.82);
+      background: rgba(6, 11, 18, 0.84);
       backdrop-filter: blur(4px);
       display: flex;
       justify-content: center;
@@ -200,10 +237,63 @@
       z-index: 100;
     }
 
+    .login-modal-card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px 22px;
+      box-shadow: 0 22px 55px rgba(0, 0, 0, 0.65);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .login-modal-card h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      color: #fff;
+      text-align: center;
+    }
+
+    .login-modal-card p {
+      margin: 0;
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.55;
+      text-align: center;
+    }
+
+    .login-input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      background: var(--bg);
+      color: #fff;
+      font-size: 1rem;
+      font-family: inherit;
+      outline: none;
+      -webkit-user-select: text;
+      user-select: text;
+    }
+
+    .login-input:focus {
+      border-color: var(--accent);
+    }
+
+    .login-error {
+      color: #ff7b7b;
+      font-size: 0.82rem;
+      min-height: 18px;
+      text-align: center;
+    }
+
     .info-modal-card {
       width: 100%;
-      max-width: 720px;
-      max-height: 84dvh;
+      max-width: 780px;
+      max-height: 85dvh;
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 16px;
@@ -257,7 +347,7 @@
       padding: 13px 15px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
     }
 
     .info-section h3 {
@@ -276,6 +366,110 @@
 
     .info-section p {
       margin: 0;
+    }
+
+    .lb-choice-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+
+    .lb-choice-btn {
+      background: var(--panel);
+      color: var(--text);
+      border: 2px solid var(--border);
+      padding: 12px 14px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .lb-choice-btn.active {
+      border-color: var(--accent);
+      background: #1d3048;
+    }
+
+    .lb-choice-btn .lb-t {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .lb-choice-btn .lb-d {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .lb-table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #0d1622;
+    }
+
+    .lb-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      text-align: left;
+    }
+
+    .lb-table th,
+    .lb-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid #20344c;
+    }
+
+    .lb-table th {
+      background: #152336;
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    .lb-table tr.is-current-player td {
+      background: rgba(59, 156, 255, 0.14);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .history-card {
+      background: #0d1622;
+      border: 1px solid #243952;
+      border-radius: 10px;
+      padding: 11px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 0.86rem;
+    }
+
+    .history-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .history-tag {
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--panel-light);
+      color: var(--accent);
+    }
+
+    .history-meta {
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .history-result {
+      color: #dbeafe;
     }
 
     .version-badge-now {
@@ -1023,9 +1217,25 @@
 </head>
 <body>
 
+  <!-- ================= 名字登入彈窗（僅限新打開頁面時顯示） ================= -->
+  <div class="info-modal" id="nameLoginModal" role="dialog" aria-modal="true" aria-labelledby="nameLoginTitle">
+    <div class="login-modal-card">
+      <h2 id="nameLoginTitle">⚾ 歡迎來到棒球壘審模擬器</h2>
+      <p>請輸入您的玩家名稱開始（日後輸入相同名稱即自動登入，所有排行榜與個人遊玩紀錄將同步至雲端）。</p>
+      <input type="text" id="playerNameInput" class="login-input" maxlength="20" placeholder="請輸入您的名字（例如：阿傑）" autocomplete="off" />
+      <div class="login-error" id="loginErrorText"></div>
+      <button type="button" class="btn-launch" id="btnConfirmPlayerName">確認並進入首頁</button>
+    </div>
+  </div>
+
   <!-- ================= 0. 首頁（模式選擇） ================= -->
   <div class="screen" id="homeScreen">
     <div class="start-card">
+      <div class="mode-top-bar">
+        <div class="player-badge-text">目前登入：<strong id="homePlayerName">--</strong></div>
+        <button type="button" class="leaderboard-text-link" id="btnOpenHistory">紀錄</button>
+      </div>
+
       <div class="start-header">
         <h1>⚾ 棒球壘審模擬器</h1>
         <p>請選擇今天要執法的判決模式</p>
@@ -1060,6 +1270,11 @@
   <!-- ================= 1. 起始頁面 ================= -->
   <div class="screen hidden" id="startScreen">
     <div class="start-card">
+      <div class="mode-top-bar">
+        <div class="player-badge-text">目前登入：<strong id="startPlayerName">--</strong></div>
+        <button type="button" class="leaderboard-text-link" id="btnOpenStartLeaderboard">排行榜</button>
+      </div>
+
       <div class="start-header">
         <h1>⚾ 棒球壘審模擬器</h1>
         <p id="startModeSubtitle">站上實際壘審位置執法，體驗實戰視角與電視輔助判決系統</p>
@@ -1384,7 +1599,59 @@
     </div>
   </div>
 
-  <!-- ================= 4. 遊戲手冊彈窗 ================= -->
+  <!-- ================= 4. 排行榜彈窗 ================= -->
+  <div class="info-modal hidden" id="leaderboardModal" role="dialog" aria-modal="true" aria-labelledby="leaderboardModalTitle">
+    <div class="info-modal-card">
+      <div class="info-modal-header">
+        <h2 id="leaderboardModalTitle">🏆 排行榜</h2>
+        <button type="button" class="btn-close-modal" id="btnCloseLeaderboard">✕ 關閉</button>
+      </div>
+      <div class="info-modal-body" id="leaderboardModalBody">
+        <div class="info-section hidden" id="lbStageSection">
+          <h3 id="lbStageTitle">選擇賽制排行</h3>
+          <div class="lb-choice-grid" id="lbStageChoices"></div>
+        </div>
+
+        <div class="info-section hidden" id="lbMetricSection">
+          <h3 id="lbMetricTitle">選擇排行項目</h3>
+          <div class="lb-choice-grid" id="lbMetricChoices"></div>
+        </div>
+
+        <div class="info-section hidden" id="lbTableSection">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+            <h3 id="lbTableTitle">排行明細</h3>
+            <span id="lbSyncStatus" style="font-size:0.78rem;color:var(--muted);">同步中...</span>
+          </div>
+          <div class="lb-table-wrap">
+            <table class="lb-table">
+              <thead>
+                <tr>
+                  <th>排名</th>
+                  <th>姓名</th>
+                  <th id="lbColMetric">準確率（或是次數）</th>
+                  <th id="lbColTime">日期時間</th>
+                </tr>
+              </thead>
+              <tbody id="lbTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 5. 個人歷史遊玩紀錄彈窗 ================= -->
+  <div class="info-modal hidden" id="historyModal" role="dialog" aria-modal="true" aria-labelledby="historyModalTitle">
+    <div class="info-modal-card">
+      <div class="info-modal-header">
+        <h2 id="historyModalTitle">📜 玩家遊玩紀錄</h2>
+        <button type="button" class="btn-close-modal" id="btnCloseHistory">✕ 關閉</button>
+      </div>
+      <div class="info-modal-body" id="historyModalBody"></div>
+    </div>
+  </div>
+
+  <!-- ================= 6. 遊戲手冊彈窗 ================= -->
   <div class="info-modal hidden" id="manualModal" role="dialog" aria-modal="true" aria-labelledby="manualModalTitle">
     <div class="info-modal-card">
       <div class="info-modal-header">
@@ -1446,18 +1713,29 @@
     </div>
   </div>
 
-  <!-- ================= 5. 版本說明彈窗 ================= -->
+  <!-- ================= 7. 版本說明彈窗 ================= -->
   <div class="info-modal hidden" id="changelogModal" role="dialog" aria-modal="true" aria-labelledby="changelogModalTitle">
     <div class="info-modal-card">
       <div class="info-modal-header">
-        <h2 id="changelogModalTitle">📋 版本說明 <span class="version-badge-now">目前版本 v1.9</span></h2>
+        <h2 id="changelogModalTitle">📋 版本說明 <span class="version-badge-now">目前版本 v2.0</span></h2>
         <button type="button" class="btn-close-modal" id="btnCloseChangelog">✕ 關閉</button>
       </div>
       <div class="info-modal-body">
         <div class="info-section">
           <div class="version-title-row">
-            <h3>v1.9（最新正式版）</h3>
+            <h3>v2.0（最新正式版）</h3>
             <span class="version-tag">目前版本</span>
+          </div>
+          <ul>
+            <li>新增玩家名字登入機制（僅限新打開頁面時詢問，玩完返回首頁不重複詢問；輸入相同名字即自動登入）。</li>
+            <li>整合 Firebase Realtime Database 雲端儲存，支援 Safe/Out（九局制/四局制）與 Fair/Foul（50球測驗）排行榜與玩家個人歷史遊玩紀錄查詢。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v1.9</h3>
+            <span class="version-tag">介面與軌跡優化</span>
           </div>
           <ul>
             <li>首頁新增「遊戲手冊」與「版本說明」文字連結與詳盡說明視窗。</li>
@@ -1489,83 +1767,6 @@
             <li>導入弧長參數化勻速引擎，確保所有球路全程恆定速度，不再出現標竿前加速或減速。</li>
             <li>修正過標竿後的球路直接淡出消失於看台區，並鎖定標竿前後遮擋與重播畫面完全一致。</li>
             <li>全模式統一修正球場幾何：全壘打標竿移至一三壘邊線最底端、一三壘壘包一側貼齊白線內緣、二壘壘包下角指向本壘。</li>
-          </ul>
-        </div>
-
-        <div class="info-section">
-          <div class="version-title-row">
-            <h3>v1.6</h3>
-            <span class="version-tag">全壘打標竿系統</span>
-          </div>
-          <ul>
-            <li>界內／界外模式新增「全壘打標竿判斷」，包含標竿後方被擋住（全壘打）、直接擊中標竿（全壘打）與標竿前方飛過（界外）。</li>
-            <li>加入 homerun.mp3 語音音效，以及裁判右手舉高伸出食指空中畫圈的全壘打宣判手勢。</li>
-          </ul>
-        </div>
-
-        <div class="info-section">
-          <div class="version-title-row">
-            <h3>v1.5</h3>
-            <span class="version-tag">壘包碰觸與自動重播擴充</span>
-          </div>
-          <ul>
-            <li>界內／界外模式同步導入自動電視輔助判決，裁判走出轉播室比出 FAIR（食指指向場內）與 FOUL（雙手高舉）手勢。</li>
-            <li>新增全軌跡掃描強制規則：不論飛球或滾地球，凡碰觸壘包本體一律判定為界內。</li>
-          </ul>
-        </div>
-
-        <div class="info-section">
-          <div class="version-title-row">
-            <h3>v1.4</h3>
-            <span class="version-tag">雙重播模式與多變球路</span>
-          </div>
-          <ul>
-            <li>起始頁面新增「手動電視輔助判決模式」與「自動電視輔助判決模式」，自動模式可觀看裁判走出轉播室比出 SAFE／OUT 手勢。</li>
-            <li>界內／界外模式大幅增加球路變化（擊中壘包、線內飛過線外落地、壘包前滾出與轉回界內等），並加入 fair.mp3 音效。</li>
-          </ul>
-        </div>
-
-        <div class="info-section">
-          <div class="version-title-row">
-            <h3>v1.3</h3>
-            <span class="version-tag">自適應版面與語音音效</span>
-          </div>
-          <ul>
-            <li>加入 iOS／平板安全區域邊距（safe-area-inset）與橫豎屏自動縮放置中，解決狀態列遮擋問題。</li>
-            <li>加入 out.mp3、safe.mp3、foul.mp3 判決語音音效並納入離線快取。</li>
-          </ul>
-        </div>
-
-        <div class="info-section">
-          <div class="version-title-row">
-            <h3>v1.2</h3>
-            <span class="version-tag">雙遊戲模式與 PWA 離線支援</span>
-          </div>
-          <ul>
-            <li>新增首頁模式選擇，正式推出「界內 / 界外 判決」模式。</li>
-            <li>加入 icon_baseball.png 主畫面原圖與圓形網頁圖標、Service Worker 離線使用與鎖定雙擊放大。</li>
-            <li>結束頁面新增「兩隊因誤判導致得分」統計數據。</li>
-          </ul>
-        </div>
-
-        <div class="info-section">
-          <div class="version-title-row">
-            <h3>v1.1</h3>
-            <span class="version-tag">實戰視角與完整賽制</span>
-          </div>
-          <ul>
-            <li>全面升級為 2.5D 壘審低角度實戰視角與擬真公仔球員，新增六隊對戰選擇、起始頁面與結束記分板。</li>
-            <li>實作九局／四局賽制（平手延長一局）、滿壘推進得分、投手牽制球與二三壘審依跑者解鎖，挑戰權調整為每隊 2 次。</li>
-          </ul>
-        </div>
-
-        <div class="info-section">
-          <div class="version-title-row">
-            <h3>v1.0</h3>
-            <span class="version-tag">初版上線</span>
-          </div>
-          <ul>
-            <li>建立棒球壘審 Safe / Out 基礎玩法，包含一二三壘切換、隨機時間差、Web Audio 合成音效與慢動作重播驗證功能。</li>
           </ul>
         </div>
       </div>
@@ -1603,7 +1804,7 @@
 
       let lastTouchEnd = 0;
       document.addEventListener('touchend', (e) => {
-        if (e.target && e.target.type === 'range') return;
+        if (e.target && (e.target.type === 'range' || e.target.tagName === 'INPUT')) return;
         const now = Date.now();
         if (now - lastTouchEnd <= 300) {
           e.preventDefault();
@@ -1613,6 +1814,83 @@
 
       document.addEventListener('gesturestart', (e) => e.preventDefault());
       document.addEventListener('dblclick', (e) => e.preventDefault());
+
+      // ================= Firebase Realtime Database REST 同步與本機備援 =================
+      const FIREBASE_DB_URL = 'https://baseball-game-0000-default-rtdb.asia-southeast1.firebasedatabase.app';
+      const LOCAL_DB_KEY = 'baseball_umpire_cloud_cache_v1';
+      const SESSION_LOGGED_IN_KEY = 'baseball_umpire_session_logged_in_v1';
+      const LAST_PLAYER_NAME_KEY = 'baseball_umpire_last_player_name_v1';
+
+      function readLocalCache() {
+        try {
+          const raw = localStorage.getItem(LOCAL_DB_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            return {
+              leaderboard: Array.isArray(parsed.leaderboard) ? parsed.leaderboard : [],
+              history: Array.isArray(parsed.history) ? parsed.history : []
+            };
+          }
+        } catch (_) {}
+        return { leaderboard: [], history: [] };
+      }
+
+      function writeLocalCache(cache) {
+        try {
+          localStorage.setItem(LOCAL_DB_KEY, JSON.stringify(cache));
+        } catch (_) {}
+      }
+
+      function formatDateTimeNow() {
+        const d = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      }
+
+      async function fbPushEntry(path, entry) {
+        const cache = readLocalCache();
+        if (path === 'leaderboard') cache.leaderboard.push(entry);
+        if (path === 'history') cache.history.push(entry);
+        writeLocalCache(cache);
+
+        try {
+          await fetch(`${FIREBASE_DB_URL}/${path}.json`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(entry)
+          });
+        } catch (_) {}
+      }
+
+      async function fbFetchAll(path) {
+        const cache = readLocalCache();
+        const localItems = path === 'leaderboard' ? cache.leaderboard : cache.history;
+        try {
+          const res = await fetch(`${FIREBASE_DB_URL}/${path}.json`);
+          if (!res.ok) return { items: localItems, fromCloud: false };
+          const data = await res.json();
+          if (!data || typeof data !== 'object') {
+            return { items: localItems, fromCloud: true };
+          }
+          const cloudItems = Object.entries(data).map(([id, val]) => ({ id, ...val }));
+          const mergedMap = new Map();
+          localItems.forEach((item, idx) => {
+            const key = item.recordId || item.id || `local_${idx}`;
+            mergedMap.set(key, item);
+          });
+          cloudItems.forEach((item, idx) => {
+            const key = item.recordId || item.id || `cloud_${idx}`;
+            mergedMap.set(key, item);
+          });
+          const merged = Array.from(mergedMap.values());
+          if (path === 'leaderboard') cache.leaderboard = merged;
+          if (path === 'history') cache.history = merged;
+          writeLocalCache(cache);
+          return { items: merged, fromCloud: true };
+        } catch (_) {
+          return { items: localItems, fromCloud: false };
+        }
+      }
 
       // ================= 球隊與常數 =================
       const TEAMS = [
@@ -1628,6 +1906,37 @@
       const ctx = canvas.getContext('2d');
 
       const ui = {
+        nameLoginModal: document.getElementById('nameLoginModal'),
+        playerNameInput: document.getElementById('playerNameInput'),
+        loginErrorText: document.getElementById('loginErrorText'),
+        btnConfirmPlayerName: document.getElementById('btnConfirmPlayerName'),
+
+        homePlayerName: document.getElementById('homePlayerName'),
+        startPlayerName: document.getElementById('startPlayerName'),
+        btnOpenHistory: document.getElementById('btnOpenHistory'),
+        btnOpenStartLeaderboard: document.getElementById('btnOpenStartLeaderboard'),
+
+        leaderboardModal: document.getElementById('leaderboardModal'),
+        leaderboardModalTitle: document.getElementById('leaderboardModalTitle'),
+        btnCloseLeaderboard: document.getElementById('btnCloseLeaderboard'),
+        lbStageSection: document.getElementById('lbStageSection'),
+        lbStageTitle: document.getElementById('lbStageTitle'),
+        lbStageChoices: document.getElementById('lbStageChoices'),
+        lbMetricSection: document.getElementById('lbMetricSection'),
+        lbMetricTitle: document.getElementById('lbMetricTitle'),
+        lbMetricChoices: document.getElementById('lbMetricChoices'),
+        lbTableSection: document.getElementById('lbTableSection'),
+        lbTableTitle: document.getElementById('lbTableTitle'),
+        lbSyncStatus: document.getElementById('lbSyncStatus'),
+        lbColMetric: document.getElementById('lbColMetric'),
+        lbColTime: document.getElementById('lbColTime'),
+        lbTableBody: document.getElementById('lbTableBody'),
+
+        historyModal: document.getElementById('historyModal'),
+        historyModalTitle: document.getElementById('historyModalTitle'),
+        historyModalBody: document.getElementById('historyModalBody'),
+        btnCloseHistory: document.getElementById('btnCloseHistory'),
+
         homeScreen: document.getElementById('homeScreen'),
         startScreen: document.getElementById('startScreen'),
         gameScreen: document.getElementById('gameScreen'),
@@ -1763,6 +2072,7 @@
       };
 
       const state = {
+        playerName: '',
         gameMode: 'safe_out',
         setup: {
           modeInnings: 9,
@@ -1775,6 +2085,13 @@
         selectedBaseMode: '1',
         previewBase: 1,
         soundEnabled: true,
+        currentGameRecorded: false,
+
+        lbState: {
+          mode: 'safe_out',
+          stage: '9', // '9' | '4' | '50'
+          metric: 'initial' // 'initial' | 'final' | 'overall'
+        },
 
         game: {
           startInning: 1,
@@ -1830,6 +2147,272 @@
         announceT: 0,
         announceVoicePlayed: false
       };
+
+      // ================= 名字登入機制（僅限新打開頁面時詢問） =================
+      function applyPlayerName(name) {
+        const clean = name.trim();
+        state.playerName = clean;
+        try {
+          sessionStorage.setItem(SESSION_LOGGED_IN_KEY, '1');
+          localStorage.setItem(LAST_PLAYER_NAME_KEY, clean);
+        } catch (_) {}
+        ui.homePlayerName.textContent = clean;
+        ui.startPlayerName.textContent = clean;
+      }
+
+      function initNameGateOnFirstLoad() {
+        let alreadyLoggedInInSession = false;
+        let savedName = '';
+        try {
+          alreadyLoggedInInSession = sessionStorage.getItem(SESSION_LOGGED_IN_KEY) === '1';
+          savedName = localStorage.getItem(LAST_PLAYER_NAME_KEY) || '';
+        } catch (_) {}
+
+        if (alreadyLoggedInInSession && savedName) {
+          applyPlayerName(savedName);
+          ui.nameLoginModal.classList.add('hidden');
+        } else {
+          if (savedName) ui.playerNameInput.value = savedName;
+          ui.nameLoginModal.classList.remove('hidden');
+          setTimeout(() => ui.playerNameInput.focus(), 60);
+        }
+      }
+
+      function handleConfirmPlayerName() {
+        const val = (ui.playerNameInput.value || '').trim();
+        if (!val) {
+          ui.loginErrorText.textContent = '請輸入您的名字才能開始遊玩。';
+          ui.playerNameInput.focus();
+          return;
+        }
+        ui.loginErrorText.textContent = '';
+        applyPlayerName(val);
+        ui.nameLoginModal.classList.add('hidden');
+      }
+
+      // ================= 排行榜與歷史紀錄儲存、計算與渲染 =================
+      async function recordCompletedGame(summaryPayload) {
+        if (!state.playerName || state.currentGameRecorded) return;
+        state.currentGameRecorded = true;
+
+        const nowStr = formatDateTimeNow();
+        const recId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+        const historyEntry = {
+          recordId: recId,
+          playerName: state.playerName,
+          timestamp: nowStr,
+          gameMode: summaryPayload.gameMode,
+          modeLabel: summaryPayload.modeLabel,
+          optionLabel: summaryPayload.optionLabel,
+          resultSummary: summaryPayload.resultSummary,
+          totalBalls: summaryPayload.totalBalls,
+          initialAccuracy: summaryPayload.initialAccuracy,
+          finalAccuracy: summaryPayload.finalAccuracy,
+          overturns: summaryPayload.overturns,
+          grade: summaryPayload.grade
+        };
+
+        await fbPushEntry('history', historyEntry);
+
+        // (1) safe/out：九局制或四局制錄入排行榜
+        // (2) fair/foul：僅限 50 球測驗模式（且至少完成 1 球或滿 50 球測驗）錄入排行榜
+        const qualifiesLeaderboard =
+          (summaryPayload.gameMode === 'safe_out' && (summaryPayload.stage === '9' || summaryPayload.stage === '4') && summaryPayload.totalBalls > 0) ||
+          (summaryPayload.gameMode === 'fair_foul' && summaryPayload.stage === '50' && summaryPayload.totalBalls > 0);
+
+        if (qualifiesLeaderboard) {
+          const lbEntry = {
+            recordId: recId,
+            playerName: state.playerName,
+            timestamp: nowStr,
+            gameMode: summaryPayload.gameMode,
+            stage: summaryPayload.stage, // '9' | '4' | '50'
+            initialAccuracy: summaryPayload.initialAccuracy,
+            finalAccuracy: summaryPayload.finalAccuracy,
+            isGoldEye: summaryPayload.grade === 'S 金眼裁判'
+          };
+          await fbPushEntry('leaderboard', lbEntry);
+        }
+      }
+
+      function openLeaderboardModal() {
+        const mode = state.gameMode;
+        state.lbState.mode = mode;
+
+        if (mode === 'fair_foul') {
+          state.lbState.stage = '50';
+          ui.leaderboardModalTitle.textContent = '🏆 界內 / 界外 排行榜（50球測驗）';
+          ui.lbStageSection.classList.add('hidden');
+        } else {
+          state.lbState.stage = state.setup.modeInnings === 4 ? '4' : '9';
+          ui.leaderboardModalTitle.textContent = '🏆 Safe / Out 排行榜';
+          ui.lbStageSection.classList.remove('hidden');
+          ui.lbStageTitle.textContent = '1. 選擇局制排行';
+          ui.lbStageChoices.innerHTML = '';
+          [
+            { key: '9', title: '九局制排行', desc: '九局完整賽成績排行' },
+            { key: '4', title: '四局制排行', desc: '四局精華賽成績排行' }
+          ].forEach(item => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'lb-choice-btn' + (state.lbState.stage === item.key ? ' active' : '');
+            btn.innerHTML = `<span class="lb-t">${item.title}</span><span class="lb-d">${item.desc}</span>`;
+            btn.addEventListener('click', () => {
+              state.lbState.stage = item.key;
+              openLeaderboardModal();
+            });
+            ui.lbStageChoices.appendChild(btn);
+          });
+        }
+
+        ui.lbMetricSection.classList.remove('hidden');
+        ui.lbMetricTitle.textContent = mode === 'fair_foul' ? '選擇排行項目' : '2. 選擇排行項目';
+        ui.lbMetricChoices.innerHTML = '';
+        [
+          { key: 'initial', title: '初判準確率排行', desc: '依初判準確率高低排序（同名可重複排列）' },
+          { key: 'final', title: '最終準確率排行', desc: '依最終準確率高低排序（同名可重複排列）' },
+          { key: 'overall', title: '綜合評價排行', desc: '比「S金眼裁判」次數，同名加總計算' }
+        ].forEach(m => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'lb-choice-btn' + (state.lbState.metric === m.key ? ' active' : '');
+          btn.innerHTML = `<span class="lb-t">${m.title}</span><span class="lb-d">${m.desc}</span>`;
+          btn.addEventListener('click', () => {
+            state.lbState.metric = m.key;
+            renderLeaderboardTable();
+          });
+          ui.lbMetricChoices.appendChild(btn);
+        });
+
+        ui.leaderboardModal.classList.remove('hidden');
+        renderLeaderboardTable();
+      }
+
+      async function renderLeaderboardTable() {
+        const { mode, stage, metric } = state.lbState;
+        ui.lbMetricChoices.querySelectorAll('.lb-choice-btn').forEach((btn, idx) => {
+          const keys = ['initial', 'final', 'overall'];
+          btn.classList.toggle('active', keys[idx] === metric);
+        });
+
+        ui.lbTableSection.classList.remove('hidden');
+        const metricNames = {
+          initial: '初判準確率排行',
+          final: '最終準確率排行',
+          overall: '綜合評價排行'
+        };
+        const stagePrefix = mode === 'fair_foul' ? '50球測驗' : (stage === '4' ? '四局制' : '九局制');
+        ui.lbTableTitle.textContent = `${stagePrefix} — ${metricNames[metric]}`;
+        ui.lbSyncStatus.textContent = '正在讀取 Firebase 雲端資料...';
+
+        if (metric === 'overall') {
+          ui.lbColMetric.textContent = 'S金眼裁判次數';
+          ui.lbColTime.classList.add('hidden');
+        } else {
+          ui.lbColMetric.textContent = metric === 'initial' ? '初判準確率' : '最終準確率';
+          ui.lbColTime.classList.remove('hidden');
+          ui.lbColTime.textContent = '日期時間';
+        }
+
+        const { items, fromCloud } = await fbFetchAll('leaderboard');
+        ui.lbSyncStatus.textContent = fromCloud ? '已同步 Firebase 雲端' : '離線快取模式';
+
+        const filtered = items.filter(it => it.gameMode === mode && String(it.stage) === String(stage));
+
+        let rows = [];
+        if (metric === 'overall') {
+          const map = new Map();
+          filtered.forEach(it => {
+            const name = String(it.playerName || '').trim();
+            if (!name) return;
+            const prev = map.get(name) || { playerName: name, count: 0 };
+            if (it.isGoldEye) prev.count += 1;
+            map.set(name, prev);
+          });
+          rows = Array.from(map.values())
+            .sort((a, b) => b.count - a.count || a.playerName.localeCompare(b.playerName, 'zh-Hant'))
+            .map((r, i) => ({
+              rank: i + 1,
+              playerName: r.playerName,
+              valueText: `${r.count} 次`,
+              timestamp: ''
+            }));
+        } else {
+          const field = metric === 'initial' ? 'initialAccuracy' : 'finalAccuracy';
+          rows = filtered
+            .map(it => ({
+              playerName: String(it.playerName || '').trim(),
+              acc: Number(it[field] ?? 0),
+              timestamp: it.timestamp || ''
+            }))
+            .filter(r => r.playerName)
+            .sort((a, b) => b.acc - a.acc || b.timestamp.localeCompare(a.timestamp))
+            .map((r, i) => ({
+              rank: i + 1,
+              playerName: r.playerName,
+              valueText: `${r.acc}%`,
+              timestamp: r.timestamp
+            }));
+        }
+
+        if (rows.length === 0) {
+          const colspan = metric === 'overall' ? 3 : 4;
+          ui.lbTableBody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center;color:var(--muted);padding:18px;">目前尚無此項排行紀錄</td></tr>`;
+          return;
+        }
+
+        ui.lbTableBody.innerHTML = rows.map(r => {
+          const isMe = r.playerName === state.playerName;
+          const timeTd = metric === 'overall' ? '' : `<td>${r.timestamp}</td>`;
+          return `
+            <tr class="${isMe ? 'is-current-player' : ''}">
+              <td>#${r.rank}</td>
+              <td>${r.playerName}${isMe ? '（你）' : ''}</td>
+              <td>${r.valueText}</td>
+              ${timeTd}
+            </tr>
+          `;
+        }).join('');
+      }
+
+      async function openHistoryModal() {
+        ui.historyModalTitle.textContent = `📜 ${state.playerName || '玩家'} 的所有遊玩紀錄`;
+        ui.historyModalBody.innerHTML = `<div class="info-section"><p>正在讀取 ${state.playerName} 的歷史遊玩紀錄...</p></div>`;
+        ui.historyModal.classList.remove('hidden');
+
+        const { items, fromCloud } = await fbFetchAll('history');
+        const myLogs = items
+          .filter(it => String(it.playerName || '').trim() === state.playerName)
+          .sort((a, b) => String(b.timestamp || '').localeCompare(String(a.timestamp || '')));
+
+        const syncNote = `<div style="font-size:0.78rem;color:var(--muted);">${fromCloud ? '資料來源：Firebase Realtime Database' : '資料來源：本機快取'}｜共 ${myLogs.length} 筆紀錄</div>`;
+
+        if (myLogs.length === 0) {
+          ui.historyModalBody.innerHTML = `
+            ${syncNote}
+            <div class="info-section">
+              <p>目前尚無 <strong>${state.playerName}</strong> 的遊玩紀錄。完成一場比賽或測驗結算後，紀錄會自動保存在這裡！</p>
+            </div>
+          `;
+          return;
+        }
+
+        const cardsHtml = myLogs.map(log => `
+          <div class="history-card">
+            <div class="history-card-top">
+              <span>${log.modeLabel || log.gameMode} — ${log.optionLabel || ''}</span>
+              <span class="history-tag">${log.grade || '--'}</span>
+            </div>
+            <div class="history-result">結果：${log.resultSummary || '--'}</div>
+            <div class="history-meta">
+              時間：${log.timestamp || '--'}｜球數：${log.totalBalls ?? 0}｜初判：${log.initialAccuracy ?? 0}%｜最終：${log.finalAccuracy ?? 0}%｜改判：${log.overturns ?? 0} 次
+            </div>
+          </div>
+        `).join('');
+
+        ui.historyModalBody.innerHTML = `${syncNote}${cardsHtml}`;
+      }
 
       // ================= 首頁與起始頁切換 =================
       function selectModeAndGoStart(mode) {
@@ -2317,6 +2900,7 @@
         state.previewBase = 1;
         state.play = null;
         state.playing = false;
+        state.currentGameRecorded = false;
 
         state.game = {
           startInning,
@@ -2391,6 +2975,7 @@
         state.phase = 'IDLE';
         state.playing = false;
         state.play = null;
+        state.currentGameRecorded = false;
         state.stats = { total: 0, initialCorrect: 0, finalCorrect: 0, overturns: 0 };
         ui.challengeBanner.classList.add('hidden');
         ui.replayBox.classList.add('hidden');
@@ -2404,6 +2989,7 @@
       }
 
       function showEndScreen() {
+        if (state.phase === 'GAME_OVER') return;
         state.phase = 'GAME_OVER';
         state.playing = false;
         const g = state.game;
@@ -2420,14 +3006,26 @@
         else if (finalAcc >= 85) grade = 'A 優秀執法';
         else if (finalAcc >= 70) grade = 'B 合格壘審';
 
+        let modeLabel = '';
+        let optionLabel = '';
+        let resultSummary = '';
+        let stage = '';
+
         if (state.gameMode === 'fair_foul') {
           ui.linescoreWrap.classList.add('hidden');
           ui.endBlownRunsCard.classList.add('hidden');
+          modeLabel = '界內 / 界外 判決';
           if (state.setup.ffMode === 'unlimited') {
+            stage = 'unlimited';
+            optionLabel = '無限制練習模式';
+            resultSummary = `共完成 ${s.total} 球`;
             ui.endWinnerTitle.textContent = '界內 / 界外 / 全壘打標竿 無限制練習結束';
             ui.endScoreBig.textContent = `共完成 ${s.total} 球`;
             ui.endSubtitle.textContent = '無限制練習模式結算';
           } else {
+            stage = '50';
+            optionLabel = '50球測驗模式';
+            resultSummary = `已完成 ${s.total} / ${FF_MAX_BALLS} 球`;
             ui.endWinnerTitle.textContent = '界內 / 界外 / 全壘打標竿 50 球測驗結束';
             ui.endScoreBig.textContent = `已完成 ${s.total} / ${FF_MAX_BALLS} 球`;
             ui.endSubtitle.textContent = s.total >= FF_MAX_BALLS ? '已完成全部 50 球執法考核' : '玩家提早結束本輪測驗';
@@ -2435,11 +3033,15 @@
         } else {
           ui.linescoreWrap.classList.remove('hidden');
           ui.endBlownRunsCard.classList.remove('hidden');
+          modeLabel = 'Safe / Out 判決';
+          stage = state.setup.modeInnings === 4 ? '4' : '9';
+          optionLabel = state.setup.modeInnings === 4 ? '四局制（四局精華賽）' : '九局制（九局完整賽）';
 
           let winnerText = '雙方握手言和！';
           if (g.scoreAway > g.scoreHome) winnerText = `${g.awayTeam.name}（客隊）獲勝！`;
           else if (g.scoreHome > g.scoreAway) winnerText = `${g.homeTeam.name}（主隊）獲勝！`;
 
+          resultSummary = `${g.awayTeam.name} ${g.scoreAway} : ${g.scoreHome} ${g.homeTeam.name}（${winnerText}）`;
           ui.endWinnerTitle.textContent = winnerText;
           ui.endScoreBig.textContent = `${g.awayTeam.name} ${g.scoreAway} : ${g.scoreHome} ${g.homeTeam.name}`;
           ui.endSubtitle.textContent = g.inning >= 10 ? '經過延長賽第 10 局激戰分出勝負' : '正規局數比賽結束';
@@ -2475,6 +3077,19 @@
         ui.endStatFinal.textContent = s.total ? finalAcc + '%' : '--%';
         ui.endStatOverturn.textContent = s.overturns;
         ui.endStatGrade.textContent = grade;
+
+        recordCompletedGame({
+          gameMode: state.gameMode,
+          stage,
+          modeLabel,
+          optionLabel,
+          resultSummary,
+          totalBalls: s.total,
+          initialAccuracy: initAcc,
+          finalAccuracy: finalAcc,
+          overturns: s.overturns,
+          grade
+        });
       }
 
       function returnToStart() {
@@ -2727,7 +3342,6 @@
         const startTime = 0.08;
         const baseSideDir = base === 1 ? 1 : -1;
 
-        // 42% 機率出現「全壘打標竿 / 直接上看台」判斷
         if (Math.random() < 0.42) {
           const poleX = getPoleX(base);
           const impactTime = 1.05 + Math.random() * 0.2;
@@ -2886,7 +3500,6 @@
           };
         }
 
-        // 一般線邊界內/界外球路（七種變化）
         const roll = Math.random();
         let variant;
         if (roll < 0.13) variant = 'hit_bag';
@@ -3706,7 +4319,6 @@
         ctx.restore();
       }
 
-      // 繪製「裁判走出轉播室並比出 SAFE / OUT / FAIR / FOUL / HOMERUN 手勢」動畫
       function drawAutoReplayAnnouncement() {
         const w = canvas.width;
         const h = canvas.height;
@@ -4507,12 +5119,31 @@
       }
 
       // ================= 事件綁定 =================
+      ui.btnConfirmPlayerName.addEventListener('click', handleConfirmPlayerName);
+      ui.playerNameInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleConfirmPlayerName();
+        }
+      });
+
+      ui.btnOpenStartLeaderboard.addEventListener('click', openLeaderboardModal);
+      ui.btnCloseLeaderboard.addEventListener('click', () => ui.leaderboardModal.classList.add('hidden'));
+      ui.leaderboardModal.addEventListener('click', (e) => {
+        if (e.target === ui.leaderboardModal) ui.leaderboardModal.classList.add('hidden');
+      });
+
+      ui.btnOpenHistory.addEventListener('click', openHistoryModal);
+      ui.btnCloseHistory.addEventListener('click', () => ui.historyModal.classList.add('hidden'));
+      ui.historyModal.addEventListener('click', (e) => {
+        if (e.target === ui.historyModal) ui.historyModal.classList.add('hidden');
+      });
+
       ui.btnSelectSafeOut.addEventListener('click', () => selectModeAndGoStart('safe_out'));
       ui.btnSelectFairFoul.addEventListener('click', () => selectModeAndGoStart('fair_foul'));
       ui.btnBackToHomeFromStart.addEventListener('click', goToHome);
       ui.btnEndToHome.addEventListener('click', goToHome);
 
-      // 遊戲手冊與版本說明彈窗控制
       ui.btnOpenManual.addEventListener('click', () => ui.manualModal.classList.remove('hidden'));
       ui.btnOpenChangelog.addEventListener('click', () => ui.changelogModal.classList.remove('hidden'));
       ui.btnCloseManual.addEventListener('click', () => ui.manualModal.classList.add('hidden'));
@@ -4648,9 +5279,12 @@
       });
 
       window.addEventListener('keydown', (e) => {
+        if (!ui.nameLoginModal.classList.contains('hidden')) return;
         if (e.key === 'Escape') {
           ui.manualModal.classList.add('hidden');
           ui.changelogModal.classList.add('hidden');
+          ui.leaderboardModal.classList.add('hidden');
+          ui.historyModal.classList.add('hidden');
           return;
         }
         if (state.phase === 'HOME' || state.phase === 'START' || state.phase === 'GAME_OVER' || state.phase === 'AUTO_REPLAY_ANNOUNCE') return;
@@ -4679,6 +5313,7 @@
         }
       });
 
+      initNameGateOnFirstLoad();
       renderTeamSelectors();
       requestAnimationFrame(loop);
     })();
