@@ -1691,7 +1691,7 @@
           <h3>遊戲簡介與帳號登入／排行榜</h3>
           <p>「棒球壘審模擬器」讓你站上實際棒球場的壘審視角進行實戰執法，透過視覺與接球音效做出即時宣判，並體驗電視輔助判決重播系統。本網站支援離線遊玩，也可加入手機主畫面當作應用程式使用。</p>
           <ul>
-            <li><strong>登入與登出：</strong>首次開啟頁面會詢問玩家名字，日後輸入相同名字即自動登入並累積個人紀錄與排行；隨時可點選「登出」回到詢問名字的頁面，或選擇「不登入遊玩」直接體驗（不登入遊玩不會錄入具名帳號之歷史紀錄與排行榜）。</li>
+            <li><strong>登入、登出與不登入遊玩：</strong>首次開啟頁面會詢問玩家名字，日後輸入相同名稱即自動登入並累積個人紀錄與排行；登入後可點選「登出」回到詢問名字的頁面；亦可在詢問名字時選擇「不登入遊玩」直接體驗。</li>
             <li><strong>排行榜與紀錄：</strong>Safe/Out 起始頁右上角提供「排行榜」（分「九局制排行」與「四局制排行」，內含「初判準確率排行」、「最終準確率排行」與「綜合評價排行（S金眼裁判次數同名加總）」）；界內／界外起始頁右上角提供「排行榜」（僅 50 球測驗模式錄入，直接進入三個排行選項）；首頁右上角「紀錄」可查看登入玩家的歷史遊玩紀錄。</li>
           </ul>
         </div>
@@ -1699,10 +1699,11 @@
         <div class="info-section">
           <h3>模式一：Safe / Out 判決</h3>
           <ul>
-            <li><strong>核心玩法：</strong>緊盯跑者碰觸壘包與守備員手套接球的瞬間（搭配接球聲與踩壘聲），迅速宣判安全上壘（SAFE）或出局（OUT）。球先進入手套／完成觸殺或封殺為 OUT，跑者先觸壘為 SAFE。</li>
-            <li><strong>滑壘邊緣觸壘規則：</strong>滑壘或撲壘時，只要跑者碰觸到壘包邊緣即算觸壘（SAFE），無需滑到壘包正中央。</li>
-            <li><strong>強迫進壘封殺與滑壘：</strong>當處於強迫進壘狀態（例如一壘有人時的二壘、一二壘有人時的二三壘、滿壘時的二三壘與本壘）且跑者未滑壘時，守備員可直接封殺（站著接球即可，不需 tag 跑者）；若是牽制、盜壘或滑壘，守備員則需要 tag 跑者。此外，即使是強迫進壘，跑者也會隨機決定要不要滑壘。</li>
-            <li><strong>盜壘機制與視角自動切換：</strong>一壘有人時，跑者有機率往二壘盜壘（盜壘機率低於一般狀況）；一旦發生盜壘，不論原本選擇哪個壘審視角或原本在哪一壘，畫面都會自動轉移至「二壘審視角」進行判決。</li>
+            <li><strong>核心玩法：</strong>緊盯跑者碰觸壘包邊緣與守備員手套接球／觸殺的瞬間（搭配接球聲與踩壘聲），迅速宣判安全上壘（SAFE）或出局（OUT）。球先進入手套／完成觸殺或封殺為 OUT，跑者先觸壘為 SAFE。</li>
+            <li><strong>滑壘／撲壘邊緣觸壘與停住：</strong>滑壘或撲壘時，跑者只要碰觸到壘包邊緣即算觸壘，且碰到壘包邊緣就會停下來，不會滑過頭。</li>
+            <li><strong>一壘不滑壘與勻速跑壘：</strong>一壘跑壘一律採正常勻速衝刺，不會滑壘；所有跑壘皆以勻速前進，不會在接近壘包時突然加速（若為 SAFE 會從起跑階段即維持較快勻速）。</li>
+            <li><strong>強迫進壘封殺與 Tag 規則：</strong>強迫進壘且跑者未滑壘時，守備員可直接站著接球封殺（無需 tag 跑者）；只有牽制、盜壘或滑壘需要以手套明顯觸碰（tag）跑者。即使是強迫進壘，跑者也會隨機決定是否滑壘。</li>
+            <li><strong>盜壘機制與視角自動切換：</strong>一壘有人時有機率往二壘盜壘（機率低於一般狀況）；一旦發生盜壘，不論原本在哪一壘或視角，畫面都會自動轉移至「二壘審視角」進行判決。</li>
             <li><strong>壘審視角切換：</strong>一壘審為預設視角；當一壘有跑者時會解鎖「二壘審」視角，二壘有跑者時會解鎖「三壘審」視角，也可選擇「隨機切換」依壘上狀況自動出題。</li>
             <li><strong>投手牽制球（Pickoff）：</strong>當執法壘包上已有跑者時，有機率觸發投手突然牽制，跑者會撲回壘包，需觸殺判斷安全回壘或牽制出局。</li>
             <li><strong>賽制與得分：</strong>可在起始頁選擇「九局完整賽（1局上起）」或「四局精華賽（6局上起）」，三出局換邊，Safe 會依序堆疊壘包，滿壘情況下 Safe 會推進得 1 分；正規局數平手將自動延長 1 局（第 10 局）。</li>
@@ -1752,21 +1753,33 @@
   <div class="info-modal hidden" id="changelogModal" role="dialog" aria-modal="true" aria-labelledby="changelogModalTitle">
     <div class="info-modal-card">
       <div class="info-modal-header">
-        <h2 id="changelogModalTitle">📋 版本說明 <span class="version-badge-now">目前版本 v2.1</span></h2>
+        <h2 id="changelogModalTitle">📋 版本說明 <span class="version-badge-now">目前版本 v2.2</span></h2>
         <button type="button" class="btn-close-modal" id="btnCloseChangelog">✕ 關閉</button>
       </div>
       <div class="info-modal-body">
         <div class="info-section">
           <div class="version-title-row">
-            <h3>v2.1（最新正式版）</h3>
+            <h3>v2.2（最新正式版）</h3>
             <span class="version-tag">目前版本</span>
           </div>
           <ul>
+            <li>修正滑壘與撲壘停點：碰到壘包邊緣即停住，不再滑過頭或穿過壘包。</li>
+            <li>修正一壘跑壘規則：一壘一律不滑壘，改為正常勻速衝刺。</li>
+            <li>改為全程勻速跑壘：若本球為 SAFE，跑者從起跑階段即維持較快勻速，不會在接近壘包時突然加速。</li>
+            <li>優化自然跑步姿勢與 Tag 動作：修正擺臂與步態協調度，並讓守備員在需要 Tag 的 play 中手套確實伸向並觸碰跑者身體／手套。</li>
+            <li>同步更新「遊戲手冊」與「版本說明」。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v2.1</h3>
+            <span class="version-tag">登出、訪客遊玩、強迫進壘與盜壘</span>
+          </div>
+          <ul>
             <li>新增「登出」功能，登出後回到詢問名字的頁面；登入視窗新增「不登入遊玩」選項。</li>
-            <li>修正滑壘觸壘判定：跑者只要碰觸到壘包邊緣即算觸壘，不再要求滑到壘包正中央。</li>
             <li>新增強迫進壘封殺與滑壘規則：強迫進壘未滑壘時守備員可直接封殺接球（無需 tag），牽制、盜壘或滑壘需 tag 跑者，且強迫進壘跑者也會隨機決定是否滑壘。</li>
             <li>新增盜壘機制：一壘有人時有機率往二壘盜壘（機率低於一般狀況），發生盜壘時不論原本在哪一壘或視角皆自動轉移至二壘審視角判決。</li>
-            <li>同步更新「遊戲手冊」與「版本說明」。</li>
           </ul>
         </div>
 
@@ -1791,18 +1804,6 @@
             <li>界內／界外模式起始頁賽制更新為「50球測驗模式」與「無限制練習模式」，皆支援提早結束與重置數據。</li>
             <li>移除裁判宣判全壘打時頭頂的虛線圓圈，保留手部空中畫圈動作。</li>
             <li>全面修正全壘打飛上看台與線邊球落地後的軌跡切線銜接，球飛上看台與落地滾動順暢不再突然轉向。</li>
-          </ul>
-        </div>
-
-        <div class="info-section">
-          <div class="version-title-row">
-            <h3>v1.8</h3>
-            <span class="version-tag">細節與挑戰優化</span>
-          </div>
-          <ul>
-            <li>收緊界內／界外模式總教練挑戰時機：打中壘包、打中標竿或明顯看台球不再誤觸挑戰，僅針對壓線近距離或轉彎滾地球提出挑戰。</li>
-            <li>移除界內／界外模式留在地面的黑色與白色落點球印，保留移動球影以提升判決真實度。</li>
-            <li>修正滾地球未碰觸壘包時不再顯示壘包旁碰撞特效與音效。</li>
           </ul>
         </div>
       </div>
@@ -3814,30 +3815,25 @@
         return verifyAndEnforceBaseTouchRule(play);
       }
 
-      // 取得壘包靠近跑者方向的「邊緣觸壘點」（只要碰到邊緣即算觸壘）
+      // 取得壘包靠近跑者方向的「邊緣觸壘點」（碰到邊緣即停住，不滑過頭）
       function getBaseEdgeContactPoint(base, action) {
         const pts = getBaseBagPolygon(base);
         if (base === 1) {
-          // 跑者從左下往右上跑，先碰到的邊緣在左下側
-          const edgePt = pts[0];
-          return {
-            x: edgePt.x - (action === 'slide' ? 2 : 8),
-            y: edgePt.y + (action === 'slide' ? 2 : 6)
-          };
+          // pts[0] 為一壘壘包左下角邊緣，碰到即停
+          return { x: pts[0].x - 2, y: pts[0].y + 2 };
         } else if (base === 2) {
           if (action === 'slide') {
-            // 跑者從右側滑向二壘，先碰到右邊緣（pts[1]）
+            // 跑者從右側滑向二壘，碰到右邊緣（pts[1]）即停
             return { x: pts[1].x + 2, y: pts[1].y };
           }
-          // 牽制跑者從左側撲回二壘，先碰到左邊緣（pts[3]）
+          // 牽制跑者從左側撲回二壘，碰到左邊緣（pts[3]）即停
           return { x: pts[3].x - 2, y: pts[3].y };
         } else {
-          // base === 3
           if (action === 'slide') {
-            // 跑者從右上往左下滑向三壘，先碰到右上/右邊緣
+            // 跑者從右上往左下滑向三壘，碰到邊緣（pts[0]）即停
             return { x: pts[0].x + 2, y: pts[0].y + 2 };
           }
-          // 牽制跑者從左側撲回三壘
+          // 牽制跑者從左側撲回三壘，碰到邊緣（pts[2]）即停
           return { x: pts[2].x - 2, y: pts[2].y };
         }
       }
@@ -3846,17 +3842,12 @@
         const g = state.game;
         const has1B = g.bases[0];
         const has2B = g.bases[1];
-        const has3B = g.bases[2];
 
-        const canPickoff = has1B || has2B || has3B;
         const canSteal2B = has1B;
-
-        // 盜壘機率比其他狀況低（一壘有人時約 15% 發生盜二壘）
         const isSteal = canSteal2B && Math.random() < 0.15;
 
         let base = pickActiveBase();
         if (isSteal) {
-          // 發生盜壘時，不論原本在哪一壘或視角，自動轉移至二壘審視角判決
           base = 2;
         }
         state.previewBase = base;
@@ -3864,7 +3855,6 @@
         const canPickoffAtBase = !isSteal && g.bases[base - 1];
         const isPickoff = canPickoffAtBase && Math.random() < 0.30;
 
-        // 判斷是否為強迫進壘（例如一壘有人->二壘、一二壘有人->三壘、滿壘->三壘/本壘）
         let isForcePlay = false;
         if (!isSteal && !isPickoff) {
           if (base === 1) isForcePlay = true;
@@ -3872,22 +3862,25 @@
           else if (base === 3) isForcePlay = has1B && has2B;
         }
 
-        // 跑者隨機決定要不要滑壘（即使是強迫進壘也會隨機滑壘；盜壘則常滑壘或衝刺）
-        const runnerSlides = !isPickoff && (isSteal ? (Math.random() < 0.65) : (Math.random() < 0.48));
+        // 一壘不會滑壘（runnerSlides 恆為 false）；其他壘包／盜壘可隨機滑壘
+        const runnerSlides = !isPickoff && base !== 1 && (isSteal ? (Math.random() < 0.65) : (Math.random() < 0.48));
         const runnerAction = isPickoff ? 'dive_back' : (runnerSlides ? 'slide' : 'sprint');
 
         // 只有牽制、盜壘或滑壘需要 tag 跑者；強迫進壘且未滑壘時，直接封殺站著接球即可
         const needsTag = isPickoff || isSteal || runnerSlides || !isForcePlay;
 
-        const baseTouchTime = (isPickoff || isSteal) ? (0.95 + Math.random() * 0.2) : (1.15 + Math.random() * 0.25);
+        const isSafe = Math.random() < 0.5;
+        // 若要 SAFE，從起跑階段即維持較快勻速；若要 OUT，則起跑速度較慢，全程勻速不突然加速
+        const baseTouchTime = (isPickoff || isSteal)
+          ? (isSafe ? (0.94 + Math.random() * 0.08) : (1.14 + Math.random() * 0.10))
+          : (isSafe ? (1.12 + Math.random() * 0.10) : (1.34 + Math.random() * 0.12));
 
         const r = Math.random();
         let absDelta;
-        if (r < 0.45) absDelta = 0.015 + Math.random() * 0.035;
-        else if (r < 0.80) absDelta = 0.05 + Math.random() * 0.065;
-        else absDelta = 0.115 + Math.random() * 0.095;
+        if (r < 0.45) absDelta = 0.02 + Math.random() * 0.035;
+        else if (r < 0.80) absDelta = 0.055 + Math.random() * 0.06;
+        else absDelta = 0.115 + Math.random() * 0.085;
 
-        const isSafe = Math.random() < 0.5;
         const delta = isSafe ? absDelta : -absDelta;
         const ballCatchTime = baseTouchTime + delta;
 
@@ -3908,9 +3901,9 @@
               runnerAction: 'dive_back',
               runnerStart: { x: 615, y: 315 },
               runnerContact: edgeContact,
-              runnerEnd: { x: edgeContact.x - 10, y: edgeContact.y + 4 },
+              runnerEnd: edgeContact,
               throwStart: { x: 250, y: 265 },
-              glovePos: { x: edgeContact.x + 4, y: edgeContact.y - 12 },
+              glovePos: { x: edgeContact.x + 12, y: edgeContact.y - 16 },
               fielderAnchor: { x: 446, y: 372 },
               fielderFacing: 1,
               throwDuration: 0.48
@@ -3920,19 +3913,13 @@
               base: 1,
               isPickoff: false,
               isSteal: false,
-              playTypeLabel: runnerSlides
-                ? '一壘強迫進壘（滑壘觸殺・需 Tag）'
-                : '一壘強迫進壘（直接封殺・站著接球）',
-              runnerAction,
+              playTypeLabel: '一壘強迫進壘（勻速衝刺封殺）',
+              runnerAction: 'sprint',
               runnerStart: { x: 186, y: 540 },
               runnerContact: edgeContact,
-              runnerEnd: runnerSlides
-                ? { x: edgeContact.x + 14, y: edgeContact.y - 8 }
-                : { x: 740, y: 245 },
+              runnerEnd: { x: 740, y: 245 },
               throwStart: { x: 300, y: 235 },
-              glovePos: runnerSlides
-                ? { x: edgeContact.x + 2, y: edgeContact.y - 8 }
-                : { x: 454, y: 332 },
+              glovePos: { x: 454, y: 332 },
               fielderAnchor: { x: 466, y: 374 },
               fielderFacing: -1,
               throwDuration: 0.72
@@ -3946,15 +3933,13 @@
               isSteal: true,
               playTypeLabel: runnerSlides
                 ? '盜二壘攻防（滑壘觸殺・需 Tag）'
-                : '盜二壘攻防（衝刺觸殺・需 Tag）',
+                : '盜二壘攻防（勻速觸殺・需 Tag）',
               runnerAction,
               runnerStart: { x: 880, y: 405 },
               runnerContact: edgeContact,
-              runnerEnd: runnerSlides
-                ? { x: edgeContact.x - 14, y: edgeContact.y }
-                : { x: 445, y: 382 },
+              runnerEnd: edgeContact,
               throwStart: { x: 480, y: 525 },
-              glovePos: { x: edgeContact.x - 4, y: edgeContact.y - 10 },
+              glovePos: { x: edgeContact.x - 16, y: edgeContact.y - 14 },
               fielderAnchor: { x: 460, y: 376 },
               fielderFacing: 1,
               throwDuration: 0.70
@@ -3968,9 +3953,9 @@
               runnerAction: 'dive_back',
               runnerStart: { x: 310, y: 382 },
               runnerContact: edgeContact,
-              runnerEnd: { x: edgeContact.x + 12, y: edgeContact.y },
+              runnerEnd: edgeContact,
               throwStart: { x: 480, y: 515 },
-              glovePos: { x: edgeContact.x + 4, y: edgeContact.y - 12 },
+              glovePos: { x: edgeContact.x + 14, y: edgeContact.y - 16 },
               fielderAnchor: { x: 492, y: 374 },
               fielderFacing: -1,
               throwDuration: 0.48
@@ -3986,13 +3971,11 @@
               runnerAction,
               runnerStart: { x: 880, y: 405 },
               runnerContact: edgeContact,
-              runnerEnd: runnerSlides
-                ? { x: edgeContact.x - 14, y: edgeContact.y }
-                : { x: 445, y: 382 },
+              runnerEnd: runnerSlides ? edgeContact : { x: 445, y: 382 },
               throwStart: { x: 480, y: 525 },
               glovePos: (!needsTag)
                 ? { x: 480, y: 344 }
-                : { x: edgeContact.x - 4, y: edgeContact.y - 10 },
+                : { x: edgeContact.x - 16, y: edgeContact.y - 14 },
               fielderAnchor: { x: 462, y: 376 },
               fielderFacing: 1,
               throwDuration: 0.72
@@ -4008,9 +3991,9 @@
               runnerAction: 'dive_back',
               runnerStart: { x: 650, y: 460 },
               runnerContact: edgeContact,
-              runnerEnd: { x: edgeContact.x - 10, y: edgeContact.y - 4 },
+              runnerEnd: edgeContact,
               throwStart: { x: 700, y: 265 },
-              glovePos: { x: edgeContact.x - 4, y: edgeContact.y - 12 },
+              glovePos: { x: edgeContact.x - 14, y: edgeContact.y - 16 },
               fielderAnchor: { x: 476, y: 372 },
               fielderFacing: 1,
               throwDuration: 0.48
@@ -4026,13 +4009,11 @@
               runnerAction,
               runnerStart: { x: 830, y: 280 },
               runnerContact: edgeContact,
-              runnerEnd: runnerSlides
-                ? { x: edgeContact.x - 14, y: edgeContact.y + 8 }
-                : { x: 440, y: 415 },
+              runnerEnd: runnerSlides ? edgeContact : { x: 440, y: 415 },
               throwStart: { x: 850, y: 235 },
               glovePos: (!needsTag)
                 ? { x: 462, y: 344 }
-                : { x: edgeContact.x - 4, y: edgeContact.y - 10 },
+                : { x: edgeContact.x - 14, y: edgeContact.y - 14 },
               fielderAnchor: { x: 468, y: 374 },
               fielderFacing: 1,
               throwDuration: 0.74
@@ -4415,36 +4396,39 @@
         return u * u * p0 + 2 * u * t * p1 + t * t * p2;
       }
 
+      // 全程勻速移動（不突然加速；碰到壘包邊緣後即停住不再滑過頭）
       function getRunnerPos(play, t) {
-        const approachDur = (play.isPickoff || play.isSteal) ? 0.58 : 0.95;
+        const approachDur = (play.isPickoff || play.isSteal) ? 0.62 : 0.96;
         const approachStart = play.baseTouchTime - approachDur;
+
         if (t <= play.baseTouchTime) {
-          const p = clamp01((t - approachStart) / approachDur);
-          const eased = play.runnerAction === 'sprint' ? p : 1 - Math.pow(1 - p, 1.35);
+          const linearP = clamp01((t - approachStart) / approachDur);
           return {
-            x: lerp(play.runnerStart.x, play.runnerContact.x, eased),
-            y: lerp(play.runnerStart.y, play.runnerContact.y, eased),
-            sliding: play.runnerAction === 'slide' && t >= play.baseTouchTime - 0.38,
-            diving: play.runnerAction === 'dive_back' && t >= play.baseTouchTime - 0.36
+            x: lerp(play.runnerStart.x, play.runnerContact.x, linearP),
+            y: lerp(play.runnerStart.y, play.runnerContact.y, linearP),
+            sliding: play.runnerAction === 'slide' && t >= play.baseTouchTime - 0.36,
+            diving: play.runnerAction === 'dive_back' && t >= play.baseTouchTime - 0.34,
+            stoppedAtBase: false
           };
         } else {
-          const afterP = clamp01((t - play.baseTouchTime) / 0.65);
-          if (play.runnerAction === 'sprint') {
+          if (play.runnerAction === 'sprint' && !play.runnerSlides && !play.isSteal && !play.isPickoff) {
+            const afterP = clamp01((t - play.baseTouchTime) / 0.65);
             return {
               x: lerp(play.runnerContact.x, play.runnerEnd.x, afterP),
               y: lerp(play.runnerContact.y, play.runnerEnd.y, afterP),
               sliding: false,
-              diving: false
-            };
-          } else {
-            const stopP = 1 - Math.pow(1 - afterP, 3);
-            return {
-              x: lerp(play.runnerContact.x, play.runnerEnd.x, stopP),
-              y: lerp(play.runnerContact.y, play.runnerEnd.y, stopP),
-              sliding: play.runnerAction === 'slide',
-              diving: play.runnerAction === 'dive_back'
+              diving: false,
+              stoppedAtBase: false
             };
           }
+          // 滑壘、撲壘或盜壘碰到壘包邊緣後即停住，不滑過頭
+          return {
+            x: play.runnerContact.x,
+            y: play.runnerContact.y,
+            sliding: play.runnerAction === 'slide',
+            diving: play.runnerAction === 'dive_back',
+            stoppedAtBase: true
+          };
         }
       }
 
@@ -4904,30 +4888,48 @@
         const catchAge = t - play.ballCatchTime;
         const ax = play.fielderAnchor.x;
         const ay = play.fielderAnchor.y;
-        const gx = play.glovePos.x;
-        const gy = play.glovePos.y;
+        const runnerPos = getRunnerPos(play, t);
         const team = play.fielderTeam;
+
+        // 計算手套位置：需要 Tag 時，隨球飛行並確實伸向跑者身體／手套觸碰點
+        let gx = play.glovePos.x;
+        let gy = play.glovePos.y;
+        if (play.needsTag) {
+          const tagTargetX = runnerPos.x + (play.fielderFacing * (runnerPos.sliding || runnerPos.diving ? 10 : 6));
+          const tagTargetY = runnerPos.y - (runnerPos.sliding || runnerPos.diving ? 14 : 34);
+          if (t < play.throwStartTime) {
+            gx = ax + play.fielderFacing * 18;
+            gy = ay - 56;
+          } else if (t < play.ballCatchTime) {
+            const p = clamp01((t - play.throwStartTime) / play.throwDuration);
+            gx = lerp(ax + play.fielderFacing * 18, tagTargetX, p);
+            gy = lerp(ay - 56, tagTargetY, p);
+          } else {
+            gx = tagTargetX;
+            gy = tagTargetY;
+          }
+        }
 
         ctx.save();
         ctx.fillStyle = 'rgba(0,0,0,0.32)';
         ctx.beginPath();
-        ctx.ellipse(ax, ay + 6, 34, 12, 0, 0, Math.PI * 2);
+        ctx.ellipse(ax, ay + 6, 32, 11, 0, 0, Math.PI * 2);
         ctx.fill();
 
         const dir = play.fielderFacing;
         const standingForce = !play.needsTag;
-        const hipX = ax + (standingForce ? 0 : (play.base === 1 && !play.isPickoff ? -16 : -4 * dir));
-        const hipY = ay - (standingForce ? 40 : 34);
-        const shoulderX = hipX + (standingForce ? 0 : dir * 10);
-        const shoulderY = hipY - (standingForce ? 36 : 30);
+        const hipX = ax + (standingForce ? 0 : -3 * dir);
+        const hipY = ay - (standingForce ? 40 : 35);
+        const shoulderX = hipX + (standingForce ? 0 : dir * 6);
+        const shoulderY = hipY - (standingForce ? 36 : 32);
 
         drawLimb(hipX, hipY, ax - 3 * dir, ay - 16, ax, ay, '#f1f5f9', '#1e293b', 10);
-        drawLimb(hipX, hipY, hipX + dir * (standingForce ? 12 : 22), ay - 16, hipX + dir * (standingForce ? 14 : 28), ay + 5, '#f1f5f9', '#1e293b', 10);
+        drawLimb(hipX, hipY, hipX + dir * (standingForce ? 10 : 16), ay - 16, hipX + dir * (standingForce ? 12 : 20), ay + 5, '#f1f5f9', '#1e293b', 10);
 
         drawTorso(hipX, hipY, shoulderX, shoulderY, team.color, team.textDark ? '#111827' : '#ffffff', play.base === 1 ? '23' : (play.base === 2 ? '6' : '5'));
-        drawLimb(shoulderX - 4 * dir, shoulderY + 4, shoulderX - 20 * dir, shoulderY + 12, shoulderX - 30 * dir, shoulderY + 4, team.color, '#f1c29b', 7);
-        drawHead(shoulderX + 3 * dir, shoulderY - 15, team.cap, false, dir);
-        drawLimb(shoulderX + 4 * dir, shoulderY + 4, (shoulderX + gx) / 2, (shoulderY + gy) / 2 + 4, gx, gy, team.color, '#f1c29b', 8);
+        drawLimb(shoulderX - 3 * dir, shoulderY + 4, shoulderX - 14 * dir, shoulderY + 18, shoulderX - 18 * dir, shoulderY + 34, team.color, '#f1c29b', 7);
+        drawHead(shoulderX + 2 * dir, shoulderY - 15, team.cap, false, dir);
+        drawLimb(shoulderX + 3 * dir, shoulderY + 4, (shoulderX + gx) / 2, (shoulderY + gy) / 2 + 3, gx, gy, team.color, '#f1c29b', 8);
 
         ctx.save();
         ctx.translate(gx, gy);
@@ -4945,6 +4947,15 @@
         ctx.arc(0, 0, 6, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
+
+        // 若為 Tag 觸殺且球已進手套並在跑者附近，顯示明顯觸碰光環
+        if (play.needsTag && caught && Math.hypot(gx - runnerPos.x, gy - (runnerPos.y - 24)) <= 36) {
+          ctx.strokeStyle = 'rgba(255, 212, 59, 0.85)';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.arc(gx, gy, 16, 0, Math.PI * 2);
+          ctx.stroke();
+        }
 
         if (caught && catchAge >= 0 && catchAge <= 0.22) {
           const p = catchAge / 0.22;
@@ -4972,52 +4983,66 @@
         if (pos.diving) {
           ctx.fillStyle = 'rgba(0,0,0,0.3)';
           ctx.beginPath();
-          ctx.ellipse(-dir * 38, 6, 46, 11, 0, 0, Math.PI * 2);
+          ctx.ellipse(-dir * 34, 6, 42, 10, 0, 0, Math.PI * 2);
           ctx.fill();
 
-          const shoulderX = -dir * 26;
+          const shoulderX = -dir * 24;
           const shoulderY = -10;
-          const hipX = -dir * 58;
+          const hipX = -dir * 54;
           const hipY = -12;
 
-          drawLimb(hipX, hipY, -dir * 78, -6, -dir * 92, 0, '#f1f5f9', '#111827', 9.5);
+          drawLimb(hipX, hipY, -dir * 72, -7, -dir * 86, -2, '#f1f5f9', '#111827', 9.5);
           drawTorso(hipX, hipY, shoulderX, shoulderY, team.color, team.textDark ? '#111827' : '#ffffff', '17');
-          drawLimb(shoulderX, shoulderY, -dir * 12, -4, 0, 0, team.color, '#f1c29b', 8);
+          drawLimb(shoulderX, shoulderY, -dir * 10, -5, 0, -2, team.color, '#f1c29b', 8);
           drawHead(shoulderX + dir * 6, shoulderY - 12, team.cap, true, dir);
         } else if (pos.sliding) {
           ctx.fillStyle = 'rgba(0,0,0,0.3)';
           ctx.beginPath();
-          ctx.ellipse(-dir * 42, 6, 48, 12, 0, 0, Math.PI * 2);
+          ctx.ellipse(-dir * 36, 6, 44, 11, 0, 0, Math.PI * 2);
           ctx.fill();
 
-          const hipX = -dir * 44;
+          const hipX = -dir * 40;
           const hipY = -8;
-          const shoulderX = -dir * 72;
-          const shoulderY = -28;
+          const shoulderX = -dir * 66;
+          const shoulderY = -24;
 
-          drawLimb(hipX, hipY, -dir * 26, -20, -dir * 20, -2, '#f1f5f9', '#111827', 9.5);
-          drawLimb(hipX, hipY, -dir * 22, -4, 0, 0, '#f1f5f9', '#111827', 10);
+          drawLimb(hipX, hipY, -dir * 22, -16, -dir * 14, -2, '#f1f5f9', '#111827', 9.5);
+          drawLimb(hipX, hipY, -dir * 18, -4, 0, 0, '#f1f5f9', '#111827', 10);
           drawTorso(hipX, hipY, shoulderX, shoulderY, team.color, team.textDark ? '#111827' : '#ffffff', '17');
-          drawLimb(shoulderX, shoulderY, shoulderX - dir * 10, shoulderY - 16, shoulderX + dir * 4, shoulderY - 26, team.color, '#f1c29b', 7);
-          drawHead(shoulderX - dir * 6, shoulderY - 14, team.cap, true, dir);
+          drawLimb(shoulderX, shoulderY, shoulderX + dir * 10, shoulderY - 6, shoulderX + dir * 22, shoulderY - 2, team.color, '#f1c29b', 7);
+          drawHead(shoulderX - dir * 5, shoulderY - 14, team.cap, true, dir);
         } else {
-          const cycle = Math.sin(t * 26);
-          const hipX = -dir * 22;
+          // 自然勻速跑步步態（停止於壘包邊緣時回到站立/觸壘姿態）
+          const runPhase = pos.stoppedAtBase ? 0 : Math.sin(t * 18);
+          const hipX = -dir * 6;
           const hipY = -44;
-          const shoulderX = hipX + dir * 10;
+          const shoulderX = hipX + dir * 6;
           const shoulderY = hipY - 34;
 
           ctx.fillStyle = 'rgba(0,0,0,0.3)';
           ctx.beginPath();
-          ctx.ellipse(hipX + dir * 6, 4, 28, 10, 0, 0, Math.PI * 2);
+          ctx.ellipse(0, 4, 24, 9, 0, 0, Math.PI * 2);
           ctx.fill();
 
-          drawLimb(hipX, hipY, hipX - dir * 18, hipY + 20, hipX - dir * (28 + cycle * 12), -6, '#f1f5f9', '#111827', 9.5);
-          drawLimb(hipX, hipY, -dir * 10, -22, 0, 0, '#f1f5f9', '#111827', 10);
-          drawLimb(shoulderX, shoulderY + 4, shoulderX - dir * 16, shoulderY + 18, shoulderX - dir * (22 - cycle * 10), shoulderY + 10, team.color, '#f1c29b', 7);
+          // 後腿與前腿自然交錯摆動
+          const backKneeX = hipX - dir * (12 + runPhase * 12);
+          const backKneeY = hipY + 18 - Math.max(0, -runPhase) * 6;
+          const backFootX = hipX - dir * (20 + runPhase * 22);
+          const backFootY = -2 - Math.max(0, runPhase) * 8;
+
+          const frontKneeX = hipX + dir * (12 - runPhase * 12);
+          const frontKneeY = hipY + 18 - Math.max(0, runPhase) * 6;
+          const frontFootX = hipX + dir * (20 - runPhase * 22);
+          const frontFootY = -2 - Math.max(0, -runPhase) * 8;
+
+          drawLimb(hipX, hipY, backKneeX, backKneeY, backFootX, backFootY, '#f1f5f9', '#111827', 9.5);
+          drawLimb(hipX, hipY, frontKneeX, frontKneeY, frontFootX, frontFootY, '#f1f5f9', '#111827', 10);
+
+          // 手臂與對側腿反向自然擺動
+          drawLimb(shoulderX, shoulderY + 4, shoulderX - dir * (8 - runPhase * 10), shoulderY + 18, shoulderX - dir * (12 - runPhase * 18), shoulderY + 28, team.color, '#f1c29b', 7);
           drawTorso(hipX, hipY, shoulderX, shoulderY, team.color, team.textDark ? '#111827' : '#ffffff', '17');
-          drawLimb(shoulderX + dir * 2, shoulderY + 4, shoulderX + dir * 16, shoulderY + 16, shoulderX + dir * (24 + cycle * 10), shoulderY + 4, team.color, '#f1c29b', 7.5);
-          drawHead(shoulderX + dir * 4, shoulderY - 14, team.cap, true, dir);
+          drawLimb(shoulderX, shoulderY + 4, shoulderX + dir * (8 + runPhase * 10), shoulderY + 18, shoulderX + dir * (12 + runPhase * 18), shoulderY + 28, team.color, '#f1c29b', 7.5);
+          drawHead(shoulderX + dir * 2, shoulderY - 14, team.cap, true, dir);
         }
 
         ctx.restore();
