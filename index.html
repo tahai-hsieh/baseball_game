@@ -1802,7 +1802,7 @@
         <div class="info-section">
           <h3>模式一：Safe / Out 判決</h3>
           <ul>
-            <li><strong>核心玩法：</strong>緊盯跑者碰觸壘包邊緣與守備員手套接球的瞬間（搭配接球聲與踩壘聲），迅速宣判安全上壘（SAFE）或出局（OUT）。球先進入手套為 OUT，跑者先觸壘為 SAFE。</li>
+            <li><strong>核心玩法：</strong>緊盯跑者碰觸壘包任一邊緣或面積與守備員手套接球的瞬間（搭配接球聲與踩壘聲），迅速宣判安全上壘（SAFE）或出局（OUT）。球先進入手套為 OUT，跑者先觸壘為 SAFE。</li>
             <li><strong>二壘全滑壘與邊緣停點：</strong>二壘非牽制攻防一律採滑壘，碰到壘包邊緣即馬上停住；一壘跑壘採正常衝刺，不會滑壘。</li>
             <li><strong>盜壘機制與視角自動切換：</strong>一壘有人時有機率往二壘盜壘（機率低於一般狀況）；一旦發生盜壘，不論原本在哪一壘或視角，畫面都會自動轉移至「二壘審視角」進行判決。</li>
             <li><strong>壘審視角切換：</strong>一壘審為預設視角；當一壘有跑者時會解鎖「二壘審」視角，二壘有跑者時會解鎖「三壘審」視角，也可選擇「隨機切換」依壘上狀況自動出題。</li>
@@ -1854,14 +1854,25 @@
   <div class="info-modal hidden" id="changelogModal" role="dialog" aria-modal="true" aria-labelledby="changelogModalTitle">
     <div class="info-modal-card">
       <div class="info-modal-header">
-        <h2 id="changelogModalTitle">📋 版本說明 <span class="version-badge-now">目前版本 v2.5</span></h2>
+        <h2 id="changelogModalTitle">📋 版本說明 <span class="version-badge-now">目前版本 v2.6</span></h2>
         <button type="button" class="btn-close-modal" id="btnCloseChangelog">✕ 關閉</button>
       </div>
       <div class="info-modal-body">
         <div class="info-section">
           <div class="version-title-row">
-            <h3>v2.5（最新正式版）</h3>
+            <h3>v2.6（最新正式版）</h3>
             <span class="version-tag">目前版本</span>
+          </div>
+          <ul>
+            <li>修正滑壘與撲壘停點與觸壘判定：跑者前端／身體只要先碰到壘包任一邊緣或面積即停住並算觸壘，不再滑穿到壘包另一側或僅依單一角落判定。</li>
+            <li>同步更新「遊戲手冊」與「版本說明」。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v2.5</h3>
+            <span class="version-tag">紀錄刪除、空紀錄過濾與登入按鈕</span>
           </div>
           <ul>
             <li>新增「刪除紀錄」功能與二次確認視窗（「刪除紀錄後無法復原，是否確定要刪除紀錄？」與指定選項），刪除後同步移除網頁端與 Firebase 雲端資料。</li>
@@ -2898,7 +2909,7 @@
           btnH.innerHTML = `<span class="swatch" style="background:${t.color}"></span><span>${t.name}</span>`;
           btnH.addEventListener('click', () => {
             if (state.setup.awayTeamId === t.id) {
-              state.setup.awayTeamId = state.setup.homeTeamId;
+              state.setup.homeTeamId = state.setup.awayTeamId;
             }
             state.setup.homeTeamId = t.id;
             renderTeamSelectors();
@@ -4147,22 +4158,38 @@
         return verifyAndEnforceBaseTouchRule(play);
       }
 
-      // 壘包邊緣停點（碰到邊緣即停住，不再往前）
-      function getBaseEdgeContactPoint(base, action) {
+      // 依壘包邊緣與面積計算最先觸壘停點（不只設定單一角落）
+      function getBaseEdgeContactPoint(base, action, runnerStart) {
         const pts = getBaseBagPolygon(base);
-        if (base === 1) {
-          return { x: pts[0].x - 2, y: pts[0].y + 2 };
-        } else if (base === 2) {
-          if (action === 'slide') {
-            return { x: pts[1].x + 2, y: pts[1].y };
+        const startPt = runnerStart || { x: 480, y: 382 };
+        let bestPt = { x: (pts[0].x + pts[1].x + pts[2].x + pts[3].x) / 4, y: (pts[0].y + pts[1].y + pts[2].y + pts[3].y) / 4 };
+        let bestDist = Infinity;
+
+        for (let i = 0; i < pts.length; i++) {
+          const a = pts[i];
+          const b = pts[(i + 1) % pts.length];
+          const steps = 12;
+          for (let s = 0; s <= steps; s++) {
+            const u = s / steps;
+            const px = lerp(a.x, b.x, u);
+            const py = lerp(a.y, b.y, u);
+            const d = Math.hypot(px - startPt.x, py - startPt.y);
+            if (d < bestDist) {
+              bestDist = d;
+              bestPt = { x: px, y: py };
+            }
           }
-          return { x: pts[3].x - 2, y: pts[3].y };
-        } else {
-          if (action === 'slide') {
-            return { x: pts[0].x + 2, y: pts[0].y + 2 };
-          }
-          return { x: pts[2].x - 2, y: pts[2].y };
         }
+
+        const c = getBaseBagCenter(base);
+        const toCenterX = c.x - bestPt.x;
+        const toCenterY = c.y - bestPt.y;
+        const len = Math.hypot(toCenterX, toCenterY) || 1;
+        const inset = action === 'slide' || action === 'dive_back' ? 4 : 2;
+        return {
+          x: bestPt.x + (toCenterX / len) * inset,
+          y: bestPt.y + (toCenterY / len) * inset
+        };
       }
 
       function generatePlay() {
@@ -4203,18 +4230,19 @@
         const fielderTeam = g.isTop ? g.homeTeam : g.awayTeam;
 
         const basePos = getBaseBagCenter(base);
-        const edgeContact = getBaseEdgeContactPoint(base, runnerAction);
 
         let cfg;
         if (base === 1) {
           if (isPickoff) {
+            const rStart = { x: 615, y: 315 };
+            const edgeContact = getBaseEdgeContactPoint(1, 'dive_back', rStart);
             cfg = {
               base: 1,
               isPickoff: true,
               isSteal: false,
               playTypeLabel: '一壘牽制（Pickoff）',
               runnerAction: 'dive_back',
-              runnerStart: { x: 615, y: 315 },
+              runnerStart: rStart,
               runnerContact: edgeContact,
               runnerEnd: edgeContact,
               throwStart: { x: 250, y: 265 },
@@ -4224,13 +4252,15 @@
               throwDuration: 0.48
             };
           } else {
+            const rStart = { x: 186, y: 540 };
+            const edgeContact = getBaseEdgeContactPoint(1, 'sprint', rStart);
             cfg = {
               base: 1,
               isPickoff: false,
               isSteal: false,
               playTypeLabel: '一壘封殺（衝刺）',
               runnerAction: 'sprint',
-              runnerStart: { x: 186, y: 540 },
+              runnerStart: rStart,
               runnerContact: edgeContact,
               runnerEnd: { x: 740, y: 245 },
               throwStart: { x: 300, y: 235 },
@@ -4242,13 +4272,15 @@
           }
         } else if (base === 2) {
           if (isSteal) {
+            const rStart = { x: 880, y: 405 };
+            const edgeContact = getBaseEdgeContactPoint(2, 'slide', rStart);
             cfg = {
               base: 2,
               isPickoff: false,
               isSteal: true,
               playTypeLabel: '盜二壘攻防（滑壘）',
               runnerAction: 'slide',
-              runnerStart: { x: 880, y: 405 },
+              runnerStart: rStart,
               runnerContact: edgeContact,
               runnerEnd: edgeContact,
               throwStart: { x: 480, y: 525 },
@@ -4258,13 +4290,15 @@
               throwDuration: 0.70
             };
           } else if (isPickoff) {
+            const rStart = { x: 310, y: 382 };
+            const edgeContact = getBaseEdgeContactPoint(2, 'dive_back', rStart);
             cfg = {
               base: 2,
               isPickoff: true,
               isSteal: false,
               playTypeLabel: '二壘牽制（Pickoff）',
               runnerAction: 'dive_back',
-              runnerStart: { x: 310, y: 382 },
+              runnerStart: rStart,
               runnerContact: edgeContact,
               runnerEnd: edgeContact,
               throwStart: { x: 480, y: 515 },
@@ -4274,13 +4308,15 @@
               throwDuration: 0.48
             };
           } else {
+            const rStart = { x: 880, y: 405 };
+            const edgeContact = getBaseEdgeContactPoint(2, 'slide', rStart);
             cfg = {
               base: 2,
               isPickoff: false,
               isSteal: false,
               playTypeLabel: '二壘滑壘攻防',
               runnerAction: 'slide',
-              runnerStart: { x: 880, y: 405 },
+              runnerStart: rStart,
               runnerContact: edgeContact,
               runnerEnd: edgeContact,
               throwStart: { x: 480, y: 525 },
@@ -4292,13 +4328,15 @@
           }
         } else {
           if (isPickoff) {
+            const rStart = { x: 650, y: 460 };
+            const edgeContact = getBaseEdgeContactPoint(3, 'dive_back', rStart);
             cfg = {
               base: 3,
               isPickoff: true,
               isSteal: false,
               playTypeLabel: '三壘牽制（Pickoff）',
               runnerAction: 'dive_back',
-              runnerStart: { x: 650, y: 460 },
+              runnerStart: rStart,
               runnerContact: edgeContact,
               runnerEnd: edgeContact,
               throwStart: { x: 700, y: 265 },
@@ -4308,13 +4346,15 @@
               throwDuration: 0.48
             };
           } else {
+            const rStart = { x: 830, y: 280 };
+            const edgeContact = getBaseEdgeContactPoint(3, 'sprint', rStart);
             cfg = {
               base: 3,
               isPickoff: false,
               isSteal: false,
               playTypeLabel: '三壘攻防',
               runnerAction: 'sprint',
-              runnerStart: { x: 830, y: 280 },
+              runnerStart: rStart,
               runnerContact: edgeContact,
               runnerEnd: { x: 440, y: 415 },
               throwStart: { x: 850, y: 235 },
@@ -4704,12 +4744,16 @@
         const approachStart = play.baseTouchTime - approachDur;
         if (t <= play.baseTouchTime) {
           const p = clamp01((t - approachStart) / approachDur);
+          const rawX = lerp(play.runnerStart.x, play.runnerContact.x, p);
+          const rawY = lerp(play.runnerStart.y, play.runnerContact.y, p);
+          const bagPts = getBaseBagPolygon(play.base);
+          const hitBagEarly = isPointInPoly(rawX, rawY, bagPts);
           return {
-            x: lerp(play.runnerStart.x, play.runnerContact.x, p),
-            y: lerp(play.runnerStart.y, play.runnerContact.y, p),
-            sliding: play.runnerAction === 'slide' && t >= play.baseTouchTime - 0.36,
-            diving: play.runnerAction === 'dive_back' && t >= play.baseTouchTime - 0.34,
-            stoppedAtBase: false
+            x: hitBagEarly ? play.runnerContact.x : rawX,
+            y: hitBagEarly ? play.runnerContact.y : rawY,
+            sliding: play.runnerAction === 'slide' && t >= play.baseTouchTime - 0.36 && !hitBagEarly,
+            diving: play.runnerAction === 'dive_back' && t >= play.baseTouchTime - 0.34 && !hitBagEarly,
+            stoppedAtBase: hitBagEarly
           };
         } else {
           if (play.base === 1 && !play.isPickoff && !play.isSteal) {
