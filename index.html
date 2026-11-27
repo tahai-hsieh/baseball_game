@@ -1303,7 +1303,7 @@
 </head>
 <body>
 
-  <!-- ================= 名字登入彈窗（僅限新打開頁面或登出時顯示） ================= -->
+  <!-- ================= 名字登入彈窗（僅限新打開頁面、登出或點擊登入時顯示） ================= -->
   <div class="info-modal" id="nameLoginModal" role="dialog" aria-modal="true" aria-labelledby="nameLoginTitle">
     <div class="login-modal-card">
       <h2 id="nameLoginTitle">⚾ 歡迎來到棒球壘審模擬器</h2>
@@ -1321,6 +1321,7 @@
       <div class="mode-top-bar">
         <div class="player-bar-left">
           <div class="player-badge-text">目前狀態：<strong id="homePlayerName">--</strong></div>
+          <button type="button" class="btn-logout-inline hidden" id="btnLoginHome">登入</button>
           <button type="button" class="btn-logout-inline hidden" id="btnLogoutHome">登出</button>
         </div>
         <button type="button" class="leaderboard-text-link" id="btnOpenHistory">紀錄</button>
@@ -1363,6 +1364,7 @@
       <div class="mode-top-bar">
         <div class="player-bar-left">
           <div class="player-badge-text">目前狀態：<strong id="startPlayerName">--</strong></div>
+          <button type="button" class="btn-logout-inline hidden" id="btnLoginStart">登入</button>
           <button type="button" class="btn-logout-inline hidden" id="btnLogoutStart">登出</button>
         </div>
         <button type="button" class="leaderboard-text-link" id="btnOpenStartLeaderboard">排行榜</button>
@@ -1767,7 +1769,7 @@
           <h3>遊戲簡介與帳號登入／排行榜</h3>
           <p>「棒球壘審模擬器」讓你站上實際棒球場的壘審視角進行實戰執法，透過視覺與接球音效做出即時宣判，並體驗電視輔助判決重播系統。本網站支援離線遊玩，也可加入手機主畫面當作應用程式使用。</p>
           <ul>
-            <li><strong>登入、登出與不登入遊玩：</strong>首次開啟頁面會詢問玩家名字，日後輸入相同名稱即自動登入並累積個人紀錄與排行；登入後可點選「登出」回到詢問名字的頁面；亦可在詢問名字時選擇「不登入遊玩」直接體驗。</li>
+            <li><strong>登入、登出與不登入遊玩：</strong>首次開啟頁面會詢問玩家名字，日後輸入相同名稱即自動登入並累積個人紀錄與排行；登入後可點選「登出」回到詢問名字的頁面；亦可在詢問名字時選擇「不登入遊玩」直接體驗，未登入狀態下隨時可點選「登入」輸入名稱登入。</li>
             <li><strong>排行榜與紀錄：</strong>Safe/Out 起始頁右上角提供「排行榜」（分「九局制排行」與「四局制排行」，內含「初判準確率排行」、「最終準確率排行」與「綜合評價排行（S金眼裁判次數同名加總）」）；界內／界外起始頁右上角提供「排行榜」（僅 50 球測驗模式錄入，直接進入三個排行選項）；首頁右上角「紀錄」可查看登入玩家的歷史遊玩紀錄。</li>
             <li><strong>壘審綜合評價分級：</strong>依「初判準確率」與「最終準確率」的平均計算：95% 以上為「S 金眼裁判」、90%～94.9% 為「A 頂級裁判」、85%～89.9% 為「B 尚可接受」、80%～84.9% 為「C 待加強」、80% 以下為「F 下放二軍」。</li>
           </ul>
@@ -2061,6 +2063,8 @@
 
         homePlayerName: document.getElementById('homePlayerName'),
         startPlayerName: document.getElementById('startPlayerName'),
+        btnLoginHome: document.getElementById('btnLoginHome'),
+        btnLoginStart: document.getElementById('btnLoginStart'),
         btnLogoutHome: document.getElementById('btnLogoutHome'),
         btnLogoutStart: document.getElementById('btnLogoutStart'),
         btnOpenHistory: document.getElementById('btnOpenHistory'),
@@ -2319,11 +2323,15 @@
         if (state.isLoggedIn && state.playerName) {
           ui.homePlayerName.textContent = state.playerName;
           ui.startPlayerName.textContent = state.playerName;
+          ui.btnLoginHome.classList.add('hidden');
+          ui.btnLoginStart.classList.add('hidden');
           ui.btnLogoutHome.classList.remove('hidden');
           ui.btnLogoutStart.classList.remove('hidden');
         } else {
           ui.homePlayerName.textContent = '未登入（訪客遊玩）';
           ui.startPlayerName.textContent = '未登入（訪客遊玩）';
+          ui.btnLoginHome.classList.remove('hidden');
+          ui.btnLoginStart.classList.remove('hidden');
           ui.btnLogoutHome.classList.add('hidden');
           ui.btnLogoutStart.classList.add('hidden');
         }
@@ -2350,14 +2358,7 @@
         ui.nameLoginModal.classList.add('hidden');
       }
 
-      function logoutToLoginModal() {
-        state.playing = false;
-        state.isLoggedIn = false;
-        state.playerName = '';
-        try {
-          sessionStorage.removeItem(SESSION_LOGGED_IN_KEY);
-        } catch (_) {}
-        updateAccountHeaderUI();
+      function openLoginModal() {
         let savedName = '';
         try {
           savedName = localStorage.getItem(LAST_PLAYER_NAME_KEY) || '';
@@ -2366,6 +2367,17 @@
         ui.loginErrorText.textContent = '';
         ui.nameLoginModal.classList.remove('hidden');
         setTimeout(() => ui.playerNameInput.focus(), 60);
+      }
+
+      function logoutToLoginModal() {
+        state.playing = false;
+        state.isLoggedIn = false;
+        state.playerName = '';
+        try {
+          sessionStorage.removeItem(SESSION_LOGGED_IN_KEY);
+        } catch (_) {}
+        updateAccountHeaderUI();
+        openLoginModal();
       }
 
       function initNameGateOnFirstLoad() {
@@ -2592,7 +2604,7 @@
           ui.historyModalBody.innerHTML = `
             <div class="info-section">
               <p>您目前為<strong>「不登入遊玩」</strong>狀態，因此不會累積具名帳號的歷史遊玩紀錄。</p>
-              <p>若要保存並查詢個人遊玩紀錄，請先點選「登出」並輸入您的玩家名字登入。</p>
+              <p>若要保存並查詢個人遊玩紀錄，請先點選畫面左上角的「登入」按鈕並輸入您的玩家名字登入。</p>
             </div>
           `;
           ui.historyModal.classList.remove('hidden');
@@ -5455,6 +5467,8 @@
       // ================= 事件綁定 =================
       ui.btnConfirmPlayerName.addEventListener('click', handleConfirmPlayerName);
       ui.btnPlayWithoutLogin.addEventListener('click', applyGuestMode);
+      ui.btnLoginHome.addEventListener('click', openLoginModal);
+      ui.btnLoginStart.addEventListener('click', openLoginModal);
       ui.btnLogoutHome.addEventListener('click', logoutToLoginModal);
       ui.btnLogoutStart.addEventListener('click', logoutToLoginModal);
       ui.playerNameInput.addEventListener('keydown', (e) => {
