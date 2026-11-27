@@ -462,7 +462,7 @@
       padding: 11px 14px;
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 6px;
       font-size: 0.86rem;
     }
 
@@ -474,6 +474,71 @@
       gap: 8px;
       font-weight: 800;
       color: #fff;
+    }
+
+    .history-card-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-delete-record {
+      background: rgba(230, 69, 69, 0.16);
+      color: #ff8787;
+      border: 1px solid rgba(230, 69, 69, 0.55);
+      padding: 3px 9px;
+      font-size: 0.76rem;
+      border-radius: 6px;
+    }
+
+    .btn-delete-record:hover:not(:disabled) {
+      background: var(--out);
+      color: #fff;
+      border-color: var(--out);
+    }
+
+    .delete-confirm-card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px 20px;
+      box-shadow: 0 22px 55px rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .delete-confirm-card h3 {
+      margin: 0;
+      font-size: 1.08rem;
+      color: #fff;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .delete-confirm-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn-confirm-delete {
+      background: var(--out);
+      color: #fff;
+      padding: 12px 14px;
+      font-size: 0.92rem;
+      border-radius: 10px;
+    }
+
+    .btn-cancel-delete {
+      background: var(--panel-light);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 11px 14px;
+      font-size: 0.92rem;
+      border-radius: 10px;
     }
 
     .history-tag {
@@ -1679,6 +1744,17 @@
     </div>
   </div>
 
+  <!-- ================= 刪除紀錄確認彈窗 ================= -->
+  <div class="info-modal hidden" id="deleteConfirmModal" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitle">
+    <div class="delete-confirm-card">
+      <h3 id="deleteConfirmTitle">刪除紀錄後無法復原，是否確定要刪除紀錄？</h3>
+      <div class="delete-confirm-actions">
+        <button type="button" class="btn-confirm-delete" id="btnConfirmDeleteRecord">是，我以了解刪除紀錄後無法復原，確定刪除</button>
+        <button type="button" class="btn-cancel-delete" id="btnCancelDeleteRecord">取消</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= 6. 遊戲手冊彈窗 ================= -->
   <div class="info-modal hidden" id="manualModal" role="dialog" aria-modal="true" aria-labelledby="manualModalTitle">
     <div class="info-modal-card">
@@ -1884,11 +1960,59 @@
         writeLocalCache(cache);
 
         try {
-          await fetch(`${FIREBASE_DB_URL}/${path}.json`, {
+          const res = await fetch(`${FIREBASE_DB_URL}/${path}.json`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(entry)
           });
+          if (res.ok) {
+            const created = await res.json();
+            if (created && created.name) {
+              entry.id = created.name;
+            }
+          }
+        } catch (_) {}
+      }
+
+      async function fbDeleteEntryByRecordId(path, recordId, fbId) {
+        const cache = readLocalCache();
+        if (path === 'leaderboard') {
+          cache.leaderboard = cache.leaderboard.filter(
+            item => !(recordId && item.recordId === recordId) && !(fbId && item.id === fbId)
+          );
+        }
+        if (path === 'history') {
+          cache.history = cache.history.filter(
+            item => !(recordId && item.recordId === recordId) && !(fbId && item.id === fbId)
+          );
+        }
+        writeLocalCache(cache);
+
+        try {
+          if (fbId) {
+            await fetch(`${FIREBASE_DB_URL}/${path}/${encodeURIComponent(fbId)}.json`, {
+              method: 'DELETE'
+            });
+          }
+          if (recordId) {
+            const res = await fetch(`${FIREBASE_DB_URL}/${path}.json`);
+            if (res.ok) {
+              const data = await res.json();
+              if (data && typeof data === 'object') {
+                const delPromises = [];
+                Object.entries(data).forEach(([key, val]) => {
+                  if (val && val.recordId === recordId) {
+                    delPromises.push(
+                      fetch(`${FIREBASE_DB_URL}/${path}/${encodeURIComponent(key)}.json`, {
+                        method: 'DELETE'
+                      })
+                    );
+                  }
+                });
+                await Promise.all(delPromises);
+              }
+            }
+          }
         } catch (_) {}
       }
 
@@ -1900,23 +2024,16 @@
           if (!res.ok) return { items: localItems, fromCloud: false };
           const data = await res.json();
           if (!data || typeof data !== 'object') {
-            return { items: localItems, fromCloud: true };
+            if (path === 'leaderboard') cache.leaderboard = [];
+            if (path === 'history') cache.history = [];
+            writeLocalCache(cache);
+            return { items: [], fromCloud: true };
           }
           const cloudItems = Object.entries(data).map(([id, val]) => ({ id, ...val }));
-          const mergedMap = new Map();
-          localItems.forEach((item, idx) => {
-            const key = item.recordId || item.id || `local_${idx}`;
-            mergedMap.set(key, item);
-          });
-          cloudItems.forEach((item, idx) => {
-            const key = item.recordId || item.id || `cloud_${idx}`;
-            mergedMap.set(key, item);
-          });
-          const merged = Array.from(mergedMap.values());
-          if (path === 'leaderboard') cache.leaderboard = merged;
-          if (path === 'history') cache.history = merged;
+          if (path === 'leaderboard') cache.leaderboard = cloudItems;
+          if (path === 'history') cache.history = cloudItems;
           writeLocalCache(cache);
-          return { items: merged, fromCloud: true };
+          return { items: cloudItems, fromCloud: true };
         } catch (_) {
           return { items: localItems, fromCloud: false };
         }
@@ -1969,6 +2086,11 @@
         historyModalTitle: document.getElementById('historyModalTitle'),
         historyModalBody: document.getElementById('historyModalBody'),
         btnCloseHistory: document.getElementById('btnCloseHistory'),
+
+        deleteConfirmModal: document.getElementById('deleteConfirmModal'),
+        deleteConfirmTitle: document.getElementById('deleteConfirmTitle'),
+        btnConfirmDeleteRecord: document.getElementById('btnConfirmDeleteRecord'),
+        btnCancelDeleteRecord: document.getElementById('btnCancelDeleteRecord'),
 
         homeScreen: document.getElementById('homeScreen'),
         startScreen: document.getElementById('startScreen'),
@@ -2120,6 +2242,7 @@
         previewBase: 1,
         soundEnabled: true,
         currentGameRecorded: false,
+        pendingDeleteRecord: null,
 
         lbState: {
           mode: 'safe_out',
@@ -2281,6 +2404,7 @@
       // ================= 排行榜與歷史紀錄儲存、計算與渲染 =================
       async function recordCompletedGame(summaryPayload) {
         if (!state.isLoggedIn || !state.playerName || state.currentGameRecorded) return;
+        if (!summaryPayload.totalBalls || summaryPayload.totalBalls <= 0 || summaryPayload.grade === '尚未執法') return;
         state.currentGameRecorded = true;
 
         const nowStr = formatDateTimeNow();
@@ -2481,7 +2605,11 @@
 
         const { items, fromCloud } = await fbFetchAll('history');
         const myLogs = items
-          .filter(it => String(it.playerName || '').trim() === state.playerName)
+          .filter(it => {
+            if (String(it.playerName || '').trim() !== state.playerName) return false;
+            if (!it.totalBalls || Number(it.totalBalls) <= 0 || it.grade === '尚未執法') return false;
+            return true;
+          })
           .sort((a, b) => String(b.timestamp || '').localeCompare(String(a.timestamp || '')));
 
         const syncNote = `<div style="font-size:0.78rem;color:var(--muted);">${fromCloud ? '資料來源：Firebase Realtime Database' : '資料來源：本機快取'}｜共 ${myLogs.length} 筆紀錄</div>`;
@@ -2496,11 +2624,14 @@
           return;
         }
 
-        const cardsHtml = myLogs.map(log => `
-          <div class="history-card">
+        const cardsHtml = myLogs.map((log, idx) => `
+          <div class="history-card" data-log-index="${idx}">
             <div class="history-card-top">
               <span>${log.modeLabel || log.gameMode} — ${log.optionLabel || ''}</span>
-              <span class="history-tag">${log.grade || '--'}</span>
+              <div class="history-card-actions">
+                <span class="history-tag">${log.grade || '--'}</span>
+                <button type="button" class="btn-delete-record" data-record-id="${encodeURIComponent(log.recordId || '')}" data-fb-id="${encodeURIComponent(log.id || '')}">刪除紀錄</button>
+              </div>
             </div>
             <div class="history-result">結果：${log.resultSummary || '--'}</div>
             <div class="history-meta">
@@ -2510,6 +2641,33 @@
         `).join('');
 
         ui.historyModalBody.innerHTML = `${syncNote}${cardsHtml}`;
+
+        ui.historyModalBody.querySelectorAll('.btn-delete-record').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const recordId = decodeURIComponent(btn.dataset.recordId || '');
+            const fbId = decodeURIComponent(btn.dataset.fbId || '');
+            state.pendingDeleteRecord = { recordId, fbId };
+            ui.deleteConfirmModal.classList.remove('hidden');
+          });
+        });
+      }
+
+      async function executeDeleteRecord() {
+        if (!state.pendingDeleteRecord) return;
+        const { recordId, fbId } = state.pendingDeleteRecord;
+        state.pendingDeleteRecord = null;
+        ui.btnConfirmDeleteRecord.disabled = true;
+        ui.btnCancelDeleteRecord.disabled = true;
+
+        try {
+          await fbDeleteEntryByRecordId('history', recordId, fbId);
+          await fbDeleteEntryByRecordId('leaderboard', recordId, '');
+        } finally {
+          ui.btnConfirmDeleteRecord.disabled = false;
+          ui.btnCancelDeleteRecord.disabled = false;
+          ui.deleteConfirmModal.classList.add('hidden');
+          await openHistoryModal();
+        }
       }
 
       // ================= 首頁與起始頁切換 =================
@@ -3848,7 +4006,6 @@
         const canPickoffAtBase = !isSteal && g.bases[base - 1];
         const isPickoff = canPickoffAtBase && Math.random() < 0.30;
 
-        // 二壘非牽制攻防改為全滑壘；一壘不滑壘
         const runnerAction = isPickoff ? 'dive_back' : (base === 2 ? 'slide' : 'sprint');
         const runnerSlides = runnerAction === 'slide';
 
@@ -4848,7 +5005,6 @@
         ctx.restore();
       }
 
-      // 恢復原本守備員接球姿勢（無 Tag 伸手邏輯）
       function drawFielderFigurine(play, t) {
         const caught = t >= play.ballCatchTime;
         const catchAge = t - play.ballCatchTime;
@@ -5320,6 +5476,18 @@
         if (e.target === ui.historyModal) ui.historyModal.classList.add('hidden');
       });
 
+      ui.btnConfirmDeleteRecord.addEventListener('click', executeDeleteRecord);
+      ui.btnCancelDeleteRecord.addEventListener('click', () => {
+        state.pendingDeleteRecord = null;
+        ui.deleteConfirmModal.classList.add('hidden');
+      });
+      ui.deleteConfirmModal.addEventListener('click', (e) => {
+        if (e.target === ui.deleteConfirmModal) {
+          state.pendingDeleteRecord = null;
+          ui.deleteConfirmModal.classList.add('hidden');
+        }
+      });
+
       ui.btnSelectSafeOut.addEventListener('click', () => selectModeAndGoStart('safe_out'));
       ui.btnSelectFairFoul.addEventListener('click', () => selectModeAndGoStart('fair_foul'));
       ui.btnBackToHomeFromStart.addEventListener('click', goToHome);
@@ -5460,6 +5628,13 @@
       });
 
       window.addEventListener('keydown', (e) => {
+        if (!ui.deleteConfirmModal.classList.contains('hidden')) {
+          if (e.key === 'Escape') {
+            state.pendingDeleteRecord = null;
+            ui.deleteConfirmModal.classList.add('hidden');
+          }
+          return;
+        }
         if (!ui.nameLoginModal.classList.contains('hidden')) return;
         if (e.key === 'Escape') {
           ui.manualModal.classList.add('hidden');
