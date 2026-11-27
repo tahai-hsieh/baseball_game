@@ -1803,6 +1803,7 @@
           <h3>模式一：Safe / Out 判決</h3>
           <ul>
             <li><strong>核心玩法：</strong>緊盯跑者碰觸壘包任一邊緣或面積與守備員手套接球的瞬間（搭配接球聲與踩壘聲），迅速宣判安全上壘（SAFE）或出局（OUT）。球先進入手套為 OUT，跑者先觸壘為 SAFE。</li>
+            <li><strong>勻速跑壘與提前起跑：</strong>跑者全程維持等速移動，不會為了 SAFE 在壘包前突然加速；若結果為 SAFE，則透過較早起跑／較早出發呈現先到壘包的時間差。</li>
             <li><strong>二壘全滑壘與邊緣停點：</strong>二壘非牽制攻防一律採滑壘，碰到壘包邊緣即馬上停住；一壘跑壘採正常衝刺，不會滑壘。</li>
             <li><strong>盜壘機制與視角自動切換：</strong>一壘有人時有機率往二壘盜壘（機率低於一般狀況）；一旦發生盜壘，不論原本在哪一壘或視角，畫面都會自動轉移至「二壘審視角」進行判決。</li>
             <li><strong>壘審視角切換：</strong>一壘審為預設視角；當一壘有跑者時會解鎖「二壘審」視角，二壘有跑者時會解鎖「三壘審」視角，也可選擇「隨機切換」依壘上狀況自動出題。</li>
@@ -1854,14 +1855,25 @@
   <div class="info-modal hidden" id="changelogModal" role="dialog" aria-modal="true" aria-labelledby="changelogModalTitle">
     <div class="info-modal-card">
       <div class="info-modal-header">
-        <h2 id="changelogModalTitle">📋 版本說明 <span class="version-badge-now">目前版本 v2.6</span></h2>
+        <h2 id="changelogModalTitle">📋 版本說明 <span class="version-badge-now">目前版本 v2.7</span></h2>
         <button type="button" class="btn-close-modal" id="btnCloseChangelog">✕ 關閉</button>
       </div>
       <div class="info-modal-body">
         <div class="info-section">
           <div class="version-title-row">
-            <h3>v2.6（最新正式版）</h3>
+            <h3>v2.7（最新正式版）</h3>
             <span class="version-tag">目前版本</span>
+          </div>
+          <ul>
+            <li>跑壘改為全程勻速移動，取消壘包前為求 SAFE 的突然加速，改以提前起跑／出發呈現 SAFE 時間差。</li>
+            <li>同步更新「遊戲手冊」與「版本說明」。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v2.6</h3>
+            <span class="version-tag">滑壘觸壘與停點修正</span>
           </div>
           <ul>
             <li>修正滑壘與撲壘停點與觸壘判定：跑者前端／身體只要先碰到壘包任一邊緣或面積即停住並算觸壘，不再滑穿到壘包另一側或僅依單一角落判定。</li>
@@ -2909,7 +2921,7 @@
           btnH.innerHTML = `<span class="swatch" style="background:${t.color}"></span><span>${t.name}</span>`;
           btnH.addEventListener('click', () => {
             if (state.setup.awayTeamId === t.id) {
-              state.setup.homeTeamId = state.setup.awayTeamId;
+              state.setup.awayTeamId = state.setup.homeTeamId;
             }
             state.setup.homeTeamId = t.id;
             renderTeamSelectors();
@@ -4214,17 +4226,17 @@
         const runnerAction = isPickoff ? 'dive_back' : (base === 2 ? 'slide' : 'sprint');
         const runnerSlides = runnerAction === 'slide';
 
-        const baseTouchTime = (isPickoff || isSteal) ? (0.95 + Math.random() * 0.2) : (1.15 + Math.random() * 0.25);
-
+        // 跑者全程勻速；若為 SAFE 則提前起跑（baseTouchTime 較早），若為 OUT 則較晚起跑（baseTouchTime 較晚）
+        const isSafe = Math.random() < 0.5;
         const r = Math.random();
         let absDelta;
         if (r < 0.45) absDelta = 0.015 + Math.random() * 0.035;
         else if (r < 0.80) absDelta = 0.05 + Math.random() * 0.065;
         else absDelta = 0.115 + Math.random() * 0.095;
 
-        const isSafe = Math.random() < 0.5;
+        const ballCatchTime = (isPickoff || isSteal) ? (1.02 + Math.random() * 0.18) : (1.22 + Math.random() * 0.22);
         const delta = isSafe ? absDelta : -absDelta;
-        const ballCatchTime = baseTouchTime + delta;
+        const baseTouchTime = ballCatchTime - delta;
 
         const runnerTeam = g.isTop ? g.awayTeam : g.homeTeam;
         const fielderTeam = g.isTop ? g.homeTeam : g.awayTeam;
@@ -4366,6 +4378,10 @@
           }
         }
 
+        // 固定勻速跑壘時長：提前起跑代表 approachStart 較早
+        const uniformMoveDur = (isPickoff || isSteal) ? 0.56 : 0.92;
+        const runnerDepartTime = baseTouchTime - uniformMoveDur;
+
         return {
           mode: 'safe_out',
           ...cfg,
@@ -4373,6 +4389,8 @@
           basePos,
           runnerTeam,
           fielderTeam,
+          uniformMoveDur,
+          runnerDepartTime,
           baseTouchTime,
           ballCatchTime,
           delta,
@@ -4739,9 +4757,10 @@
         return u * u * p0 + 2 * u * t * p1 + t * t * p2;
       }
 
+      // 全程勻速跑壘（取消壘包前突然加速，改以 runnerDepartTime 提前起跑控制到達時間）
       function getRunnerPos(play, t) {
-        const approachDur = (play.isPickoff || play.isSteal) ? 0.58 : 0.95;
-        const approachStart = play.baseTouchTime - approachDur;
+        const approachDur = play.uniformMoveDur || ((play.isPickoff || play.isSteal) ? 0.56 : 0.92);
+        const approachStart = play.runnerDepartTime !== undefined ? play.runnerDepartTime : (play.baseTouchTime - approachDur);
         if (t <= play.baseTouchTime) {
           const p = clamp01((t - approachStart) / approachDur);
           const rawX = lerp(play.runnerStart.x, play.runnerContact.x, p);
@@ -4751,8 +4770,8 @@
           return {
             x: hitBagEarly ? play.runnerContact.x : rawX,
             y: hitBagEarly ? play.runnerContact.y : rawY,
-            sliding: play.runnerAction === 'slide' && t >= play.baseTouchTime - 0.36 && !hitBagEarly,
-            diving: play.runnerAction === 'dive_back' && t >= play.baseTouchTime - 0.34 && !hitBagEarly,
+            sliding: play.runnerAction === 'slide' && p >= 0.62 && !hitBagEarly,
+            diving: play.runnerAction === 'dive_back' && p >= 0.64 && !hitBagEarly,
             stoppedAtBase: hitBagEarly
           };
         } else {
@@ -5620,11 +5639,12 @@
                 : '關鍵點已出現！請立刻宣判「界內」或「界外」！';
             }
           } else {
+            const slideStartT = state.play.runnerDepartTime + state.play.uniformMoveDur * 0.62;
             if (
               (state.play.runnerAction === 'slide' || state.play.runnerAction === 'dive_back') &&
               !state.triggeredSlideSound &&
-              prevT < state.play.baseTouchTime - 0.34 &&
-              state.t >= state.play.baseTouchTime - 0.34
+              prevT < slideStartT &&
+              state.t >= slideStartT
             ) {
               state.triggeredSlideSound = true;
               if (!isSlow) playSlideDirt();
