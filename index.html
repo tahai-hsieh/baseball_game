@@ -1911,16 +1911,137 @@
             <span class="version-tag">登出、訪客遊玩與盜壘</span>
           </div>
           <ul>
-            <li>新增登出與不登入遊玩，以及盜壘機制與二壘審視角自動切換。</li>
+            <li>新增「登出」功能，登出後回到詢問名字的頁面；登入視窗新增「不登入遊玩」選項。</li>
+            <li>修正滑壘觸壘判定：跑者只要碰觸到壘包邊緣即算觸壘，不再要求滑到壘包正中央。</li>
+            <li>新增強迫進壘封殺與滑壘規則，以及盜壘機制與二壘審視角自動切換。</li>
+            <li>同步更新「遊戲手冊」與「版本說明」。</li>
           </ul>
         </div>
 
         <div class="info-section">
           <div class="version-title-row">
-            <h3>v1.0 ～ v2.0 歷史紀錄說明</h3>
-            <span class="version-tag">無早期版本紀錄</span>
+            <h3>v2.0</h3>
+            <span class="version-tag">帳號登入、排行榜與遊玩紀錄</span>
           </div>
-          <p>我手邊沒有 v1.0 ～ v2.0 各版本的詳細變更紀錄（目前現有程式與對話中僅留存 v2.1 之後的版本說明），因此無法提供 v1.0 ～ v2.0 的具體更新內容。</p>
+          <ul>
+            <li>新增玩家名字登入機制（僅限新打開頁面時詢問，玩完返回首頁不重複詢問；輸入相同名字即自動登入）。</li>
+            <li>整合 Firebase Realtime Database 雲端儲存，支援 Safe/Out（九局制/四局制）與 Fair/Foul（50球測驗）排行榜與玩家個人歷史遊玩紀錄查詢。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v1.9</h3>
+            <span class="version-tag">介面與軌跡優化</span>
+          </div>
+          <ul>
+            <li>首頁新增「遊戲手冊」與「版本說明」文字連結與詳盡說明視窗。</li>
+            <li>界內／界外模式起始頁賽制更新為「50球測驗模式」與「無限制練習模式」，皆支援提早結束與重置數據。</li>
+            <li>移除裁判宣判全壘打時頭頂的虛線圓圈，保留手部空中畫圈動作。</li>
+            <li>全面修正全壘打飛上看台與線邊球落地後的軌跡切線銜接，球飛上看台與落地滾動順暢不再突然轉向。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v1.8</h3>
+            <span class="version-tag">細節與挑戰優化</span>
+          </div>
+          <ul>
+            <li>收緊界內／界外模式總教練挑戰時機：打中壘包、打中標竿或明顯看台球不再誤觸挑戰，僅針對壓線近距離或轉彎滾地球提出挑戰。</li>
+            <li>移除界內／界外模式留在地面的黑色與白色落點球印，保留移動球影以提升判決真實度。</li>
+            <li>修正滾地球未碰觸壘包時不再顯示壘包旁碰撞特效與音效。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v1.7</h3>
+            <span class="version-tag">鏡頭、物理與球場幾何</span>
+          </div>
+          <ul>
+            <li>全壘打標竿判斷新增即時畫面自動放大特寫鏡頭，並加入直接飛上外野看台與標竿外側看台的新球路。</li>
+            <li>導入弧長參數化勻速引擎，確保所有球路全程恆定速度，不再出現標竿前加速或減速。</li>
+            <li>修正過標竿後的球路直接淡出消失於看台區，並鎖定標竿前後遮擋與重播畫面完全一致。</li>
+            <li>全模式統一修正球場幾何：全壘打標竿移至一三壘邊線最底端、一三壘壘包一側貼齊白線內緣、二壘壘包下角指向本壘。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v1.6</h3>
+            <span class="version-tag">全壘打標竿系統</span>
+          </div>
+          <ul>
+            <li>界內／界外模式新增「全壘打標竿判斷」，包含標竿後方被擋住（全壘打）、直接擊中標竿（全壘打）與標竿前方飛過（界外）。</li>
+            <li>加入 homerun.mp3 語音音效，以及裁判右手舉高伸出食指空中畫圈的全壘打宣判手勢。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v1.5</h3>
+            <span class="version-tag">壘包碰觸與自動重播擴充</span>
+          </div>
+          <ul>
+            <li>界內／界外模式同步導入自動電視輔助判決，裁判走出轉播室比出 FAIR（食指指向場內）與 FOUL（雙手高舉）手勢。</li>
+            <li>新增全軌跡掃描強制規則：不論飛球或滾地球，凡碰觸壘包本體一律判定為界內。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v1.4</h3>
+            <span class="version-tag">雙重播模式與多變球路</span>
+          </div>
+          <ul>
+            <li>起始頁面新增「手動電視輔助判決模式」與「自動電視輔助判決模式」，自動模式可觀看裁判走出轉播室比出 SAFE／OUT 手勢。</li>
+            <li>界內／界外模式大幅增加球路變化（擊中壘包、線內飛過線外落地、壘包前滾出與轉回界內等），並加入 fair.mp3 音效。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v1.3</h3>
+            <span class="version-tag">自適應版面與語音音效</span>
+          </div>
+          <ul>
+            <li>加入 iOS／平板安全區域邊距（safe-area-inset）與橫豎屏自動縮放置中，解決狀態列遮擋問題。</li>
+            <li>加入 out.mp3、safe.mp3、foul.mp3 判決語音音效並納入離線快取。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v1.2</h3>
+            <span class="version-tag">雙遊戲模式與 PWA 離線支援</span>
+          </div>
+          <ul>
+            <li>新增首頁模式選擇，正式推出「界內 / 界外 判決」模式。</li>
+            <li>加入 icon_baseball.png 主畫面原圖與圓形網頁圖標、Service Worker 離線使用與鎖定雙擊放大。</li>
+            <li>結束頁面新增「兩隊因誤判導致得分」統計數據。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v1.1</h3>
+            <span class="version-tag">實戰視角與完整賽制</span>
+          </div>
+          <ul>
+            <li>全面升級為 2.5D 壘審低角度實戰視角與擬真公仔球員，新增六隊對戰選擇、起始頁面與結束記分板。</li>
+            <li>實作九局／四局賽制（平手延長一局）、滿壘推進得分、投手牽制球與二三壘審依跑者解鎖，挑戰權調整為每隊 2 次。</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="version-title-row">
+            <h3>v1.0</h3>
+            <span class="version-tag">初版上線</span>
+          </div>
+          <ul>
+            <li>建立棒球壘審 Safe / Out 基礎玩法，包含一二三壘切換、隨機時間差、Web Audio 合成音效與慢動作重播驗證功能。</li>
+          </ul>
         </div>
       </div>
     </div>
